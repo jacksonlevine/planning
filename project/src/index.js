@@ -6,8 +6,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: process.env.NODE_ENV === 'development' ?
-  process.env.REACT_APP_FIREBASE_API_KEY_DEVELOPMENT : process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
+  apiKey: (process.env.NODE_ENV === 'development' ?
+  process.env.REACT_APP_apiKeyDev : process.env.REACT_APP_apiKeyProd),
   authDomain: "jacksongame-eb775.firebaseapp.com",
   databaseURL: "https://jacksongame-eb775-default-rtdb.firebaseio.com",
   projectId: "jacksongame-eb775",
@@ -20,19 +20,21 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+let possibleError;
+
 const auth = getAuth();
 signInAnonymously(auth)
   .then(() => {
     // Signed in..
   })
   .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // ...
+    possibleError = error;
   });
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <App error = {possibleError}
+        fbapp = {app}
+        auth = {auth}/>
   </React.StrictMode>
 );
