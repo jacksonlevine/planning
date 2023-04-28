@@ -4,7 +4,6 @@ import App from './components/App';
 import "firebase/app"; 
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
-import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
@@ -35,6 +34,20 @@ signInAnonymously(auth)
     possibleError = error;
   });
 
+  function initGame()
+  {
+    const allPlayersRef = firebase.database().ref('players');
+
+    allPlayersRef.on("value", (snapshot) => {
+      //Fires whenever a change occurs
+    });
+
+    allPlayersRef.on("child_added", (snapshot) => {
+      //Fires whenever a new node is added to players
+    });
+
+  }
+
   onAuthStateChanged(auth, (user) => {
     if (user) {
       playerId = user.uid;
@@ -50,6 +63,8 @@ signInAnonymously(auth)
       );
 
       playerRef.onDisconnect().remove();
+
+      initGame();
     } else {
       // User is signed out
       // ...
