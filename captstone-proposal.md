@@ -1,12 +1,10 @@
-
-
 Name of Student:
 
   - Jackson Levine
 
 Name of Project:
 
-  - TBD
+  - TBD (Jackson Game as placeholder)
 
 Project's Purpose or Goal: (What will it do for users?)
 
