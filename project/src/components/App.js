@@ -9,9 +9,19 @@ class App extends Component {
     };
   }
   render() {
+    let mainElement = null;
+
+    switch(this.state.pageVisible)
+    {
+      default:
+      case "default":
+        mainElement = <h1>Hello</h1>
+        break;
+    }
+
     return (
       <div className="App">
-        <h1>{props.pid}</h1>
+        {mainElement}
       </div>
     );
   }
