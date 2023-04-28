@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './components/App';
-
+require('dotenv').config()
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAuth, signInAnonymously } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: {process.env.REACT_APP_FIREBASE_API_KEY},
+  apiKey: process.env.NODE_ENV === 'development' ?
+  process.env.REACT_APP_FIREBASE_API_KEY_DEVELOPMENT : process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
   authDomain: "jacksongame-eb775.firebaseapp.com",
   databaseURL: "https://jacksongame-eb775-default-rtdb.firebaseio.com",
   projectId: "jacksongame-eb775",
@@ -18,8 +19,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
+const auth = getAuth();
+signInAnonymously(auth)
+  .then(() => {
+    // Signed in..
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // ...
+  });
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
