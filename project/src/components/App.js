@@ -11,12 +11,17 @@ class App extends Component {
   render() {
     let mainElement = null;
 
-    switch(this.state.pageVisible)
+    if(this.props.error != null)
     {
-      default:
-      case "default":
-        mainElement = <h1>Hello</h1>
-        break;
+      mainElement = <h1>There was an error signing in. {error.message}</h1>;
+    } else {
+      switch(this.state.pageVisible)
+      {
+        default:
+        case "default":
+          mainElement = <h1>Hello</h1>;
+          break;
+      }
     }
 
     return (
