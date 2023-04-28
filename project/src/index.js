@@ -21,7 +21,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 let possibleError;
-
+let playerId;
+let playerRef;
 
 const auth = getAuth();
 signInAnonymously(auth)
@@ -31,6 +32,28 @@ signInAnonymously(auth)
   .catch((error) => {
     possibleError = error;
   });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      playerId = user.uid;
+      playerRef = firebase.database().ref(`players/${playerId}`);
+
+      playerRef.set(
+        {
+          id: playerId,
+          name: "test",
+          direction: "right",
+          x: 3, y: 3, z: 3
+        }
+      );
+        
+      playerRef.onDisconnect().remove();
+    } else {
+      // User is signed out
+      // ...
+    }
+  });
+  
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
