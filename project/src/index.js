@@ -3,25 +3,25 @@ import ReactDOM from 'react-dom/client';
 import App from './components/App';
 import "firebase/app"; 
 import firebase from "firebase/compat/app";
-import {} from "firebase/database";
+import "firebase/compat/database";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: (process.env.NODE_ENV === 'development' ?
   process.env.REACT_APP_apiKeyDev : process.env.REACT_APP_apiKeyProd),
-  authDomain: process.env.authDomain,
-  databaseURL: process.env.databaseUrl,
-  projectId: process.env.projectId,
-  storageBucket: process.env.storageBucket,
-  messagingSenderId: process.env.messageSenderId,
-  appId: process.env.appId,
-  measurementId: process.env.measurementId
+  authDomain: process.env.REACT_APP_authDomain,
+  databaseURL: process.env.REACT_APP_databaseUrl,
+  projectId: process.env.REACT_APP_projectId,
+  storageBucket: process.env.REACT_APP_storageBucket,
+  messagingSenderId: process.env.REACT_APP_messageSenderId,
+  appId: process.env.REACT_APP_appId,
+  measurementId: process.env.REACT_APP_measurementId
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
+const app = firebase.initializeApp(firebaseConfig);
+console.log(app.name);
 let possibleError;
 let playerId;
 let playerRef;
