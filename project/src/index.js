@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './components/App';
-require('dotenv').config()
+import "firebase/app"; 
+import firebase from "firebase/compat/app";
+import {} from "firebase/database";
 import { initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: (process.env.NODE_ENV === 'development' ?
@@ -46,7 +48,7 @@ signInAnonymously(auth)
           x: 3, y: 3, z: 3
         }
       );
-        
+
       playerRef.onDisconnect().remove();
     } else {
       // User is signed out
@@ -61,6 +63,7 @@ root.render(
   <React.StrictMode>
     <App error = {possibleError}
         fbapp = {app}
-        auth = {auth}/>
+        auth = {auth}
+        pid = {playerId}/>
   </React.StrictMode>
 );

@@ -1,7 +1,7 @@
 function App(props) {
   return (
     <div className="App">
-      <h1>props.auth.</h1>
+      <h1>{props.pid}</h1>
     </div>
   );
 }
