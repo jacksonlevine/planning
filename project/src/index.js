@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './components/App';
 import "firebase/app"; 
@@ -35,17 +35,30 @@ signInAnonymously(auth)
     possibleSignInError = error;
   });
 
-function initGame()
-{
-  const allPlayersRef = firebase.database().ref('players');
 
-  allPlayersRef.on("value", (snapshot) => {
-    //Fires whenever a change occurs
-  });
+class Game extends Component {
+  constructor() {
+    super()
+    this.allPlayersRef = firebase.database().ref('players');
 
-  allPlayersRef.on("child_added", (snapshot) => {
-    //Fires whenever a new node is added to players
-  });
+    allPlayersRef.on("value", (snapshot) => {
+      //Fires whenever a change occurs
+    });
+
+    allPlayersRef.on("child_added", (snapshot) => {
+      //Fires whenever a new node is added to players
+    });
+  } 
+
+  render() {
+    return(
+      <React.Fragment>
+        <canvas className="canvas">
+          
+        </canvas>
+      </React.Fragment>
+    );
+  }
 
 }
 
