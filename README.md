@@ -5,3 +5,4 @@
 * 8:50 Research Firebase
 * 9:30 Creating Firebase project in-browser
 * 9:50 Researching Supabase as potential other choice
+* 10:00 Setting up Firebase
