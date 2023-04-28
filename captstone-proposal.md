@@ -25,7 +25,7 @@ What tools, frameworks, libraries, APIs, modules and/or other resources (whateve
 
 If you finish developing the minimum viable product (MVP) with time to spare, what will you work on next? Describe these features here: Be specific.
 
-  - Generating a world for the users and allowing users to build on to to the world
+  - Generating a voxel world for the users and allowing users to build on to to the world
   - Realistic physics in the world
 
 What additional tools, frameworks, libraries, APIs, or other resources will these additional features require?
