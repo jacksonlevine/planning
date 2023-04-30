@@ -5,49 +5,55 @@ import "firebase/compat/database";
 
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { Vector3 } from "three";
 import ImprovedNoise from "./../perlin.js";
 
+let saturn;
+
 class InputState {
-    constructor() {
-      this.left = false;
-      this.right = false;
-      this.back = false;
-      this.forward = false;
-      this.up = false;
-      this.down = false;
-    }
+  constructor() {
+    this.left = false;
+    this.right = false;
+    this.back = false;
+    this.forward = false;
+    this.up = false;
+    this.down = false;
   }
+}
 
-  class InputHandler {
-    constructor() {
-      this.ActiveState = new InputState();
-    }
+class InputHandler {
+  constructor() {
+    this.ActiveState = new InputState();
   }
+}
 
-  const meshMaterial = new THREE.MeshLambertMaterial({
-    color: 0xff0000,
-    depthWrite: true,
-  });
+const meshMaterial = new THREE.MeshLambertMaterial({
+  color: 0xff0000,
+  depthWrite: true,
+});
+
+class PrevAndNewPosition {
+    constructor(vector1,vector2)
+    {
+        this.prevPosition = vector1;
+        this.newPosition = vector2;
+    }
+}
 
 export default class Game extends Component {
   constructor() {
     super();
+    this.allPlayerModels = new Map();
     this.allPlayersRef = firebase.database().ref("players");
-
-    this.allPlayersRef.on("value", (snapshot) => {
-      //Fires whenever a change occurs
-    });
-
-    this.allPlayersRef.on("child_added", (snapshot) => {
-      const addedPlayer = snapshot.val();
-      
-    });
+    
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       window.innerWidth / window.innerHeight,
-      1,
+      0.001,
       1000
     );
+    this.players = {};
     this.isOpen = true;
     this.styles = {};
     this.canvas = null;
@@ -63,9 +69,15 @@ export default class Game extends Component {
     this.neededChunks = new Map();
     this.chunkpool = [];
     this.input = new InputHandler();
+    this.playerOldAndNewPositions = new Map(); // uid , PrevAndNewPosiotn
+    this.updatePlayersTimer = parseFloat("0.0");
+    this.updatePlayersInterval = 0.20;
+    this.clock = new THREE.Clock();
   }
 
   render() {
+    
+    //console.log(this.props.pid)
     return (
       <div style={this.styles}>
         <h1>Hello I am a Game</h1>
@@ -151,10 +163,67 @@ export default class Game extends Component {
     }
   };
   componentDidMount() {
+    const gltfLoader = new GLTFLoader();
+    const loadAsync = url => {
+        return new Promise(resolve => {
+          gltfLoader.load(url, gltf => {
+            resolve(gltf)
+          })
+        })
+      }
+    Promise.all([loadAsync("/player/scene.gltf")]).then(
+        models => {
+            saturn = models[0].scene.children[0];
+
+            
+    this.allPlayersRef.on("value", (snapshot) => {
+        this.players = snapshot.val() || {};
+        Object.keys(this.players).forEach((key) => {
+          const playerState = this.players[key];
+          if(this.allPlayerModels.has(key)) {
+            let model = this.allPlayerModels.get(key);
+            //console.log("Model", model);
+
+            model.rotation.z = playerState.zrotation+155;
+            this.playerOldAndNewPositions.set(key, new PrevAndNewPosition(
+                model.position,
+                new THREE.Vector3(playerState.x, playerState.y-1.6, playerState.z)
+            ));
+
+
+            this.allPlayerModels.set(key, model);
+
+          }
+        });
+      });
+  
+      this.allPlayersRef.on("child_added", (snapshot) => {
+        const addedPlayer = snapshot.val();
+        if(!this.allPlayerModels.has(addedPlayer.id) && addedPlayer.id != this.props.pid)
+        {
+          const newPlayer = saturn.clone();
+          this.scene.add(newPlayer);
+          this.allPlayerModels.set(addedPlayer.id, newPlayer);
+          newPlayer.position.x = addedPlayer.x;
+          newPlayer.position.y = addedPlayer.y-1.6;
+          newPlayer.position.z = addedPlayer.z;
+        }
+        
+      });
+
+      this.allPlayersRef.on("child_removed", (oldChildSnapshot) => {
+        if(this.allPlayerModels.has(oldChildSnapshot.key)){
+            this.scene.remove(this.allPlayerModels.get(oldChildSnapshot.key))
+        }
+      });
+
+        }
+    );
+
+
     this.mountListeners();
     const chunk_width = this.chunk_width;
 
-    
     class World {
       constructor() {
         this.data = new Map();
@@ -240,7 +309,7 @@ export default class Game extends Component {
 
     this.renderer.setSize(500, 500);
     this.renderer.setClearColor(0x000000, 1);
-    this.clock = new THREE.Clock();
+
 
     this.controls = new PointerLockControls(this.camera, this.canvas);
 
@@ -254,7 +323,6 @@ export default class Game extends Component {
   }
 
   populateChunkPool() {
-
     const chunk_width = this.chunk_width;
     const world = this.world;
     class Chunk {
@@ -628,23 +696,52 @@ export default class Game extends Component {
 
   runGameLoop(input) {
     const animate = () => {
+        if(this.updatePlayersTimer > this.updatePlayersInterval) {
+            this.updatePlayersTimer = 0;
+            this.props.pref.set({
+                ...this.players[this.props.pid],
+                zrotation: this.camera.rotation.z,
+                x: this.camera.position.x,
+                y: this.camera.position.y,
+                z: this.camera.position.z,
+            }
+                );
+        }
+        else {
+            let x = this.clock.getDelta()
+            this.updatePlayersTimer += parseFloat(x);
+
+            Object.keys(this.players).forEach((key)=> {
+                if(this.allPlayerModels.has(key) && this.playerOldAndNewPositions.has(key)) {
+                let model = this.allPlayerModels.get(key);
+                model.position.lerp(this.playerOldAndNewPositions.get(key).newPosition,this.updatePlayersTimer*2);
+                this.allPlayerModels.set(key, model);
+                }
+            });
+        }
       if (input.ActiveState.forward) {
         this.controls.moveForward(0.25);
+        
       }
       if (input.ActiveState.back) {
         this.controls.moveForward(-0.25);
+        
       }
       if (input.ActiveState.right) {
         this.controls.moveRight(0.25);
+        
       }
       if (input.ActiveState.left) {
         this.controls.moveRight(-0.25);
+        
       }
       if (input.ActiveState.up) {
         this.camera.position.y += 0.2;
+        
       }
       if (input.ActiveState.down) {
         this.camera.position.y -= 0.2;
+        
       }
       if (this.surveyNeededChunksTimer >= this.surveyNeededChunksInterval) {
         this.surveyNeededChunksTimer = 0;
@@ -655,14 +752,12 @@ export default class Game extends Component {
 
       this.rebuildQueuedMeshes();
       this.renderer.render(this.scene, this.camera);
-      if(this.isOpen)
-      {
+      if (this.isOpen) {
         window.requestAnimationFrame(animate);
       }
-
     };
-    if(this.isOpen){
-        animate();
+    if (this.isOpen) {
+      animate();
     }
   }
 }

@@ -1,0 +1,300 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 43,
+      "max": [
+        0.019886000081896782,
+        -0.07602699846029282,
+        1.6159329414367676
+      ],
+      "min": [
+        -0.019886000081896782,
+        -0.09146399796009064,
+        1.613204002380371
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 84,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 516,
+      "componentType": 5126,
+      "count": 19112,
+      "max": [
+        0.10703899711370468,
+        0.11377900093793869,
+        1.800421953201294
+      ],
+      "min": [
+        -0.10703899711370468,
+        -0.11354400217533112,
+        1.4786109924316406
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 229860,
+      "componentType": 5126,
+      "count": 19112,
+      "max": [
+        0.9997987151145935,
+        0.9999984502792358,
+        0.9999208450317383
+      ],
+      "min": [
+        -0.9997987151145935,
+        -0.9999880790710449,
+        -0.9999783039093018
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 19112,
+      "max": [
+        0.9764909744262695,
+        0.8521000146865845
+      ],
+      "min": [
+        0.023506000638008118,
+        0.09807100147008896
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 336,
+      "componentType": 5125,
+      "count": 113688,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 459204,
+      "componentType": 5126,
+      "count": 1762,
+      "max": [
+        0.05015400052070618,
+        -0.047912999987602234,
+        1.7012039422988892
+      ],
+      "min": [
+        -0.05015400052070618,
+        -0.07795300334692001,
+        1.670954942703247
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 480348,
+      "componentType": 5126,
+      "count": 1762,
+      "max": [
+        1.0,
+        0.9998380541801453,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.9999395608901978,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 152896,
+      "componentType": 5126,
+      "count": 1762,
+      "max": [
+        1.0,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 455088,
+      "componentType": 5125,
+      "count": 6912,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "MKULTRA (https://sketchfab.com/mkultraviolence)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/realistic-korean-girl-head-lowpoly-basemesh-c0cd098fe6bb47fa9117cd8b48151703",
+      "title": "Realistic Korean Girl Head Lowpoly Basemesh"
+    },
+    "generator": "Sketchfab-15.19.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 482736,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 166992,
+      "byteOffset": 482736,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 501492,
+      "byteOffset": 649728,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1151220,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "specularFactor": 0.4517778323479224
+        }
+      },
+      "name": "material_0",
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.4580743875025973
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Object_0",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "material": 0,
+          "mode": 1
+        }
+      ]
+    },
+    {
+      "name": "Object_1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 3,
+            "POSITION": 2,
+            "TEXCOORD_0": 4
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Object_2",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 7,
+            "POSITION": 6,
+            "TEXCOORD_0": 8
+          },
+          "indices": 9,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2,
+        3,
+        4
+      ],
+      "name": "korean girl.obj.cleaner.materialmerger.gles"
+    },
+    {
+      "mesh": 0,
+      "name": "Object_2"
+    },
+    {
+      "mesh": 1,
+      "name": "Object_3"
+    },
+    {
+      "mesh": 2,
+      "name": "Object_4"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}
