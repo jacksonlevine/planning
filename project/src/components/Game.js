@@ -17,8 +17,8 @@ class InputState {
     this.right = false;
     this.back = false;
     this.forward = false;
-    this.up = false;
-    this.down = false;
+    this.jump = false;
+    this.crouch = false;
   }
 }
 
@@ -128,10 +128,10 @@ export default class Game extends Component {
         this.input.ActiveState.right = true;
         break;
       case "Space":
-        this.input.ActiveState.up = true;
+        this.input.ActiveState.jump = true;
         break;
       case "ShiftLeft":
-        this.input.ActiveState.down = true;
+        this.input.ActiveState.crouch = true;
         break;
       default:
         break;
@@ -154,11 +154,11 @@ export default class Game extends Component {
       case "KeyD":
         this.input.ActiveState.right = false;
         break;
-      case "Space":
-        this.input.ActiveState.up = false;
-        break;
+      // case "Space":
+      //   this.input.ActiveState.up = false;
+      //   break;
       case "ShiftLeft":
-        this.input.ActiveState.down = false;
+        this.input.ActiveState.crouch = false;
         break;
     }
   };
@@ -205,7 +205,7 @@ export default class Game extends Component {
           this.scene.add(newPlayer);
           this.allPlayerModels.set(addedPlayer.id, newPlayer);
           newPlayer.position.x = addedPlayer.x;
-          newPlayer.position.y = addedPlayer.y-1.6;
+          newPlayer.position.y = addedPlayer.y-1.6; //odd positioning problem on the model I'm using atm, this will be gone!
           newPlayer.position.z = addedPlayer.z;
         }
         
