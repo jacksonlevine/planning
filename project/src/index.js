@@ -5,6 +5,9 @@ import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import Game from './components/Game';
+
+
 
 const firebaseConfig = {
   apiKey: (process.env.NODE_ENV === 'development' ?
@@ -36,31 +39,9 @@ signInAnonymously(auth)
   });
 
 
-class Game extends Component {
-  constructor() {
-    super()
-    this.allPlayersRef = firebase.database().ref('players');
 
-    allPlayersRef.on("value", (snapshot) => {
-      //Fires whenever a change occurs
-    });
 
-    allPlayersRef.on("child_added", (snapshot) => {
-      //Fires whenever a new node is added to players
-    });
-  } 
-
-  render() {
-    return(
-      <React.Fragment>
-        <canvas className="canvas">
-          
-        </canvas>
-      </React.Fragment>
-    );
-  }
-
-}
+let game = null;
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -78,7 +59,6 @@ onAuthStateChanged(auth, (user) => {
 
     playerRef.onDisconnect().remove();
 
-    initGame();
   } else {
     // User is signed out
     // ...
@@ -92,6 +72,7 @@ root.render(
   <React.StrictMode>
     <App error = {possibleSignInError}
         fbapp = {app}
-        pid = {playerId}/>
+        pid = {playerId}
+        isError = {possibleSignInError !== null}/>
   </React.StrictMode>
 );
