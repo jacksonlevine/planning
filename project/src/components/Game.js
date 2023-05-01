@@ -212,17 +212,18 @@ export default class Game extends Component {
   {
     const blockKey = `${pos.x},${pos.y},${pos.z}`; 
           this.world.data.delete(blockKey);
-          const chunkX = Math.floor((pos.x-(pos.x%this.chunk_width))/this.chunk_width);
-          const chunkY = Math.floor((pos.y-(pos.y%this.chunk_width))/this.chunk_width);
-          const chunkZ = Math.floor((pos.z-(pos.z%this.chunk_width))/this.chunk_width);
+          
+          const chunkX = Math.floor((pos.x)/this.chunk_width);
+          const chunkY = Math.floor((pos.y)/this.chunk_width);
+          const chunkZ = Math.floor((pos.z)/this.chunk_width);
           if(this.world.fullblockmarks.has(`${chunkX},${chunkY},${chunkZ}`)){
             this.world.fullblockmarks.delete(`${chunkX},${chunkY},${chunkZ}`);
           }
           if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`))
           {
-            this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`)
-            .buildmeshinplace();
-
+           const chunk = this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`);
+            chunk.buildmeshinplace();
+            
           
           }
             //6 surrounders
@@ -488,7 +489,7 @@ export default class Game extends Component {
             }
           }
         }
-        console.log("Done generating this.world.");
+        //console.log("Done generating this.world.");
       };
     }
 
@@ -547,7 +548,7 @@ export default class Game extends Component {
         this.mesh = new THREE.Mesh(this.meshGeometry, meshMaterial);
         this.x = 0; //multiply x and z by 16 to get real-this.world position
         this.z = 0;
-        this.y = 0;
+        this.y = -500;
       }
       buildmesh(newx, newy, newz) {
         this.x = newx;

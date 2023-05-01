@@ -99,10 +99,11 @@ class App extends Component {
         this.db = getFirestore(this.app);
         this.changeState()("gameButtonVisible")(true);
         this.changeState()("messageToClient")("none");
+        this.switchPage("default");
       }
     ).catch(
       error=> {
-        this.changeState()("messageToClient")("signinerror");
+        this.changeState()("messageToClient")("signin");
       }
     );
   }
