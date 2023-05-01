@@ -1278,13 +1278,7 @@ export default class Game extends Component {
       if (this.surveyNeededChunksTimer >= this.surveyNeededChunksInterval) {
         this.surveyNeededChunksTimer = 0;
         this.surveyNeededChunks();
-        let d = new Date();
-        this.currentPushedActions.forEach(action => {
-          if(d.getTime() - parseInt(action.time) > 3000)
-          {
-            action.remove();
-          }
-        });
+
       } else {
         this.surveyNeededChunksTimer += 1;
       }
