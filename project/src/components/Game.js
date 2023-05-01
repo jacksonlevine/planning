@@ -9,7 +9,7 @@ import ImprovedNoise from "./../perlin.js";
 import GiantMapSaver from "../giantMapSaver.js";
 import LZString from "lz-string/libs/lz-string.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
-
+import { collection, addDoc } from "firebase/firestore";
 
 let saturn;
 
@@ -351,7 +351,7 @@ export default class Game extends Component {
 
     this.mountListeners();
     const chunk_width = this.chunk_width;
-        
+    const db = this.props.db;
     class World {
       constructor() {
         this.data = new Map();
@@ -404,6 +404,17 @@ export default class Game extends Component {
                           REAL_WORLD_Z,
                         "1"
                       ); // Real this.world level (micro)
+                      // try {
+                      //   const docRef = addDoc(collection(db, "blocks"), {
+                      //     x: REAL_WORLD_X,
+                      //     y: REAL_WORLD_Y,
+                      //     z: REAL_WORLD_Z,
+                      //     id: 1
+                      //   });
+        
+                      // } catch (e) {
+                      //   console.error("Error adding document: ", e);
+                      // }
                     }
                   }
                 }

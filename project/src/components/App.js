@@ -5,6 +5,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import GameInfo from "./GameInfo.js";
+import { getFirestore } from "firebase/firestore";
 
 let playerId = null; 
 let playerRef;
@@ -24,12 +25,11 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 
 
 
 const auth = getAuth();
-
 signInAnonymously(auth)
   .then(() => {
     // Signed in..
@@ -60,19 +60,23 @@ onAuthStateChanged(auth, (user) => {
     // ...
   }
 });
-  
+  return app;
 }
 
 class App extends Component {
   constructor()
   {
     super();
-    Login();
+    this.app = Login();
+    
+
+    this.db = getFirestore(this.app);
     this.state = {
       pageVisible: "default",
       messageToClient: "none",
       chat: []
     };
+    
 
     this.styles = {
       display:"flex",
@@ -125,7 +129,8 @@ class App extends Component {
             <Game switcher = {this.switchPage}
                   pid = {playerId}
                   pref = {playerRef}
-                  handle = {this.changeState}/>
+                  handle = {this.changeState}
+                  db = {this.db}/>
             <GameInfo message = {this.state.messageToClient}/>
           </React.Fragment>;
           //console.log(this.props.pid);
