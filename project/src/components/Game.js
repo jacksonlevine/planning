@@ -65,7 +65,7 @@ export default class Game extends Component {
     this.styles = {};
     this.canvas = null;
     this.controls = null;
-    this.chunk_width = 16;
+    this.chunk_width = 12;
     this.scene = new THREE.Scene();
     this.world = null;
     this.surveyNeededChunksTimer = 0;
@@ -89,7 +89,6 @@ export default class Game extends Component {
     //console.log(this.props.pid)
     return (
       <div style={this.styles}>
-        <h1>Hello I am a Game</h1>
         <canvas id="canvas"></canvas>
         <button
           onClick={() => {
@@ -103,8 +102,47 @@ export default class Game extends Component {
     );
   }
 
+  castRay = (x, y, z, dx, dy, dz, maxDistance) => {
+    return new Promise((resolve, reject) => {
+      let distanceTraveled = 0;
+      let currentX = x;
+      let currentY = y;
+      let currentZ = z;
+  
+      while (distanceTraveled < maxDistance) {
+        currentX += dx;
+        currentY += dy;
+        currentZ += dz;
+        distanceTraveled += .2;
+  
+        const key = `${Math.floor(currentX)},${Math.floor(currentY)},${Math.floor(currentZ)}`;
+        if (this.world.data.has(key)) {
+          resolve(key);
+          return;
+        }
+      }
+  
+      reject('Raycast did not hit anything');
+    });
+  }
+
   lockControls = () => {
-    this.controls.lock();
+    if(!this.controls.isLocked)
+    {
+      this.controls.lock();
+    }
+    else {
+      this.castRay(this.camera.position.x, 
+        this.camera.position.y, 
+        this.camera.position.z, this.camera.rotation.x,
+        this.camera.rotation.y, this.camera.rotation.z, 10)
+        .then((blockKey) => {
+          console.log(`Raycast hit block at ${blockKey}`);
+        })
+        .catch((error) => {
+          console.log(`Raycast failed: ${error}`);
+        });
+    }
   };
 
   componentWillUnmount() {
@@ -194,7 +232,7 @@ export default class Game extends Component {
             let model = this.allPlayerModels.get(key);
             //console.log("Model", model);
 
-            model.rotation.z = playerState.zrotation+155;
+            model.rotation.z = playerState.zrotation;
             this.playerOldAndNewPositions.set(key, new PrevAndNewPosition(
                 model.position,
                 new THREE.Vector3(playerState.x, playerState.y-1.6, playerState.z)
@@ -333,7 +371,7 @@ export default class Game extends Component {
     for(let i = 0; i < deconstructedWorld.length; ++i)
     {
       let jsonData = LZString.compress(JSON.stringify(deconstructedWorld[i]));
-      console.log(jsonData);
+
 
     }
 
@@ -484,21 +522,21 @@ export default class Game extends Component {
                 if (
                   world.data.has(
                     "" +
-                      (this.x * 16 + i) +
+                      (this.x * chunk_width + i) +
                       "," +
-                      (this.y * 16 + j) +
+                      (this.y * chunk_width + j) +
                       "," +
-                      (this.z * 16 + k)
+                      (this.z * chunk_width + k)
                   )
                 ) {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * 16 + i - 1) +
+                        (this.x * chunk_width + i - 1) +
                         "," +
-                        (this.y * 16 + j) +
+                        (this.y * chunk_width + j) +
                         "," +
-                        (this.z * 16 + k)
+                        (this.z * chunk_width + k)
                     )
                   ) {
                     newVerts.push(i, j, k);
@@ -514,11 +552,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * 16 + i) +
+                        (this.x * chunk_width + i) +
                         "," +
-                        (this.y * 16 + j) +
+                        (this.y * chunk_width + j) +
                         "," +
-                        (this.z * 16 + k - 1)
+                        (this.z * chunk_width + k - 1)
                     )
                   ) {
                     newVerts.push(i, j, k);
@@ -534,11 +572,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * 16 + i + 1) +
+                        (this.x * chunk_width + i + 1) +
                         "," +
-                        (this.y * 16 + j) +
+                        (this.y * chunk_width + j) +
                         "," +
-                        (this.z * 16 + k)
+                        (this.z * chunk_width + k)
                     )
                   ) {
                     newVerts.push(i + 1, j, k);
@@ -554,11 +592,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * 16 + i) +
+                        (this.x * chunk_width + i) +
                         "," +
-                        (this.y * 16 + j) +
+                        (this.y * chunk_width + j) +
                         "," +
-                        (this.z * 16 + k + 1)
+                        (this.z * chunk_width + k + 1)
                     )
                   ) {
                     newVerts.push(i, j, k + 1);
@@ -574,11 +612,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * 16 + i) +
+                        (this.x * chunk_width + i) +
                         "," +
-                        (this.y * 16 + j - 1) +
+                        (this.y * chunk_width + j - 1) +
                         "," +
-                        (this.z * 16 + k)
+                        (this.z * chunk_width + k)
                     )
                   ) {
                     newVerts.push(i, j, k);
@@ -594,11 +632,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * 16 + i) +
+                        (this.x * chunk_width + i) +
                         "," +
-                        (this.y * 16 + j + 1) +
+                        (this.y * chunk_width + j + 1) +
                         "," +
-                        (this.z * 16 + k)
+                        (this.z * chunk_width + k)
                     )
                   ) {
                     newVerts.push(i, j + 1, k);
@@ -625,7 +663,279 @@ export default class Game extends Component {
           "normal",
           new THREE.BufferAttribute(new Float32Array(newNorms), 3)
         );
-        this.mesh.position.set(this.x * 16, this.y * 16, this.z * 16);
+        this.mesh.position.set(this.x * chunk_width, this.y * chunk_width, this.z * chunk_width);
+
+        this.mesh.geometry = this.meshGeometry;
+      }
+      buildmeshinplace() {
+        let newVerts = [];
+        let newNorms = [];
+        if (
+          world.fullblockmarks.has("" + this.x + "," + this.y + "," + this.z)
+        ) {
+          if (
+            !world.fullblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            ) ||
+            !world.hasblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            )
+          ) {
+            //left
+            newVerts.push(0, 0, 0);
+            newVerts.push(0, 0, chunk_width);
+            newVerts.push(0, chunk_width, chunk_width);
+            newVerts.push(0, chunk_width, chunk_width);
+            newVerts.push(0, chunk_width, 0);
+            newVerts.push(0, 0, 0);
+            for (let h = 0; h < 6; h++) {
+              newNorms.push(-1, 0, 0);
+            }
+          }
+          if (
+            !world.fullblockmarks.has(
+              "" + this.x + "," + this.y + "," + (this.z - 1)
+            ) ||
+            !world.hasblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            )
+          ) {
+            //front
+            newVerts.push(0, 0, 0);
+            newVerts.push(0, chunk_width, 0);
+            newVerts.push(chunk_width, chunk_width, 0);
+            newVerts.push(chunk_width, chunk_width, 0);
+            newVerts.push(chunk_width, 0, 0);
+            newVerts.push(0, 0, 0);
+            for (let h = 0; h < 6; h++) {
+              newNorms.push(0, 0, -1);
+            }
+          }
+          if (
+            !world.fullblockmarks.has(
+              "" + (this.x + 1) + "," + this.y + "," + this.z
+            ) ||
+            !world.hasblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            )
+          ) {
+            //right
+            newVerts.push(chunk_width, 0, 0);
+            newVerts.push(chunk_width, chunk_width, 0);
+            newVerts.push(chunk_width, chunk_width, chunk_width);
+            newVerts.push(chunk_width, chunk_width, chunk_width);
+            newVerts.push(chunk_width, 0, chunk_width);
+            newVerts.push(chunk_width, 0, 0);
+            for (let h = 0; h < 6; h++) {
+              newNorms.push(1, 0, 0);
+            }
+          }
+          if (
+            !world.fullblockmarks.has(
+              "" + this.x + "," + this.y + "," + this.z + 1
+            ) ||
+            !world.hasblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            )
+          ) {
+            //back
+            newVerts.push(chunk_width, 0, chunk_width);
+            newVerts.push(chunk_width, chunk_width, chunk_width);
+            newVerts.push(0, chunk_width, chunk_width);
+            newVerts.push(0, chunk_width, chunk_width);
+            newVerts.push(0, 0, chunk_width);
+            newVerts.push(chunk_width, 0, chunk_width);
+            for (let h = 0; h < 6; h++) {
+              newNorms.push(0, 0, 1);
+            }
+          }
+          if (
+            !world.fullblockmarks.has(
+              "" + this.x + "," + (this.y - 1) + "," + this.z
+            ) ||
+            !world.hasblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            )
+          ) {
+            //bottom
+            newVerts.push(0, 0, chunk_width);
+            newVerts.push(0, 0, 0);
+            newVerts.push(chunk_width, 0, 0);
+            newVerts.push(chunk_width, 0, 0);
+            newVerts.push(chunk_width, 0, chunk_width);
+            newVerts.push(0, 0, chunk_width);
+            for (let h = 0; h < 6; h++) {
+              newNorms.push(0, -1, 0);
+            }
+          }
+          if (
+            !world.fullblockmarks.has(
+              "" + this.x + "," + (this.y + 1) + "," + this.z
+            ) ||
+            !world.hasblockmarks.has(
+              "" + (this.x - 1) + "," + this.y + "," + this.z
+            )
+          ) {
+            //top
+            newVerts.push(0, chunk_width, 0);
+            newVerts.push(0, chunk_width, chunk_width);
+            newVerts.push(chunk_width, chunk_width, chunk_width);
+            newVerts.push(chunk_width, chunk_width, chunk_width);
+            newVerts.push(chunk_width, chunk_width, 0);
+            newVerts.push(0, chunk_width, 0);
+            for (let h = 0; h < 6; h++) {
+              newNorms.push(0, 1, 0);
+            }
+          }
+        } else {
+          for (let j = 0; j < chunk_width; j++) {
+            for (let i = 0; i < chunk_width; i++) {
+              for (let k = 0; k < chunk_width; k++) {
+                if (
+                  world.data.has(
+                    "" +
+                      (this.x * chunk_width + i) +
+                      "," +
+                      (this.y * chunk_width + j) +
+                      "," +
+                      (this.z * chunk_width + k)
+                  )
+                ) {
+                  if (
+                    !world.data.has(
+                      "" +
+                        (this.x * chunk_width + i - 1) +
+                        "," +
+                        (this.y * chunk_width + j) +
+                        "," +
+                        (this.z * chunk_width + k)
+                    )
+                  ) {
+                    newVerts.push(i, j, k);
+                    newVerts.push(i, j, k + 1);
+                    newVerts.push(i, j + 1, k + 1);
+                    newVerts.push(i, j + 1, k + 1);
+                    newVerts.push(i, j + 1, k);
+                    newVerts.push(i, j, k);
+                    for (let h = 0; h < 6; h++) {
+                      newNorms.push(-1, 0, 0);
+                    }
+                  }
+                  if (
+                    !world.data.has(
+                      "" +
+                        (this.x * chunk_width + i) +
+                        "," +
+                        (this.y * chunk_width + j) +
+                        "," +
+                        (this.z * chunk_width + k - 1)
+                    )
+                  ) {
+                    newVerts.push(i, j, k);
+                    newVerts.push(i, j + 1, k);
+                    newVerts.push(i + 1, j + 1, k);
+                    newVerts.push(i + 1, j + 1, k);
+                    newVerts.push(i + 1, j, k);
+                    newVerts.push(i, j, k);
+                    for (let h = 0; h < 6; h++) {
+                      newNorms.push(0, 0, -1);
+                    }
+                  }
+                  if (
+                    !world.data.has(
+                      "" +
+                        (this.x * chunk_width + i + 1) +
+                        "," +
+                        (this.y * chunk_width + j) +
+                        "," +
+                        (this.z * chunk_width + k)
+                    )
+                  ) {
+                    newVerts.push(i + 1, j, k);
+                    newVerts.push(i + 1, j + 1, k);
+                    newVerts.push(i + 1, j + 1, k + 1);
+                    newVerts.push(i + 1, j + 1, k + 1);
+                    newVerts.push(i + 1, j, k + 1);
+                    newVerts.push(i + 1, j, k);
+                    for (let h = 0; h < 6; h++) {
+                      newNorms.push(1, 0, 0);
+                    }
+                  }
+                  if (
+                    !world.data.has(
+                      "" +
+                        (this.x * chunk_width + i) +
+                        "," +
+                        (this.y * chunk_width + j) +
+                        "," +
+                        (this.z * chunk_width + k + 1)
+                    )
+                  ) {
+                    newVerts.push(i, j, k + 1);
+                    newVerts.push(i + 1, j, k + 1);
+                    newVerts.push(i + 1, j + 1, k + 1);
+                    newVerts.push(i + 1, j + 1, k + 1);
+                    newVerts.push(i, j + 1, k + 1);
+                    newVerts.push(i, j, k + 1);
+                    for (let h = 0; h < 6; h++) {
+                      newNorms.push(0, 0, 1);
+                    }
+                  }
+                  if (
+                    !world.data.has(
+                      "" +
+                        (this.x * chunk_width + i) +
+                        "," +
+                        (this.y * chunk_width + j - 1) +
+                        "," +
+                        (this.z * chunk_width + k)
+                    )
+                  ) {
+                    newVerts.push(i, j, k);
+                    newVerts.push(i + 1, j, k);
+                    newVerts.push(i + 1, j, k + 1);
+                    newVerts.push(i + 1, j, k + 1);
+                    newVerts.push(i, j, k + 1);
+                    newVerts.push(i, j, k);
+                    for (let h = 0; h < 6; h++) {
+                      newNorms.push(0, -1, 0);
+                    }
+                  }
+                  if (
+                    !world.data.has(
+                      "" +
+                        (this.x * chunk_width + i) +
+                        "," +
+                        (this.y * chunk_width + j + 1) +
+                        "," +
+                        (this.z * chunk_width + k)
+                    )
+                  ) {
+                    newVerts.push(i, j + 1, k);
+                    newVerts.push(i, j + 1, k + 1);
+                    newVerts.push(i + 1, j + 1, k + 1);
+                    newVerts.push(i + 1, j + 1, k + 1);
+                    newVerts.push(i + 1, j + 1, k);
+                    newVerts.push(i, j + 1, k);
+                    for (let h = 0; h < 6; h++) {
+                      newNorms.push(0, 1, 0);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        this.vertices = new Float32Array(newVerts);
+        this.meshGeometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(this.vertices, 3)
+        );
+        this.meshGeometry.setAttribute(
+          "normal",
+          new THREE.BufferAttribute(new Float32Array(newNorms), 3)
+        );
+      
 
         this.mesh.geometry = this.meshGeometry;
       }
@@ -669,7 +979,7 @@ export default class Game extends Component {
         this.chunkpool.unshift(grabbedMesh);
         this.mappedChunks.set(
           "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
-          true
+          grabbedMesh
         );
         this.neededChunks.delete(
           "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z
@@ -775,7 +1085,7 @@ export default class Game extends Component {
       }
       if (input.ActiveState.jump) {
         if(!this.input.ActiveState.isGrounded || this.input.ActiveState.jumpTimer < 0.5) {
-        this.input.ActiveState.jumpTimer += this.delt;
+        this.input.ActiveState.jumpTimer += this.delt/8;
         this.camera.position.y += (this.delt*16) - this.input.ActiveState.jumpTimer;
         }
         else{
