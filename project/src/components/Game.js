@@ -117,7 +117,13 @@ export default class Game extends Component {
   
         const key = `${Math.floor(currentX)},${Math.floor(currentY)},${Math.floor(currentZ)}`;
         if (this.world.data.has(key)) {
-          resolve(key);
+          resolve(
+            {
+              x: Math.floor(currentX),
+              y: Math.floor(currentY),
+              z: Math.floor(currentZ)
+            }
+          );
           return;
         }
       }
@@ -132,15 +138,40 @@ export default class Game extends Component {
       this.controls.lock();
     }
     else {
+      var vector = new THREE.Vector3( 0, 0, - 1 );
+      vector.applyQuaternion( this.camera.quaternion );
+
       this.castRay(this.camera.position.x, 
         this.camera.position.y, 
-        this.camera.position.z, this.camera.rotation.x,
-        this.camera.rotation.y, this.camera.rotation.z, 10)
-        .then((blockKey) => {
-          console.log(`Raycast hit block at ${blockKey}`);
+        this.camera.position.z, vector.x,
+        vector.y, vector.z, 10)
+        .then((pos) => {
+          const blockKey = `${pos.x},${pos.y},${pos.z}`; 
+          this.world.data.delete(blockKey);
+          const chunkX = Math.floor(pos.x/this.chunk_width);
+          const chunkY = Math.floor(pos.y/this.chunk_width);
+          const chunkZ = Math.floor(pos.z/this.chunk_width);
+          if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`))
+          {
+            this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`)
+            .buildmeshinplace();
+
+            //6 surrounders
+            this.mappedChunks.get(`${chunkX-1},${chunkY},${chunkZ}`)
+            .buildmeshinplace();
+            this.mappedChunks.get(`${chunkX+1},${chunkY},${chunkZ}`)
+            .buildmeshinplace();
+            this.mappedChunks.get(`${chunkX},${chunkY-1},${chunkZ}`)
+            .buildmeshinplace();
+            this.mappedChunks.get(`${chunkX},${chunkY+1},${chunkZ}`)
+            .buildmeshinplace();
+            this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ-1}`)
+            .buildmeshinplace();
+            this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ+1}`)
+            .buildmeshinplace();
+          }
         })
         .catch((error) => {
-          console.log(`Raycast failed: ${error}`);
         });
     }
   };
@@ -1003,9 +1034,9 @@ export default class Game extends Component {
             k < this.chunk_width * 10;
             k += 16
           ) {
-            let x = Math.round((i + this.camera.position.x) / 16);
-            let z = Math.round((k + this.camera.position.z) / 16);
-            let yy = Math.round((y + this.camera.position.y) / 16);
+            let x = Math.round((i + this.camera.position.x) / this.chunk_width);
+            let z = Math.round((k + this.camera.position.z) / this.chunk_width);
+            let yy = Math.round((y + this.camera.position.y) /  this.chunk_width);
 
             if (
               this.world.hasblockmarks.has("" + x + "," + yy + "," + z) &&
@@ -1022,6 +1053,27 @@ export default class Game extends Component {
         }
       }
     }
+  }
+
+  castRayBlocking = (x, y, z, dx, dy, dz, maxDistance) => {
+    let distanceTraveled = 0;
+    let currentX = Math.floor(x);
+    let currentY = Math.floor(y);
+    let currentZ = Math.floor(z);
+  
+    while (distanceTraveled < maxDistance) {
+      currentX += dx;
+      currentY += dy;
+      currentZ += dz;
+      distanceTraveled += 1;
+  
+      const key = `${currentX},${currentY},${currentZ}`;
+      if (this.world.data.has(key)) {
+        return key;
+      }
+    }
+  
+    return null;
   }
 
   runGameLoop(input) {
@@ -1084,9 +1136,9 @@ export default class Game extends Component {
         
       }
       if (input.ActiveState.jump) {
-        if(!this.input.ActiveState.isGrounded || this.input.ActiveState.jumpTimer < 0.5) {
-        this.input.ActiveState.jumpTimer += this.delt/8;
-        this.camera.position.y += (this.delt*16) - this.input.ActiveState.jumpTimer;
+        if(!this.input.ActiveState.isGrounded || this.input.ActiveState.jumpTimer < 0.1) {
+        this.input.ActiveState.jumpTimer += this.delt*12;
+        this.camera.position.y += ((6) - this.input.ActiveState.jumpTimer)*this.delt;
         }
         else{
           this.input.ActiveState.jumpTimer = 0;
