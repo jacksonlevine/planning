@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import Game from "./Game";
+import Game from "./Game.js";
 import "firebase/app"; 
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import GameInfo from "./GameInfo.js";
 
 let playerId = null; 
 let playerRef;
@@ -23,8 +24,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-let possibleSignInError = null;
+firebase.initializeApp(firebaseConfig);
 
 
 
@@ -35,7 +35,7 @@ signInAnonymously(auth)
     // Signed in..
   })
   .catch((error) => {
-    possibleSignInError = error;
+    console.log(error);
   });
 
 
@@ -69,7 +69,9 @@ class App extends Component {
     super();
     Login();
     this.state = {
-      pageVisible: "default"
+      pageVisible: "default",
+      messageToClient: "none",
+      chat: []
     };
   }
 
@@ -109,9 +111,11 @@ class App extends Component {
           <React.Fragment>
             <Game switcher = {this.switchPage}
                   pid = {playerId}
-                  pref = {playerRef}/>
+                  pref = {playerRef}
+                  handle = {this.changeState}/>
+            <GameInfo message = {this.state.messageToClient}/>
           </React.Fragment>;
-          console.log(this.props.pid);
+          //console.log(this.props.pid);
           break;
       }
 

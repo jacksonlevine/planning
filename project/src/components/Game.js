@@ -2,12 +2,13 @@ import React, { Component } from "react";
 import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
-
 import * as THREE from "three";
-import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { Vector3 } from "three";
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import ImprovedNoise from "./../perlin.js";
+import GiantMapSaver from "../giantMapSaver.js";
+import LZString from "lz-string/libs/lz-string.js";
+
 
 let saturn;
 
@@ -19,6 +20,9 @@ class InputState {
     this.forward = false;
     this.jump = false;
     this.crouch = false;
+    this.jumpSpeed = 2;
+    this.jumpTimer = 0;
+    this.isGrounded = false;
   }
 }
 
@@ -47,9 +51,12 @@ export default class Game extends Component {
     this.allPlayerModels = new Map();
     this.allPlayersRef = firebase.database().ref("players");
     
+    
+    this.width = 1024;
+    this.height = 720;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
-      window.innerWidth / window.innerHeight,
+      this.width /this.height,
       0.001,
       1000
     );
@@ -71,12 +78,14 @@ export default class Game extends Component {
     this.input = new InputHandler();
     this.playerOldAndNewPositions = new Map(); // uid , PrevAndNewPosiotn
     this.updatePlayersTimer = parseFloat("0.0");
-    this.updatePlayersInterval = 0.20;
+    this.updatePlayersInterval = 0.15;
     this.clock = new THREE.Clock();
+    this.delt = 0;
+    this.isReady = false;
   }
 
   render() {
-    
+
     //console.log(this.props.pid)
     return (
       <div style={this.styles}>
@@ -129,6 +138,7 @@ export default class Game extends Component {
         break;
       case "Space":
         this.input.ActiveState.jump = true;
+        this.input.ActiveState.isGrounded = false;
         break;
       case "ShiftLeft":
         this.input.ActiveState.crouch = true;
@@ -199,7 +209,7 @@ export default class Game extends Component {
   
       this.allPlayersRef.on("child_added", (snapshot) => {
         const addedPlayer = snapshot.val();
-        if(!this.allPlayerModels.has(addedPlayer.id) && addedPlayer.id != this.props.pid)
+        if(!this.allPlayerModels.has(addedPlayer.id) && addedPlayer.id !== this.props.pid)
         {
           const newPlayer = saturn.clone();
           this.scene.add(newPlayer);
@@ -223,7 +233,7 @@ export default class Game extends Component {
 
     this.mountListeners();
     const chunk_width = this.chunk_width;
-
+        
     class World {
       constructor() {
         this.data = new Map();
@@ -290,6 +300,7 @@ export default class Game extends Component {
     this.world = new World();
 
     this.camera.position.z = 4;
+    this.camera.position.y += 20;
     this.scene.add(this.camera);
 
     // Lights
@@ -307,7 +318,7 @@ export default class Game extends Component {
       antialias: false,
     });
 
-    this.renderer.setSize(500, 500);
+    this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(0x000000, 1);
 
 
@@ -316,6 +327,15 @@ export default class Game extends Component {
     //MAIN STUFF
 
     this.world.generate();
+
+    let gms = new GiantMapSaver(this.world.data);
+    let deconstructedWorld = gms.deconstruct();
+    for(let i = 0; i < deconstructedWorld.length; ++i)
+    {
+      let jsonData = LZString.compress(JSON.stringify(deconstructedWorld[i]));
+      console.log(jsonData);
+
+    }
 
     this.populateChunkPool();
 
@@ -696,6 +716,24 @@ export default class Game extends Component {
 
   runGameLoop(input) {
     const animate = () => {
+      let playerFloorCheckPos = "" + Math.floor(this.camera.position.x)
+      + "," + Math.floor(this.camera.position.y -2)
+      + "," + Math.floor(this.camera.position.z)
+      if(this.world.data.has(playerFloorCheckPos))
+      {
+        this.input.ActiveState.isGrounded = true;
+      }
+      else {
+        this.input.ActiveState.isGrounded = false;
+      }
+      //console.log(this.mappedChunks.size );
+        if(this.mappedChunks.size < 200)
+        {
+          this.props.handle()("messageToClient")("loadingworld");
+        } else {
+          this.props.handle()("messageToClient")("none");
+          this.isReady = true;
+        }
         if(this.updatePlayersTimer > this.updatePlayersInterval) {
             this.updatePlayersTimer = 0;
             this.props.pref.set({
@@ -708,39 +746,45 @@ export default class Game extends Component {
                 );
         }
         else {
-            let x = this.clock.getDelta()
-            this.updatePlayersTimer += parseFloat(x);
+            this.delt = this.clock.getDelta()
+            this.updatePlayersTimer += parseFloat(this.delt);
 
             Object.keys(this.players).forEach((key)=> {
                 if(this.allPlayerModels.has(key) && this.playerOldAndNewPositions.has(key)) {
                 let model = this.allPlayerModels.get(key);
-                model.position.lerp(this.playerOldAndNewPositions.get(key).newPosition,this.updatePlayersTimer*2);
+                model.position.lerpVectors(this.playerOldAndNewPositions.get(key).prevPosition, this.playerOldAndNewPositions.get(key).newPosition,this.updatePlayersTimer);
                 this.allPlayerModels.set(key, model);
                 }
             });
         }
       if (input.ActiveState.forward) {
-        this.controls.moveForward(0.25);
+        this.controls.moveForward(this.delt*8);
         
       }
       if (input.ActiveState.back) {
-        this.controls.moveForward(-0.25);
+        this.controls.moveForward(-this.delt*8);
         
       }
       if (input.ActiveState.right) {
-        this.controls.moveRight(0.25);
+        this.controls.moveRight(this.delt*8);
         
       }
       if (input.ActiveState.left) {
-        this.controls.moveRight(-0.25);
+        this.controls.moveRight(-this.delt*8);
         
       }
-      if (input.ActiveState.up) {
-        this.camera.position.y += 0.2;
-        
+      if (input.ActiveState.jump) {
+        if(!this.input.ActiveState.isGrounded || this.input.ActiveState.jumpTimer < 0.5) {
+        this.input.ActiveState.jumpTimer += this.delt;
+        this.camera.position.y += (this.delt*16) - this.input.ActiveState.jumpTimer;
+        }
+        else{
+          this.input.ActiveState.jumpTimer = 0;
+          this.input.ActiveState.jump = false;
+        }
       }
       if (input.ActiveState.down) {
-        this.camera.position.y -= 0.2;
+        this.camera.position.y -= this.delt*8;
         
       }
       if (this.surveyNeededChunksTimer >= this.surveyNeededChunksInterval) {

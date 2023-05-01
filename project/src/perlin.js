@@ -35,8 +35,8 @@ const lerp = (t, a, b) => {
 const grad = (hash, x, y, z) => {
   const h = hash & 15;
   const u = h < 8 ? x : y,
-    v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-  return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+    v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+  return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
 };
 
 export default class ImprovedNoise {
