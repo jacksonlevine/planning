@@ -8,6 +8,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import ImprovedNoise from "./../perlin.js";
 import GiantMapSaver from "../giantMapSaver.js";
 import LZString from "lz-string/libs/lz-string.js";
+import { generateUUID } from "three/src/math/MathUtils.js";
 
 
 let saturn;
@@ -50,10 +51,12 @@ export default class Game extends Component {
     super();
     this.allPlayerModels = new Map();
     this.allPlayersRef = firebase.database().ref("players");
+    this.allBlockActionsRef = firebase.database().ref("blockActions");
     
     
     this.width = 1024;
-    this.height = 720;
+    this.height = 640;
+    this.fov = 100;
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       this.width /this.height,
@@ -62,7 +65,11 @@ export default class Game extends Component {
     );
     this.players = {};
     this.isOpen = true;
-    this.styles = {};
+    this.styles = {
+      display:"flex",
+      flexDirection: "column",
+      alignItems: "center"
+    };
     this.canvas = null;
     this.controls = null;
     this.chunk_width = 12;
@@ -82,6 +89,7 @@ export default class Game extends Component {
     this.clock = new THREE.Clock();
     this.delt = 0;
     this.isReady = false;
+    this.currentPushedActions = [];
   }
 
   render() {
@@ -113,7 +121,7 @@ export default class Game extends Component {
         currentX += dx;
         currentY += dy;
         currentZ += dz;
-        distanceTraveled += .2;
+        distanceTraveled += .05;
   
         const key = `${Math.floor(currentX)},${Math.floor(currentY)},${Math.floor(currentZ)}`;
         if (this.world.data.has(key)) {
@@ -132,25 +140,58 @@ export default class Game extends Component {
     });
   }
 
+  getCameraDirection = () => {
+    var vector = new THREE.Vector3( 0, 0, - 1 );
+    vector.applyQuaternion( this.camera.quaternion );
+    return vector;
+  }
+
+  getCameraDirectionRight = () => {
+    const cameraDirection = this.getCameraDirection();
+    cameraDirection.y = 0;
+    const upVector = new THREE.Vector3(0, 1, 0);
+    const rightVector = cameraDirection.clone().cross(upVector).normalize();
+    return rightVector;
+  }
+
   lockControls = () => {
     if(!this.controls.isLocked)
     {
       this.controls.lock();
     }
     else {
-      var vector = new THREE.Vector3( 0, 0, - 1 );
-      vector.applyQuaternion( this.camera.quaternion );
+      var vector = this.getCameraDirection();
 
       this.castRay(this.camera.position.x, 
         this.camera.position.y, 
         this.camera.position.z, vector.x,
         vector.y, vector.z, 10)
         .then((pos) => {
-          const blockKey = `${pos.x},${pos.y},${pos.z}`; 
+          this.breakBlock(pos);
+          let actionRef = firebase.database().ref(`blockActions/${generateUUID()}`);
+          actionRef.set(
+            {
+              action: "break",
+              time: new Date().getTime(),
+              ...pos
+            });
+          this.currentPushedActions.push(actionRef);
+        })
+        .catch((error) => {
+        });
+    }
+  };
+
+  breakBlock(pos)
+  {
+    const blockKey = `${pos.x},${pos.y},${pos.z}`; 
           this.world.data.delete(blockKey);
           const chunkX = Math.floor(pos.x/this.chunk_width);
           const chunkY = Math.floor(pos.y/this.chunk_width);
           const chunkZ = Math.floor(pos.z/this.chunk_width);
+          if(this.world.fullblockmarks.has(`${chunkX},${chunkY},${chunkZ}`)){
+            this.world.fullblockmarks.delete(`${chunkX},${chunkY},${chunkZ}`);
+          }
           if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`))
           {
             this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`)
@@ -170,11 +211,7 @@ export default class Game extends Component {
             this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ+1}`)
             .buildmeshinplace();
           }
-        })
-        .catch((error) => {
-        });
-    }
-  };
+  }
 
   componentWillUnmount() {
     window.removeEventListener("click", this.lockControls);
@@ -275,6 +312,18 @@ export default class Game extends Component {
           }
         });
       });
+
+      this.allBlockActionsRef.on("child_added", snapshot => {
+        const addedAct = snapshot.val();
+        switch(addedAct.action)
+        {
+          case "break":
+            this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z});
+            break;
+          default:
+            break;
+        }
+      })
   
       this.allPlayersRef.on("child_added", (snapshot) => {
         const addedPlayer = snapshot.val();
@@ -1057,17 +1106,17 @@ export default class Game extends Component {
 
   castRayBlocking = (x, y, z, dx, dy, dz, maxDistance) => {
     let distanceTraveled = 0;
-    let currentX = Math.floor(x);
-    let currentY = Math.floor(y);
-    let currentZ = Math.floor(z);
+    let currentX = x;
+    let currentY = y;
+    let currentZ = z;
   
     while (distanceTraveled < maxDistance) {
       currentX += dx;
       currentY += dy;
       currentZ += dz;
-      distanceTraveled += 1;
+      distanceTraveled += .1;
   
-      const key = `${currentX},${currentY},${currentZ}`;
+      const key = `${Math.floor(currentX)},${Math.floor(currentY)},${Math.floor(currentZ)}`;
       if (this.world.data.has(key)) {
         return key;
       }
@@ -1077,17 +1126,16 @@ export default class Game extends Component {
   }
 
   runGameLoop(input) {
+    const collisionDistance = 0.1;
     const animate = () => {
-      let playerFloorCheckPos = "" + Math.floor(this.camera.position.x)
-      + "," + Math.floor(this.camera.position.y -2)
-      + "," + Math.floor(this.camera.position.z)
-      if(this.world.data.has(playerFloorCheckPos))
-      {
-        this.input.ActiveState.isGrounded = true;
-      }
-      else {
-        this.input.ActiveState.isGrounded = false;
-      }
+      this.input.ActiveState.isGrounded = (this.castRayBlocking(this.camera.position.x,
+        this.camera.position.y-1,
+        this.camera.position.z, 0, -1, 0, collisionDistance) !== null)
+        if(!this.input.ActiveState.isGrounded)
+        {
+          this.input.ActiveState.jumpTimer += this.delt*12;
+          this.camera.position.y += ((6) - this.input.ActiveState.jumpTimer)*this.delt;
+        }
       //console.log(this.mappedChunks.size );
         if(this.mappedChunks.size < 200)
         {
@@ -1120,25 +1168,92 @@ export default class Game extends Component {
             });
         }
       if (input.ActiveState.forward) {
-        this.controls.moveForward(this.delt*8);
+        let dir = this.getCameraDirection();
+        dir.y = 0;
+        if(this.castRayBlocking(this.camera.position.x,
+          this.camera.position.y, this.camera.position.z,
+          dir.x,
+          dir.y,
+          dir.z,
+          collisionDistance) === null
+          &&
+          this.castRayBlocking(this.camera.position.x,
+            this.camera.position.y-1, this.camera.position.z,
+            dir.x,
+            dir.y,
+            dir.z,
+            collisionDistance) === null)
+          {
+          this.controls.moveForward(this.delt*8);
+          }
         
       }
       if (input.ActiveState.back) {
-        this.controls.moveForward(-this.delt*8);
-        
+        let dir = this.getCameraDirection();
+        dir.y = 0;
+        if(this.castRayBlocking(this.camera.position.x,
+          this.camera.position.y, this.camera.position.z,
+          -dir.x,
+          -dir.y,
+          -dir.z,
+          collisionDistance) === null
+          &&
+          this.castRayBlocking(this.camera.position.x,
+            this.camera.position.y-1, this.camera.position.z,
+            -dir.x,
+            -dir.y,
+            -dir.z,
+            collisionDistance) === null)
+          {
+          this.controls.moveForward(-this.delt*8);
+          }
       }
       if (input.ActiveState.right) {
-        this.controls.moveRight(this.delt*8);
+       let dir = this.getCameraDirectionRight();
+        dir.y = 0;
+        if(this.castRayBlocking(this.camera.position.x,
+          this.camera.position.y, this.camera.position.z,
+          dir.x,
+          dir.y,
+          dir.z,
+          collisionDistance) === null
+          &&
+          this.castRayBlocking(this.camera.position.x,
+            this.camera.position.y-1, this.camera.position.z,
+            dir.x,
+            dir.y,
+            dir.z,
+            collisionDistance) === null)
+          {
+          this.controls.moveRight(this.delt*8);
+          }
         
       }
       if (input.ActiveState.left) {
-        this.controls.moveRight(-this.delt*8);
+        let dir = this.getCameraDirectionRight();
+        dir.y = 0;
+        if(this.castRayBlocking(this.camera.position.x,
+          this.camera.position.y, this.camera.position.z,
+          -dir.x,
+          -dir.y,
+          -dir.z,
+          collisionDistance) === null
+          &&
+          this.castRayBlocking(this.camera.position.x,
+            this.camera.position.y-1, this.camera.position.z,
+            -dir.x,
+            -dir.y,
+            -dir.z,
+            collisionDistance) === null)
+          {
+          this.controls.moveRight(-this.delt*8);
+          }
         
       }
       if (input.ActiveState.jump) {
         if(!this.input.ActiveState.isGrounded || this.input.ActiveState.jumpTimer < 0.1) {
-        this.input.ActiveState.jumpTimer += this.delt*12;
-        this.camera.position.y += ((6) - this.input.ActiveState.jumpTimer)*this.delt;
+
+          this.camera.position.y += ((6) - this.input.ActiveState.jumpTimer)*this.delt;
         }
         else{
           this.input.ActiveState.jumpTimer = 0;
@@ -1152,6 +1267,13 @@ export default class Game extends Component {
       if (this.surveyNeededChunksTimer >= this.surveyNeededChunksInterval) {
         this.surveyNeededChunksTimer = 0;
         this.surveyNeededChunks();
+        let d = new Date();
+        this.currentPushedActions.forEach(action => {
+          if(d.getTime() - parseInt(action.time) > 3000)
+          {
+            action.remove();
+          }
+        });
       } else {
         this.surveyNeededChunksTimer += 1;
       }

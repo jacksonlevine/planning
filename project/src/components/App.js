@@ -73,6 +73,19 @@ class App extends Component {
       messageToClient: "none",
       chat: []
     };
+
+    this.styles = {
+      display:"flex",
+      flexDirection:"column",
+      justifyContent: "center",
+      backgroundColor: "rgb(80, 170, 80)",
+      alignItems: "center",
+      padding: "40px 0px",
+      margin: "0% 20%",
+      borderRadius: "50px",
+      border: "40px solid lightgreen",
+      fontFamily: "Tahoma"
+    }
   }
 
   changeState = () => (property) => (newValue) => {
@@ -121,7 +134,7 @@ class App extends Component {
 
 
     return (
-      <div className="App">
+      <div style={this.styles} className="App">
         {mainElement}
       </div>
     );
