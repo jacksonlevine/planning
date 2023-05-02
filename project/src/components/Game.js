@@ -6,14 +6,9 @@ import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import ImprovedNoise from "./../perlin.js";
-import GiantMapSaver from "../giantMapSaver.js";
 import LZString from "lz-string/libs/lz-string.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
 import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
-import file1 from "./../myFile0.txt";
-import file2 from "./../myFile1.txt";
-import file3 from "./../myFile2.txt";
-import file4 from "./../myFile3.txt";
 import LinkedHashMap from "../linkHashMap.js";
 
 let saturn;
