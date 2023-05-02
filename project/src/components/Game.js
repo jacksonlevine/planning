@@ -6,9 +6,9 @@ import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import ImprovedNoise from "./../perlin.js";
-import LZString from "lz-string/libs/lz-string.js";
+//import LZString from "lz-string/libs/lz-string.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
-import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
+//import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
 import LinkedHashMap from "../linkHashMap.js";
 
 let saturn;
@@ -404,6 +404,7 @@ export default class Game extends Component {
             break;
           case "place":
             this.placeBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z}, 1);
+            break;
           default:
             break;
         }
@@ -427,7 +428,6 @@ export default class Game extends Component {
 
     this.mountListeners();
     const chunk_width = this.chunk_width;
-    const db = this.props.db;
     class World {
       constructor() {
         this.data = new LinkedHashMap();
@@ -435,15 +435,15 @@ export default class Game extends Component {
         this.fullblockmarks = new LinkedHashMap();
         this.ishandledmarks = new LinkedHashMap();
       }
-      load = (string) => {
+      // load = (string) => {
 
-            const text = LZString.decompress(string);
-            console.log(text);
-            const json = JSON.parse(text);
+      //       const text = LZString.decompress(string);
+      //       console.log(text);
+      //       const json = JSON.parse(text);
             
-            //const map = new Map(Object.entries(json));
-            //this.data = new Map([...map, ...this.data]);
-      }
+      //       //const map = new Map(Object.entries(json));
+      //       //this.data = new Map([...map, ...this.data]);
+      // }
       generateOneChunk(A, B, C)
       {
 
@@ -671,12 +671,9 @@ export default class Game extends Component {
         this.x = newx;
         this.z = newz;
         this.y = newy;
-        let newVerts2 = new LinkedHashMap();
         let newVerts = [];
         let newNorms = [];
-        let newIndos = [];
         let newUVs = [];
-        let indHead = 0;
 
         const add4UVs = () =>
         {
@@ -740,7 +737,6 @@ export default class Game extends Component {
             v += addVert(chunk_width, 0, 0);
             v += addVert(0, 0, 0);
             add4UVs();
-            newIndos.push();
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, -1);
             }
@@ -991,7 +987,6 @@ export default class Game extends Component {
         
         let newVerts = [];
         let newNorms = [];
-        let newIndos = [];
         
         let newUVs = [];
         const add4UVs = () =>
@@ -1393,17 +1388,18 @@ export default class Game extends Component {
             let h = 0;
             let cont = true;
             while(!this.world.ishandledmarks.has("" + x + "," + (yy+h) + "," + z) && h < 6 && cont) {
-            let prom = new Promise(
-              (resolve, reject) => {
+              const resrej = (resolve, reject) => {
                 try{
                 const res = this.world.generateOneChunk(x, yy+h, z);
-                cont = (this.res !== "air")
+                cont = (res !== "air")
                 resolve(null);
                 }catch(e)
                 {
                   reject(e);
                 }
               }
+            let prom = new Promise(
+              resrej
             );
             prom.then(result=>{
               //yay
@@ -1469,10 +1465,10 @@ export default class Game extends Component {
         }
         if(this.updatePlayersTimer > this.updatePlayersInterval) {
             this.updatePlayersTimer = 0;
-            if(this.controls.camera.rotation.y != myPrevGO.zrotation
-            || this.controls.camera.position.x != myPrevGO.x
-            || this.controls.camera.position.y != myPrevGO.y
-            || this.controls.camera.position.z != myPrevGO.z) 
+            if(this.controls.camera.rotation.y !== myPrevGO.zrotation
+            || this.controls.camera.position.x !== myPrevGO.x
+            || this.controls.camera.position.y !== myPrevGO.y
+            || this.controls.camera.position.z !== myPrevGO.z) 
             {
                 let upd = {
                     id: this.props.pid,
