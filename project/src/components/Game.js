@@ -36,6 +36,8 @@ const texture = new THREE.TextureLoader().load( "textures/textures.png" );
 texture.magFilter = THREE.NearestFilter;
 texture.minFilter = THREE.LinearFilter;
 texture.generateMipmaps = false;
+texture.antialias = false;
+
 const meshMaterial = new THREE.MeshLambertMaterial({
   color: 0xffffff,
   depthWrite: true
@@ -49,6 +51,31 @@ class PrevAndNewPosition {
         this.prevPosition = vector1;
         this.newPosition = vector2;
     }
+}
+
+const blockTypes = {
+  "1": {
+    texture: {
+      uniform:true,
+      all: [
+                0.0+.0625, 1.0-.0625,
+                0.0, 1.0-.0625,
+                0.0 ,      1.0,
+                0.0+.0625, 1.0
+      ]
+    }
+  },
+  "2": {
+    texture: {
+      uniform:true,
+      all: [
+        .0625 + 0.0+.0625, 1.0-.0625,
+        .0625 + 0.0, 1.0-.0625,
+        .0625 + 0.0 ,      1.0,
+        .0625 + 0.0+.0625, 1.0
+      ]
+    }
+  }
 }
 
 export default class Game extends Component {
@@ -195,11 +222,13 @@ export default class Game extends Component {
         this.camera.position.z, vector.x,
         vector.y, vector.z, 10, .3)
         .then((pos) => {
-          this.placeBlock(pos, 1);
+          let placed = "2";
+          this.placeBlock(pos, placed);
           let actionRef = firebase.database().ref(`blockActions/${generateUUID()}`);
           actionRef.set(
             {
               action: "place",
+              type: placed,
               time: new Date().getTime(),
               ...pos
             });
@@ -405,7 +434,7 @@ export default class Game extends Component {
             this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z});
             break;
           case "place":
-            this.placeBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z}, 1);
+            this.placeBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z}, addedAct.type || "1");
             break;
           default:
             break;
@@ -667,7 +696,7 @@ export default class Game extends Component {
         this.mesh = new THREE.Mesh(this.meshGeometry, meshMaterial);
         this.x = 0; //multiply x and z by 16 to get real-this.world position
         this.z = 0;
-        this.y = -500;
+        this.y = 2000;
       }
       buildmesh(newx, newy, newz) {
         this.x = newx;
@@ -677,14 +706,18 @@ export default class Game extends Component {
         let newNorms = [];
         let newUVs = [];
 
-        const add4UVs = () =>
+        const add4UVs = (id, side) =>
         {
-          newUVs.push(0.0+.0625, 1.0-.0625);
-          newUVs.push(0.0, 1.0-.0625);
-          newUVs.push(0.0 ,      1.0);
-          newUVs.push(0.0 ,      1.0);
-          newUVs.push(0.0+.0625, 1.0);
-          newUVs.push(0.0+.0625, 1.0-.0625);
+          const values = blockTypes[id].texture.uniform ? 
+          blockTypes[id].texture.all : blockTypes[id].texture[side];
+
+
+          newUVs.push(values[0], values[1]); 
+          newUVs.push(values[2], values[3]);
+          newUVs.push(values[4], values[5]);
+          newUVs.push(values[4], values[5]);
+          newUVs.push(values[6], values[7]);
+          newUVs.push(values[0], values[1]);
           
 
         }
@@ -716,7 +749,7 @@ export default class Game extends Component {
             v += addVert(0, chunk_width, 0);
             v += addVert(0, 0, 0);
 
-            add4UVs();
+            add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(-1, 0, 0);
 
@@ -738,7 +771,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, chunk_width, 0);
             v += addVert(chunk_width, 0, 0);
             v += addVert(0, 0, 0);
-            add4UVs();
+            add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, -1);
             }
@@ -758,7 +791,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, 0, chunk_width);
-            v += addVert(chunk_width, 0, 0);add4UVs();
+            v += addVert(chunk_width, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(1, 0, 0);
             }
@@ -778,7 +811,7 @@ export default class Game extends Component {
             v += addVert(0, chunk_width, chunk_width);
             v += addVert(0, chunk_width, chunk_width);
             v += addVert(0, 0, chunk_width);
-            v += addVert(chunk_width, 0, chunk_width);add4UVs();
+            v += addVert(chunk_width, 0, chunk_width);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, 1);
             }
@@ -798,7 +831,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, 0, 0);
             v += addVert(chunk_width, 0, 0);
             v += addVert(chunk_width, 0, chunk_width);
-            v += addVert(0, 0, chunk_width);add4UVs();
+            v += addVert(0, 0, chunk_width);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, -1, 0);
             }
@@ -818,7 +851,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, chunk_width, 0);
-            v += addVert(0, chunk_width, 0);add4UVs();
+            v += addVert(0, chunk_width, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 1, 0);
             }
@@ -837,6 +870,14 @@ export default class Game extends Component {
                       (this.z * chunk_width + k)
                   )
                 ) {
+                  const ID = world.data.get(
+                    "" +
+                      (this.x * chunk_width + i) +
+                      "," +
+                      (this.y * chunk_width + j) +
+                      "," +
+                      (this.z * chunk_width + k)
+                  )
                   if (
                     !world.data.has(
                       "" +
@@ -853,7 +894,7 @@ export default class Game extends Component {
                     v += addVert(i, j + 1, k + 1);
                     v += addVert(i, j + 1, k + 1);
                     v += addVert(i, j + 1, k);
-                    v += addVert(i, j, k);add4UVs();
+                    v += addVert(i, j, k);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(-1, 0, 0);
                     }
@@ -874,7 +915,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k);
                     v += addVert(i + 1, j + 1, k);
                     v += addVert(i + 1, j, k);
-                    v += addVert(i, j, k);add4UVs();
+                    v += addVert(i, j, k);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 0, -1);
                     }
@@ -895,7 +936,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j, k + 1);
-                    v += addVert(i + 1, j, k);add4UVs();
+                    v += addVert(i + 1, j, k);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(1, 0, 0);
                     }
@@ -916,7 +957,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i, j + 1, k + 1);
-                    v += addVert(i, j, k + 1);add4UVs();
+                    v += addVert(i, j, k + 1);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 0, 1);
                     }
@@ -937,7 +978,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j, k + 1);
                     v += addVert(i + 1, j, k + 1);
                     v += addVert(i, j, k + 1);
-                    v += addVert(i, j, k);add4UVs();
+                    v += addVert(i, j, k);add4UVs(ID, "bottom");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, -1, 0);
                     }
@@ -958,7 +999,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k);
-                    v += addVert(i, j + 1, k);add4UVs();
+                    v += addVert(i, j + 1, k);add4UVs(ID, "top");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 1, 0);
                     }
@@ -991,14 +1032,18 @@ export default class Game extends Component {
         let newNorms = [];
         
         let newUVs = [];
-        const add4UVs = () =>
+        const add4UVs = (id, side) =>
         {
-          newUVs.push(0.0+.0625, 1.0-.0625);
-          newUVs.push(0.0, 1.0-.0625);
-          newUVs.push(0.0 ,      1.0);
-          newUVs.push(0.0 ,      1.0);
-          newUVs.push(0.0+.0625, 1.0);
-          newUVs.push(0.0+.0625, 1.0-.0625);
+          const values = blockTypes[id].texture.uniform ? 
+          blockTypes[id].texture.all : blockTypes[id].texture[side];
+
+
+          newUVs.push(values[0], values[1]); 
+          newUVs.push(values[2], values[3]);
+          newUVs.push(values[4], values[5]);
+          newUVs.push(values[4], values[5]);
+          newUVs.push(values[6], values[7]);
+          newUVs.push(values[0], values[1]);
           
 
         }
@@ -1028,7 +1073,7 @@ export default class Game extends Component {
             v += addVert(0, chunk_width, chunk_width);
             v += addVert(0, chunk_width, chunk_width);
             v += addVert(0, chunk_width, 0);
-            v += addVert(0, 0, 0);add4UVs();
+            v += addVert(0, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(-1, 0, 0);
             }
@@ -1048,7 +1093,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, chunk_width, 0);
             v += addVert(chunk_width, chunk_width, 0);
             v += addVert(chunk_width, 0, 0);
-            v += addVert(0, 0, 0);add4UVs();
+            v += addVert(0, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, -1);
             }
@@ -1068,7 +1113,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, 0, chunk_width);
-            v += addVert(chunk_width, 0, 0);add4UVs();
+            v += addVert(chunk_width, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(1, 0, 0);
             }
@@ -1088,7 +1133,7 @@ export default class Game extends Component {
             v += addVert(0, chunk_width, chunk_width);
             v += addVert(0, chunk_width, chunk_width);
             v += addVert(0, 0, chunk_width);
-            v += addVert(chunk_width, 0, chunk_width);add4UVs();
+            v += addVert(chunk_width, 0, chunk_width);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, 1);
             }
@@ -1108,7 +1153,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, 0, 0);
             v += addVert(chunk_width, 0, 0);
             v += addVert(chunk_width, 0, chunk_width);
-            v += addVert(0, 0, chunk_width);add4UVs();
+            v += addVert(0, 0, chunk_width);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, -1, 0);
             }
@@ -1128,7 +1173,7 @@ export default class Game extends Component {
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, chunk_width, chunk_width);
             v += addVert(chunk_width, chunk_width, 0);
-            v += addVert(0, chunk_width, 0);add4UVs();
+            v += addVert(0, chunk_width, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 1, 0);
             }
@@ -1147,6 +1192,14 @@ export default class Game extends Component {
                       (this.z * chunk_width + k)
                   )
                 ) {
+                  const ID = world.data.get(
+                    "" +
+                      (this.x * chunk_width + i) +
+                      "," +
+                      (this.y * chunk_width + j) +
+                      "," +
+                      (this.z * chunk_width + k)
+                  );
                   if (
                     !world.data.has(
                       "" +
@@ -1163,7 +1216,7 @@ export default class Game extends Component {
                     v += addVert(i, j + 1, k + 1);
                     v += addVert(i, j + 1, k + 1);
                     v += addVert(i, j + 1, k);
-                    v += addVert(i, j, k);add4UVs();
+                    v += addVert(i, j, k);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(-1, 0, 0);
                     }
@@ -1184,7 +1237,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k);
                     v += addVert(i + 1, j + 1, k);
                     v += addVert(i + 1, j, k);
-                    v += addVert(i, j, k);add4UVs();
+                    v += addVert(i, j, k);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 0, -1);
                     }
@@ -1205,7 +1258,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j, k + 1);
-                    v += addVert(i + 1, j, k);add4UVs();
+                    v += addVert(i + 1, j, k);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(1, 0, 0);
                     }
@@ -1226,7 +1279,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i, j + 1, k + 1);
-                    v += addVert(i, j, k + 1);add4UVs();
+                    v += addVert(i, j, k + 1);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 0, 1);
                     }
@@ -1247,7 +1300,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j, k + 1);
                     v += addVert(i + 1, j, k + 1);
                     v += addVert(i, j, k + 1);
-                    v += addVert(i, j, k);add4UVs();
+                    v += addVert(i, j, k);add4UVs(ID, "bottom");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, -1, 0);
                     }
@@ -1268,7 +1321,7 @@ export default class Game extends Component {
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j + 1, k);
-                    v += addVert(i, j + 1, k);add4UVs();
+                    v += addVert(i, j + 1, k);add4UVs(ID, "top");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 1, 0);
                     }
