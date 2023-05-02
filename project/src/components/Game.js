@@ -1459,7 +1459,7 @@ export default class Game extends Component {
         }
         if(this.updatePlayersTimer > this.updatePlayersInterval) {
             this.updatePlayersTimer = 0;
-            this.props.pref.set({
+            this.props.socket.emit({
                 ...this.players[this.props.pid],
                 zrotation: this.controls.camera.rotation.y,
                 x: this.camera.position.x,

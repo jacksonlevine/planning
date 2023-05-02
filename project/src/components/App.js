@@ -6,7 +6,7 @@ import "firebase/compat/database";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
-
+import io from 'socket.io-client';
 
 const Login = () => {
   return new Promise((resolve, reject) => {
@@ -37,16 +37,13 @@ const Login = () => {
       if (user) {
         const playerId = user.uid;
         let playerRef = firebase.database().ref(`players/${playerId}`);
+        const socket = io();
         playerRef.set({
           id: playerId,
           name: "test",
-          zrotation: 0,
-          x: 3,
-          y: 3,
-          z: 3,
         });
         playerRef.onDisconnect().remove();
-        resolve({ app, playerRef, playerId, auth});
+        resolve({ app, playerRef, playerId, auth, socket});
       } else {
         reject("You need to sign in.");
       }
@@ -62,6 +59,7 @@ class App extends Component {
     this.app = null;
     this.playerId = null;
     this.playerRef = null;
+    this.socket = null;
     this.db = null;
     this.state = {
       gameButtonVisible: false,
@@ -96,6 +94,7 @@ class App extends Component {
         this.playerId = result.playerId;
         this.playerRef = result.playerRef;
         this.app = result.app;
+        this.socket = result.socket;
         this.db = getFirestore(this.app);
         this.changeState()("gameButtonVisible")(true);
         this.changeState()("messageToClient")("none");
@@ -161,6 +160,7 @@ class App extends Component {
               pref={this.playerRef}
               handle={this.changeState}
               db={this.db}
+              socket={this.socket}
             />
             <GameInfo message={this.state.messageToClient} />
           </React.Fragment>
