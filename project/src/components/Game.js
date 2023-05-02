@@ -127,7 +127,21 @@ export default class Game extends Component {
     //console.log(this.props.pid)
     return (
       <div style={this.styles}>
-        <canvas id="canvas"></canvas>
+        <div style = {{
+          textAlign: "center"
+        }}>
+        <img style = {{
+           position:"absolute",
+           zIndex:"10",
+           margin:"0px",
+           top:"50%",
+           left:"50%",
+           transform: "translate(-50%, -50%)"
+        }}src="/textures/hairsmall.png" alt=""/>
+        <canvas style={{
+          zIndex:"-1"
+        }} id="canvas"></canvas>
+        </div>
         <button
           onClick={() => {
             this.isOpen = false;
@@ -197,7 +211,7 @@ export default class Game extends Component {
         this.castRay(this.camera.position.x, 
           this.camera.position.y, 
           this.camera.position.z, vector.x,
-          vector.y, vector.z, 10, 0)
+          vector.y, vector.z, 5, 0)
           .then((pos) => {
             this.breakBlock(pos);
             let actionRef = firebase.database().ref(`blockActions/${generateUUID()}`);
@@ -220,7 +234,7 @@ export default class Game extends Component {
       this.castRay(this.camera.position.x, 
         this.camera.position.y, 
         this.camera.position.z, vector.x,
-        vector.y, vector.z, 10, .3)
+        vector.y, vector.z, 5, .3)
         .then((pos) => {
           let placed = "2";
           this.placeBlock(pos, placed);
