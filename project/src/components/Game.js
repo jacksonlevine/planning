@@ -9,7 +9,12 @@ import ImprovedNoise from "./../perlin.js";
 import GiantMapSaver from "../giantMapSaver.js";
 import LZString from "lz-string/libs/lz-string.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
+import file1 from "./../myFile0.txt";
+import file2 from "./../myFile1.txt";
+import file3 from "./../myFile2.txt";
+import file4 from "./../myFile3.txt";
+import LinkedHashMap from "../linkHashMap.js";
 
 let saturn;
 
@@ -72,11 +77,11 @@ export default class Game extends Component {
     };
     this.canvas = null;
     this.controls = null;
-    this.chunk_width = 12;
+    this.chunk_width = 10;
     this.scene = new THREE.Scene();
     this.world = null;
     this.surveyNeededChunksTimer = 0;
-    this.surveyNeededChunksInterval = 20;
+    this.surveyNeededChunksInterval = 1;
     this.chunkQueueTimer = 0;
     this.chunkQueueInterval = 0;
     this.mappedChunks = new Map();
@@ -343,6 +348,7 @@ export default class Game extends Component {
     }
   };
   componentDidMount() {
+    this.scene.fog = new THREE.Fog(0x000000, 20, 130)
     const gltfLoader = new GLTFLoader();
     const loadAsync = url => {
         return new Promise(resolve => {
@@ -421,9 +427,88 @@ export default class Game extends Component {
     const db = this.props.db;
     class World {
       constructor() {
-        this.data = new Map();
-        this.hasblockmarks = new Map();
-        this.fullblockmarks = new Map();
+        this.data = new LinkedHashMap();
+        this.hasblockmarks = new LinkedHashMap();
+        this.fullblockmarks = new LinkedHashMap();
+        this.ishandledmarks = new LinkedHashMap();
+      }
+      load = (string) => {
+
+            const text = LZString.decompress(string);
+            console.log(text);
+            const json = JSON.parse(text);
+            
+            //const map = new Map(Object.entries(json));
+            //this.data = new Map([...map, ...this.data]);
+      }
+      generateOneChunk(A, B, C)
+      {
+
+        let blockCount = 0;
+              for (var o = 0+(A*chunk_width); o < chunk_width+(A*chunk_width); o++) {
+                for (var o2 = 0+(B*chunk_width); o2 < chunk_width+(B*chunk_width); o2++) {
+                  for (var o3 = 0+(C*chunk_width); o3 < chunk_width+(C*chunk_width); o3++) {
+                    let REAL_WORLD_X =  o;
+                    let REAL_WORLD_Z = o3;
+                    let REAL_WORLD_Y =o2;
+
+                    let n =
+                      ImprovedNoise.noise(
+                        REAL_WORLD_X / 25.34,
+                        34.425,
+                        REAL_WORLD_Z / 25.65
+                      ) * 15;
+
+                      if (
+                        !this.ishandledmarks.has("" + A + "," + B + "," + C)
+                      ) {
+                        this.ishandledmarks.set("" + A + "," + B + "," + C, "1")
+                      }
+
+                    if (REAL_WORLD_Y < n) {
+                      blockCount++;
+                      if (!this.hasblockmarks.has("" + A + "," + B + "," + C)) {
+                        this.hasblockmarks.set("" +A + "," + B + "," + C, "1"); //Chunk level (zoomed out)
+                      }
+                      if (
+                        blockCount >=
+                        chunk_width * chunk_width * chunk_width
+                      ) {
+                        this.fullblockmarks.set(
+                          "" + A + "," + B + "," + C,
+                          "1"
+                        ); // Remove it if its full for now
+                      }
+                      
+                      this.data.set(
+                        "" +
+                          REAL_WORLD_X +
+                          "," +
+                          REAL_WORLD_Y +
+                          "," +
+                          REAL_WORLD_Z,
+                        "1"
+                      ); // Real this.world level (micro)
+                      // try {
+                      //   const docRef = addDoc(collection(db, "blocks"), {
+                      //     x: REAL_WORLD_X,
+                      //     y: REAL_WORLD_Y,
+                      //     z: REAL_WORLD_Z,
+                      //     id: 1
+                      //   });
+        
+                      // } catch (e) {
+                      //   console.error("Error adding document: ", e);
+                      // }
+                    }
+                  }
+                }
+              }
+        if(blockCount === 0){
+          return "air";
+        } else {
+          return "go";
+        }
       }
       generate = () => {
         let REAL_WORLD_X;
@@ -447,7 +532,11 @@ export default class Game extends Component {
                         34.425,
                         REAL_WORLD_Z / 25.65
                       ) * 15;
-
+                      if (
+                        !this.ishandledmarks.has("" + i + "," + j + "," + k)
+                      ) {
+                        this.ishandledmarks.set("" + i + "," + j + "," + k, "1")
+                      }
                     if (REAL_WORLD_Y < n) {
                       blockCount++;
                       if (!this.hasblockmarks.has("" + i + "," + j + "," + k)) {
@@ -462,6 +551,7 @@ export default class Game extends Component {
                           "1"
                         ); // Remove it if its full for now
                       }
+                      
                       this.data.set(
                         "" +
                           REAL_WORLD_X +
@@ -523,15 +613,39 @@ export default class Game extends Component {
     //MAIN STUFF
 
     this.world.generate();
+   // const docRef = doc(db, "blobs", "1");
+    // try {
+    //   const docSnap = getDoc(docRef);
+    //   docSnap.then(result =>
+    //     {
+    //       console.log("Result", result);
+    //       let x = result._document.data.value.mapValue.fields.data.stringValue;
+    //       //console.log(x);
+    //       //this.world.load(""+x);
+    //     }).catch(error => {console.log(error)});
+      
+    //   } catch(error) {
+    //       console.log(error)
+    //   }
+ 
+    // let gms = new GiantMapSaver(this.world.data);
+    // let deconstructedWorld = gms.deconstruct();
+    // for(let i = 0; i < deconstructedWorld.length; ++i)
+    // {
+    //   let s = JSON.stringify(deconstructedWorld[i]);
+    //   //console.log(s);
+    //   let u8arr = LZString.compressToUint8Array(s);
+    //   let kson = JSON.stringify(u8arr);
+    //   try {
+    //     setDoc(doc(db, "blobs", `${i}`), {
+    //       data:kson
+    //     });
 
-    /*let gms = new GiantMapSaver(this.world.data);
-    let deconstructedWorld = gms.deconstruct();
-    for(let i = 0; i < deconstructedWorld.length; ++i)
-    {
-      let jsonData = LZString.compress(JSON.stringify(deconstructedWorld[i]));
 
-
-    }*/
+    //     } catch (e) {
+    //       console.error("Error adding document: ", e);
+    //     }
+    // }
 
     this.populateChunkPool();
 
@@ -1098,9 +1212,9 @@ export default class Game extends Component {
         this.mesh.geometry = this.meshGeometry;
       }
     }
-    for (let i = 0; i < 16; i++) {
-      for (let k = 0; k < 16; k++) {
-        for (let a = 0; a < 16; a++) {
+    for (let i = 0; i < 9; i++) {
+      for (let k = 0; k < 9; k++) {
+        for (let a = 0; a < 9; a++) {
           let testChunk = new Chunk();
           testChunk.mesh.frustumCulled = false;
           this.chunkpool.push(testChunk);
@@ -1121,7 +1235,7 @@ export default class Game extends Component {
       const neededSpot = needed[0];
 
       let grabbedMesh = this.chunkpool.pop();
-      if (grabbedMesh != null) {
+      if (grabbedMesh !== null && grabbedMesh !== undefined) {
         if (
           this.mappedChunks.has(
             "" + grabbedMesh.x + "," + grabbedMesh.y + "," + grabbedMesh.z
@@ -1150,15 +1264,15 @@ export default class Game extends Component {
 
   surveyNeededChunks() {
     if (this.camera !== null && this.camera !== undefined) {
-      for (let y = -this.chunk_width * 4; y < this.chunk_width * 4; y += this.chunk_width) {
+      let y = -this.chunk_width * 2
         for (
-          let i = -this.chunk_width * 10;
-          i < this.chunk_width * 10;
+          let i = -this.chunk_width * 4;
+          i < this.chunk_width * 4;
           i += this.chunk_width
         ) {
           for (
-            let k = -this.chunk_width * 10;
-            k < this.chunk_width * 10;
+            let k = -this.chunk_width * 4;
+            k < this.chunk_width * 4;
             k += this.chunk_width
           ) {
 
@@ -1168,7 +1282,7 @@ export default class Game extends Component {
             let x = Math.round((i + THERIGHTX) / this.chunk_width);
             let z = Math.round((k + THERIGHTZ) / this.chunk_width);
             let yy = Math.round((y + THERIGHTY) /  this.chunk_width);
-
+            if(this.world.ishandledmarks.has("" + x + "," + yy + "," + z)) {
             if (
               this.world.hasblockmarks.has("" + x + "," + yy + "," + z) &&
               !this.mappedChunks.has("" + x + "," + yy + "," + z)
@@ -1178,11 +1292,44 @@ export default class Game extends Component {
               if (!this.neededChunks.has("" + x + "," + yy + "," + z)) {
                 // if it needs to tell neededchunks it needs this
                 this.neededChunks.set("" + x + "," + yy + "," + z, obj);
+                let h = 1;
+     
+                while(this.world.hasblockmarks.has("" + x + "," + (yy+h) + "," + z)) {
+                  this.neededChunks.set("" + x + "," + (yy+h) + "," + z,
+                  {x, y: yy+h, z});
+                  h+=1;
+                }
               }
             }
+
+          } else {
+            let h = 0;
+            let cont = true;
+            while(!this.world.ishandledmarks.has("" + x + "," + (yy+h) + "," + z) && h < 6 && cont) {
+            let prom = new Promise(
+              (resolve, reject) => {
+                try{
+                const res = this.world.generateOneChunk(x, yy+h, z);
+                cont = (this.res !== "air")
+                resolve(null);
+                }catch(e)
+                {
+                  reject(e);
+                }
+              }
+            );
+            prom.then(result=>{
+              //yay
+            }).catch(error=>{
+              console.log(error);
+            });
+            h +=1;
+
+            }
+          }
           }
         }
-      }
+      
     }
   }
 
@@ -1219,7 +1366,7 @@ export default class Game extends Component {
           this.camera.position.y += ((6) - this.input.ActiveState.jumpTimer)*this.delt;
         }
       //console.log(this.mappedChunks.size );
-        if(this.mappedChunks.size < 200)
+        if(this.mappedChunks.size < 125)
         {
           this.props.handle()("messageToClient")("loadingworld");
         } else {
@@ -1353,7 +1500,7 @@ export default class Game extends Component {
         this.surveyNeededChunks();
 
       } else {
-        this.surveyNeededChunksTimer += 1;
+        this.surveyNeededChunksTimer += this.delt;
       }
 
       this.rebuildQueuedMeshes();
