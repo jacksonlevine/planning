@@ -36,13 +36,10 @@ const Login = () => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         const playerId = user.uid;
-        let playerRef = firebase.database().ref(`players/${playerId}`);
-        const socket = io("http://localhost:3001");
-        playerRef.set({
-          id: playerId,
-          name: "test",
-        });
-        playerRef.onDisconnect().remove();
+        let playerRef;
+        const socket = io("67.58.229.227:3001");
+        
+        //playerRef.onDisconnect().remove();
         resolve({ app, playerRef, playerId, auth, socket});
       } else {
         reject("You need to sign in.");

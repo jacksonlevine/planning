@@ -34,6 +34,8 @@ class InputHandler {
 }
 const texture = new THREE.TextureLoader().load( "textures/textures.png" );
 texture.magFilter = THREE.NearestFilter;
+texture.minFilter = THREE.LinearFilter;
+texture.generateMipmaps = false;
 const meshMaterial = new THREE.MeshLambertMaterial({
   color: 0xffffff,
   depthWrite: true
