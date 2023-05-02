@@ -279,6 +279,9 @@ export default class Game extends Component {
             this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`)
             .buildmeshinplace();
           }
+          else{
+            this.neededChunks.set(`${chunkX},${chunkY},${chunkZ}`, {x:chunkX, y:chunkY, z:chunkZ})
+          }
   }
 
   componentWillUnmount() {
