@@ -34,8 +34,9 @@ class InputHandler {
 }
 const texture = new THREE.TextureLoader().load( "textures/textures.png" );
 const meshMaterial = new THREE.MeshLambertMaterial({
-  color: 0xff0000,
-  depthWrite: true
+  color: 0xffffff,
+  depthWrite: true,
+  antialias: false
 });
 meshMaterial.map = texture;
 meshMaterial.emissiveIntensity = 0;
