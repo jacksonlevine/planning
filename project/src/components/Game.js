@@ -362,25 +362,37 @@ export default class Game extends Component {
             saturn = models[0].scene.children[0];
             saturn.scale.set(2,2,2);
             
-    this.allPlayersRef.on("value", (snapshot) => {
-        this.players = snapshot.val() || {};
-        Object.keys(this.players).forEach((key) => {
-          const playerState = this.players[key];
+    this.props.socket.on("playerUpdate", (data) => {
+
+        const key = data.id;
+          const playerState = data;
+          //console.log(data);
           if(this.allPlayerModels.has(key)) {
             let model = this.allPlayerModels.get(key);
             //console.log("Model", model);
 
             model.rotation.z = playerState.zrotation;
-            this.playerOldAndNewPositions.set(key, new PrevAndNewPosition(
-                model.position,
-                new THREE.Vector3(playerState.x, playerState.y-1.6, playerState.z)
-            ));
-
+             this.playerOldAndNewPositions.set(key, new PrevAndNewPosition(
+                 model.position,
+                 new THREE.Vector3(data.x, data.y-1.6, data.z)
+             ));
+            // model.position.x = data.x;
+            //   model.position.y = data.y-1.6; //odd positioning problem on the model I'm using atm, this will be gone!
+            //   model.position.z = data.z;
 
             this.allPlayerModels.set(key, model);
 
+          } else {
+
+              const newPlayer = saturn.clone();
+              this.scene.add(newPlayer);
+              this.allPlayerModels.set(data.id, newPlayer);
+              newPlayer.position.x = data.x;
+              newPlayer.position.y = data.y-1.6; //odd positioning problem on the model I'm using atm, this will be gone!
+              newPlayer.position.z = data.z;
+
           }
-        });
+
       });
 
       this.allBlockActionsRef.on("child_added", snapshot => {
@@ -397,24 +409,15 @@ export default class Game extends Component {
         }
       })
   
-      this.allPlayersRef.on("child_added", (snapshot) => {
-        const addedPlayer = snapshot.val();
-        if(!this.allPlayerModels.has(addedPlayer.id) && addedPlayer.id !== this.props.pid)
-        {
-          const newPlayer = saturn.clone();
-          this.scene.add(newPlayer);
-          this.allPlayerModels.set(addedPlayer.id, newPlayer);
-          newPlayer.position.x = addedPlayer.x;
-          newPlayer.position.y = addedPlayer.y-1.6; //odd positioning problem on the model I'm using atm, this will be gone!
-          newPlayer.position.z = addedPlayer.z;
-        }
+      // this.allPlayersRef.on("child_added", (snapshot) => {
         
-      });
+        
+      // });
 
-      this.allPlayersRef.on("child_removed", (oldChildSnapshot) => {
-        if(this.allPlayerModels.has(oldChildSnapshot.key)){
-            this.scene.remove(this.allPlayerModels.get(oldChildSnapshot.key))
-            this.allPlayerModels.delete(oldChildSnapshot.key);
+      this.props.socket.on("playerDisconnect", (id) => {
+        if(this.allPlayerModels.has(id)){
+            this.scene.remove(this.allPlayerModels.get(id))
+            this.allPlayerModels.delete(id);
         }
       });
 
@@ -1438,7 +1441,14 @@ export default class Game extends Component {
     return null;
   }
 
+
   runGameLoop(input) {
+    let myPrevGO  = {
+      x:0,
+      y:0,
+      z:0,
+      zrotation:0
+    };
     const collisionDistance = 0.1;
     const animate = () => {
       this.input.ActiveState.isGrounded = (!this.isReady || this.castRayBlocking(this.camera.position.x,
@@ -1459,26 +1469,36 @@ export default class Game extends Component {
         }
         if(this.updatePlayersTimer > this.updatePlayersInterval) {
             this.updatePlayersTimer = 0;
-            this.props.socket.emit({
-                ...this.players[this.props.pid],
-                zrotation: this.controls.camera.rotation.y,
-                x: this.camera.position.x,
-                y: this.camera.position.y,
-                z: this.camera.position.z,
+            if(this.controls.camera.rotation.y != myPrevGO.zrotation
+            || this.controls.camera.position.x != myPrevGO.x
+            || this.controls.camera.position.y != myPrevGO.y
+            || this.controls.camera.position.z != myPrevGO.z) 
+            {
+                let upd = {
+                    id: this.props.pid,
+                    zrotation: this.controls.camera.rotation.y,
+                    x: this.camera.position.x,
+                    y: this.camera.position.y,
+                    z: this.camera.position.z,
+                };
+                this.props.socket.emit('playerUpdate', upd);
+              myPrevGO = 
+              {
+                ...upd
+              }
             }
-                );
-        }
+          }
         else {
             this.delt = this.clock.getDelta()
-            this.updatePlayersTimer += parseFloat(this.delt);
-
-            Object.keys(this.players).forEach((key)=> {
-                if(this.allPlayerModels.has(key) && this.playerOldAndNewPositions.has(key)) {
-                let model = this.allPlayerModels.get(key);
+            this.updatePlayersTimer += this.delt;
+            for(const [key, value] of this.allPlayerModels.entries()) {
+                if(this.playerOldAndNewPositions.has(key)) {
+                let model = value;
                 model.position.lerpVectors(this.playerOldAndNewPositions.get(key).prevPosition, this.playerOldAndNewPositions.get(key).newPosition,this.updatePlayersTimer);
                 this.allPlayerModels.set(key, model);
                 }
-            });
+              }
+
         }
       if(this.isReady) {
       if (input.ActiveState.forward) {

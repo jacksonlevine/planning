@@ -37,7 +37,7 @@ const Login = () => {
       if (user) {
         const playerId = user.uid;
         let playerRef = firebase.database().ref(`players/${playerId}`);
-        const socket = io();
+        const socket = io("http://localhost:3001");
         playerRef.set({
           id: playerId,
           name: "test",
