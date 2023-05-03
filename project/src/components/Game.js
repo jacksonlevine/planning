@@ -144,7 +144,7 @@ export default class Game extends Component {
     this.scene = new THREE.Scene();
     this.world = null;
     this.surveyNeededChunksTimer = 0;
-    this.surveyNeededChunksInterval = 1;
+    this.surveyNeededChunksInterval = 5;
     this.chunkQueueTimer = 0;
     this.chunkQueueInterval = 0;
     this.mappedChunks = new Map();
@@ -391,10 +391,12 @@ export default class Game extends Component {
     window.removeEventListener("touchstart", this.onTouchStart, false)
     window.removeEventListener("touchmove", this.onTouchMove, false)
     window.removeEventListener("touchend", this.onTouchEnd, false)
-  
+
   }
 
   mountListeners() {
+    window.setInterval(()=>{
+      this.surveyNeededChunks()}, 2000);
     window.addEventListener("mousedown", this.onClick, false);
 
     window.addEventListener("keydown", this.onKeyDown, false);
@@ -791,7 +793,7 @@ export default class Game extends Component {
   populateChunkPool() {
     const chunk_width = this.chunk_width;
     const world = this.world;
-
+    const clock = this.clock
 
     class Chunk {
       constructor() {
@@ -801,8 +803,10 @@ export default class Game extends Component {
         this.x = 0; //multiply x and z by 16 to get real-this.world position
         this.z = 0;
         this.y = 2000;
+        this.timeLastMeshed = 0;
       }
       buildmesh(newx, newy, newz) {
+        this.timeLastMeshed = Date.now();
         this.x = newx;
         this.z = newz;
         this.y = newy;
@@ -1454,9 +1458,9 @@ export default class Game extends Component {
         this.mesh.geometry = this.meshGeometry;
       }
     }
-    for (let i = 0; i < 9; i++) {
-      for (let k = 0; k < 9; k++) {
-        for (let a = 0; a < 9; a++) {
+    for (let i = 0; i < 10; i++) {
+      for (let k = 0; k < 10; k++) {
+        for (let a = 0; a < 10; a++) {
           let testChunk = new Chunk();
           testChunk.mesh.frustumCulled = false;
           this.chunkpool.push(testChunk);
@@ -1474,16 +1478,21 @@ export default class Game extends Component {
       this.chunkQueueTimer = 0;
       const needed = Array.from(this.neededChunks.values());
 
-      needed.sort(
-        (a,b)=> 
-        {
-          return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
-          <
-          this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
-          ) ? -1 : 1;
+      // needed.sort(
+      //   (a,b)=> 
+      //   {
+      //     if(this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z)) < 50 && 
+      //     this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z)) < 50)
+      //     {
+      //       return 0;
+      //     }
+      //     return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
+      //     <
+      //     this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
+      //     ) ? -1 : 1;
           
-        }
-      );
+      //   }
+      // );
 
       /*needed.sort(
         (a,b) => {
@@ -1492,18 +1501,24 @@ export default class Game extends Component {
       );*/
 
       const neededSpot = needed[0];
-      this.chunkpool.sort(
-        (a,b)=> 
-        {
-          return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
-          <
-          this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
-          ) ? -1 : 1;
-          
-        }
-      );
+   
       if(!this.mappedChunks.has(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`)) {
-      let grabbedMesh = this.chunkpool.pop();
+
+        let cp = this.chunkpool.filter(c=>{return Date.now()-c.timeLastMeshed > 12000});
+        
+        cp.sort(
+          (a,b)=> 
+          {
+
+            return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
+            <
+            this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
+            ) ? -1 : 1;
+            
+          }
+        );
+
+      let grabbedMesh = cp.pop();
       if (grabbedMesh !== null && grabbedMesh !== undefined) {
         if (
           this.mappedChunks.has(
@@ -1517,7 +1532,6 @@ export default class Game extends Component {
         this.scene.remove(grabbedMesh.mesh);
         grabbedMesh.buildmesh(neededSpot.x, neededSpot.y, neededSpot.z);
         this.scene.add(grabbedMesh.mesh);
-        this.chunkpool.unshift(grabbedMesh);
         this.mappedChunks.set(
           "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
           grabbedMesh
@@ -1527,7 +1541,7 @@ export default class Game extends Component {
         );
       }
     } else {
-      console.log("Mapped chunks already has", neededSpot.x, neededSpot.y, neededSpot.z)
+      //console.log("Mapped chunks already has", neededSpot.x, neededSpot.y, neededSpot.z)
       this.mappedChunks.get(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`).buildmeshinplace();
       this.neededChunks.delete(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`)
     }
@@ -1537,21 +1551,22 @@ export default class Game extends Component {
   }
 
   surveyNeededChunks() {
+    console.log("doing this")
     if (this.camera !== null && this.camera !== undefined) {
       let y = -this.chunk_width * 2
         for (
-          let i = -this.chunk_width * 4;
-          i < this.chunk_width * 4;
+          let i = -this.chunk_width * 3;
+          i < this.chunk_width * 3;
           i += this.chunk_width
         ) {
           for (
-            let k = -this.chunk_width * 4;
-            k < this.chunk_width * 4;
+            let k = -this.chunk_width * 3;
+            k < this.chunk_width * 3;
             k += this.chunk_width
           ) {
-            let THERIGHTX = this.camera.position.x;
-            let THERIGHTY = this.camera.position.y ;
-            let THERIGHTZ = this.camera.position.z ;
+            let THERIGHTX = this.camera.position.x - (this.camera.position.x%this.chunk_width);
+            let THERIGHTY = this.camera.position.y -  (this.camera.position.y%this.chunk_width);
+            let THERIGHTZ = this.camera.position.z - (this.camera.position.z%this.chunk_width);
             let x = Math.round((i + THERIGHTX) / this.chunk_width);
             let z = Math.round((k + THERIGHTZ) / this.chunk_width);
             let yy = Math.round((y + THERIGHTY) /  this.chunk_width);
@@ -1578,7 +1593,7 @@ export default class Game extends Component {
           } else {
             let h = 0;
             let cont = true;
-            while(!this.world.ishandledmarks.has("" + x + "," + (yy+h) + "," + z) && h < 6 && cont) {
+            while(!this.world.ishandledmarks.has("" + x + "," + (yy+h) + "," + z) && h < 4 && cont) {
               const resrej = (resolve, reject) => {
                 try{
                 const res = this.world.generateOneChunk(x, yy+h, z);
@@ -1630,6 +1645,7 @@ export default class Game extends Component {
 
 
   runGameLoop(input) {
+
     let myPrevGO  = {
       x:0,
       y:0,
@@ -1705,7 +1721,7 @@ export default class Game extends Component {
             dir.z,
             collisionDistance) === null)
           {
-          this.controls.moveForward(this.delt*8);
+          this.controls.moveForward(this.delt*6);
           }
         
       }
@@ -1726,7 +1742,7 @@ export default class Game extends Component {
             -dir.z,
             collisionDistance) === null)
           {
-          this.controls.moveForward(-this.delt*8);
+          this.controls.moveForward(-this.delt*6);
           }
       }
       if (input.ActiveState.right) {
@@ -1746,7 +1762,7 @@ export default class Game extends Component {
             dir.z,
             collisionDistance) === null)
           {
-          this.controls.moveRight(this.delt*8);
+          this.controls.moveRight(this.delt*6);
           }
         
       }
@@ -1767,7 +1783,7 @@ export default class Game extends Component {
             -dir.z,
             collisionDistance) === null)
           {
-          this.controls.moveRight(-this.delt*8);
+          this.controls.moveRight(-this.delt*6);
           }
         
       }
@@ -1786,13 +1802,7 @@ export default class Game extends Component {
         
       }
     }
-      if (this.surveyNeededChunksTimer >= this.surveyNeededChunksInterval) {
-        this.surveyNeededChunksTimer = 0;
-        this.surveyNeededChunks();
 
-      } else {
-        this.surveyNeededChunksTimer += .01;
-      }
 
       this.rebuildQueuedMeshes();
       this.renderer.render(this.scene, this.camera);
