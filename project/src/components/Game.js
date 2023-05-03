@@ -1551,7 +1551,6 @@ export default class Game extends Component {
   }
 
   surveyNeededChunks() {
-    console.log("doing this")
     if (this.camera !== null && this.camera !== undefined) {
       let y = -this.chunk_width * 2
         for (
