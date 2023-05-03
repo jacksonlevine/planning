@@ -54,16 +54,17 @@ class PrevAndNewPosition {
         this.newPosition = vector2;
     }
 }
+const texPad = .0015
 
 const blockTypes = {
   "1": { //stone
     texture: {
       uniform:true,
       all: [
-                0.0+.0625-.0001, 1.0-.0625+.0001,
-                0.0+.0001, 1.0-.0625+ .0001,
-                0.0+.0001 ,      1.0-.0001,
-                0.0+.0625-.0001, 1.0-.0001
+                0.0+.0625-texPad, 1.0-.0625+texPad,
+                0.0+texPad, 1.0-.0625+ texPad,
+                0.0+texPad ,      1.0-texPad,
+                0.0+.0625-texPad, 1.0-texPad
       ]
     }
   },
@@ -71,10 +72,10 @@ const blockTypes = {
     texture: {
       uniform:true,
       all: [
-        .0625+ 0.0+.0625-.0001, 1.0-.0625+.0001,
-        .0625 +0.0+.0001, 1.0-.0625+ .0001,
-        .0625 +0.0+.0001 ,      1.0-.0001,
-        .0625 +0.0+.0625-.0001, 1.0-.0001
+        .0625+ 0.0+.0625-texPad, 1.0-.0625+texPad,
+        .0625 +0.0+texPad, 1.0-.0625+ texPad,
+        .0625 +0.0+texPad ,      1.0-texPad,
+        .0625 +0.0+.0625-texPad, 1.0-texPad
       ]
     }
   },
@@ -82,10 +83,10 @@ const blockTypes = {
     texture: {
       uniform:true,
       all: [
-        .0625*2+ 0.0+.0625-.0001, 1.0-.0625+.0001,
-        .0625*2 +0.0+.0001, 1.0-.0625+ .0001,
-        .0625*2 +0.0+.0001 ,      1.0-.0001,
-        .0625*2 +0.0+.0625-.0001, 1.0-.0001
+        .0625*2+ 0.0+.0625-texPad, 1.0-.0625+texPad,
+        .0625*2 +0.0+texPad, 1.0-.0625+ texPad,
+        .0625*2 +0.0+texPad ,      1.0-texPad,
+        .0625*2 +0.0+.0625-texPad, 1.0-texPad
       ]
     }
   },
@@ -93,22 +94,22 @@ const blockTypes = {
     texture: {
       uniform:false,
       "top": [
-        .0625*3+ 0.0+.0625-.0001, 1.0-.0625+.0001,
-        .0625*3 +0.0+.0001, 1.0-.0625+ .0001,
-        .0625*3 +0.0+.0001 ,      1.0-.0001,
-        .0625*3 +0.0+.0625-.0001, 1.0-.0001
+        .0625*3+ 0.0+.0625-texPad, 1.0-.0625+texPad,
+        .0625*3 +0.0+texPad, 1.0-.0625+ texPad,
+        .0625*3 +0.0+texPad ,      1.0-texPad,
+        .0625*3 +0.0+.0625-texPad, 1.0-texPad
       ],
       "sides": [
-        .0625*4+ 0.0+.0625-.0001, 1.0-.0625+.0001,
-        .0625*4 +0.0+.0001, 1.0-.0625+ .0001,
-        .0625*4 +0.0+.0001 ,      1.0-.0001,
-        .0625*4 +0.0+.0625-.0001, 1.0-.0001
+        .0625*4+ 0.0+.0625-texPad, 1.0-.0625+texPad,
+        .0625*4 +0.0+texPad, 1.0-.0625+ texPad,
+        .0625*4 +0.0+texPad ,      1.0-texPad,
+        .0625*4 +0.0+.0625-texPad, 1.0-texPad
       ],
       "bottom": [
-        .0625*5+ 0.0+.0625-.0001, 1.0-.0625+.0001,
-        .0625*5 +0.0+.0001, 1.0-.0625+ .0001,
-        .0625*5 +0.0+.0001 ,      1.0-.0001,
-        .0625*5 +0.0+.0625-.0001, 1.0-.0001
+        .0625*5+ 0.0+.0625-texPad, 1.0-.0625+texPad,
+        .0625*5 +0.0+texPad, 1.0-.0625+ texPad,
+        .0625*5 +0.0+texPad ,      1.0-texPad,
+        .0625*5 +0.0+.0625-texPad, 1.0-texPad
       ]
     }
   }
@@ -355,6 +356,14 @@ export default class Game extends Component {
 
   placeBlock(pos, id)
   {
+    
+    let [chunkx, chunky, chunkz] = [Math.floor(pos.x/this.chunk_width), Math.floor(pos.y/this.chunk_width), Math.floor(pos.z/this.chunk_width)];
+
+    if(!this.world.ishandledmarks.has(
+      `${chunkx},${chunky},${chunkz}`
+    )){
+      this.world.generateOneChunk(chunkx, chunky, chunkz);
+    }
     const blockKey = `${pos.x},${pos.y},${pos.z}`; 
           this.world.data.set(blockKey, id);
           const chunkX = Math.floor(pos.x/this.chunk_width);
@@ -402,13 +411,13 @@ export default class Game extends Component {
   }
 
   onTouchMove = (event) => {
-    if(event.touches[0].clientX != this.currentTouchX)
+    if(event.touches[0].clientX !== this.currentTouchX)
     {
       this.camera.rotation.y += (event.touches[0].clientX - this.currentTouchX);
 
       this.currentTouchX = event.touches[0].clientX;
     }
-    if(event.touches[0].clientY != this.currentTouchY)
+    if(event.touches[0].clientY !== this.currentTouchY)
     {
       this.camera.rotation.x += (event.touches[0].clientY - this.currentTouchY);
 
@@ -782,6 +791,8 @@ export default class Game extends Component {
   populateChunkPool() {
     const chunk_width = this.chunk_width;
     const world = this.world;
+
+
     class Chunk {
       constructor() {
         this.meshGeometry = new THREE.BufferGeometry();
@@ -1117,7 +1128,6 @@ export default class Game extends Component {
           new THREE.BufferAttribute(new Float32Array(newUVs), 2)
         )
         this.mesh.position.set(this.x * chunk_width, this.y * chunk_width, this.z * chunk_width);
-
         this.mesh.geometry = this.meshGeometry;
       }
       buildmeshinplace() {
@@ -1441,7 +1451,6 @@ export default class Game extends Component {
           new THREE.BufferAttribute(new Float32Array(newUVs), 2)
         )
       
-
         this.mesh.geometry = this.meshGeometry;
       }
     }
@@ -1493,7 +1502,7 @@ export default class Game extends Component {
           
         }
       );
-
+      if(!this.mappedChunks.has(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`)) {
       let grabbedMesh = this.chunkpool.pop();
       if (grabbedMesh !== null && grabbedMesh !== undefined) {
         if (
@@ -1517,6 +1526,11 @@ export default class Game extends Component {
           "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z
         );
       }
+    } else {
+      console.log("Mapped chunks already has", neededSpot.x, neededSpot.y, neededSpot.z)
+      this.mappedChunks.get(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`).buildmeshinplace();
+      this.neededChunks.delete(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`)
+    }
     } else {
       this.chunkQueueTimer++;
     }
