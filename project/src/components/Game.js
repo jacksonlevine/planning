@@ -27,6 +27,8 @@ class InputState {
   }
 }
 
+
+
 class InputHandler {
   constructor() {
     this.ActiveState = new InputState();
@@ -54,25 +56,59 @@ class PrevAndNewPosition {
 }
 
 const blockTypes = {
-  "1": {
+  "1": { //stone
     texture: {
       uniform:true,
       all: [
-                0.0+.0625, 1.0-.0625,
-                0.0, 1.0-.0625,
-                0.0 ,      1.0,
-                0.0+.0625, 1.0
+                0.0+.0625-.0001, 1.0-.0625+.0001,
+                0.0+.0001, 1.0-.0625+ .0001,
+                0.0+.0001 ,      1.0-.0001,
+                0.0+.0625-.0001, 1.0-.0001
       ]
     }
   },
-  "2": {
+  "2": { //b rick
     texture: {
       uniform:true,
       all: [
-        .0625 + 0.0+.0625, 1.0-.0625,
-        .0625 + 0.0, 1.0-.0625,
-        .0625 + 0.0 ,      1.0,
-        .0625 + 0.0+.0625, 1.0
+        .0625+ 0.0+.0625-.0001, 1.0-.0625+.0001,
+        .0625 +0.0+.0001, 1.0-.0625+ .0001,
+        .0625 +0.0+.0001 ,      1.0-.0001,
+        .0625 +0.0+.0625-.0001, 1.0-.0001
+      ]
+    }
+  },
+  "3": { //sand
+    texture: {
+      uniform:true,
+      all: [
+        .0625*2+ 0.0+.0625-.0001, 1.0-.0625+.0001,
+        .0625*2 +0.0+.0001, 1.0-.0625+ .0001,
+        .0625*2 +0.0+.0001 ,      1.0-.0001,
+        .0625*2 +0.0+.0625-.0001, 1.0-.0001
+      ]
+    }
+  },
+  "4": { //grass
+    texture: {
+      uniform:false,
+      "top": [
+        .0625*3+ 0.0+.0625-.0001, 1.0-.0625+.0001,
+        .0625*3 +0.0+.0001, 1.0-.0625+ .0001,
+        .0625*3 +0.0+.0001 ,      1.0-.0001,
+        .0625*3 +0.0+.0625-.0001, 1.0-.0001
+      ],
+      "sides": [
+        .0625*4+ 0.0+.0625-.0001, 1.0-.0625+.0001,
+        .0625*4 +0.0+.0001, 1.0-.0625+ .0001,
+        .0625*4 +0.0+.0001 ,      1.0-.0001,
+        .0625*4 +0.0+.0625-.0001, 1.0-.0001
+      ],
+      "bottom": [
+        .0625*5+ 0.0+.0625-.0001, 1.0-.0625+.0001,
+        .0625*5 +0.0+.0001, 1.0-.0625+ .0001,
+        .0625*5 +0.0+.0001 ,      1.0-.0001,
+        .0625*5 +0.0+.0625-.0001, 1.0-.0001
       ]
     }
   }
@@ -103,7 +139,7 @@ export default class Game extends Component {
     };
     this.canvas = null;
     this.controls = null;
-    this.chunk_width = 10;
+    this.chunk_width = 11;
     this.scene = new THREE.Scene();
     this.world = null;
     this.surveyNeededChunksTimer = 0;
@@ -120,6 +156,15 @@ export default class Game extends Component {
     this.clock = new THREE.Clock();
     this.delt = 0;
     this.isReady = false;
+    this.currentTouchX = 0;
+    this.currentTouchY = 0;
+  }
+
+  isCameraFacingThis = (direction, x, y, z) => {
+    const spot = new THREE.Vector3(x,y,z)
+    return (spot.distanceTo(this.camera.position) 
+    < 
+    spot.distanceTo(this.camera.position.add(direction.addScalar(2.0))));
   }
 
   render() {
@@ -131,7 +176,7 @@ export default class Game extends Component {
           textAlign: "center"
         }}>
         <img style = {{
-           position:"absolute",
+           position:"fixed",
            zIndex:"10",
            margin:"0px",
            top:"50%",
@@ -272,6 +317,8 @@ export default class Game extends Component {
             chunk.buildmeshinplace();
             
           
+          } else {
+            this.neededChunks.set(`${chunkX},${chunkY},${chunkZ}`, {x:chunkX, y:chunkY, z:chunkZ})
           }
             //6 surrounders
             if(this.mappedChunks.has(`${chunkX-1},${chunkY},${chunkZ}`))
@@ -331,6 +378,11 @@ export default class Game extends Component {
     window.removeEventListener("keydown", this.onKeyDown, false);
 
     window.removeEventListener("keyup", this.onKeyUp, false);
+    
+    window.removeEventListener("touchstart", this.onTouchStart, false)
+    window.removeEventListener("touchmove", this.onTouchMove, false)
+    window.removeEventListener("touchend", this.onTouchEnd, false)
+  
   }
 
   mountListeners() {
@@ -339,9 +391,34 @@ export default class Game extends Component {
     window.addEventListener("keydown", this.onKeyDown, false);
 
     window.addEventListener("keyup", this.onKeyUp, false);
+    window.addEventListener("touchstart", this.onTouchStart, false)
+    window.addEventListener("touchmove", this.onTouchMove, false)
+    window.addEventListener("touchend", this.onTouchEnd, false)
   }
 
+  onTouchStart = (event) => {
+    this.currentTouchX = event.touches[0].clientX
+    this.currentTouchY = event.touches[0].clientY
+  }
 
+  onTouchMove = (event) => {
+    if(event.touches[0].clientX != this.currentTouchX)
+    {
+      this.camera.rotation.y += (event.touches[0].clientX - this.currentTouchX);
+
+      this.currentTouchX = event.touches[0].clientX;
+    }
+    if(event.touches[0].clientY != this.currentTouchY)
+    {
+      this.camera.rotation.x += (event.touches[0].clientY - this.currentTouchY);
+
+      this.currentTouchY = event.touches[0].clientY;
+    }
+  }
+
+  onTouchEnd = (event) => {
+    
+  }
   onKeyDown = (event) => {
     switch (event.code) {
       case "KeyW":
@@ -528,6 +605,7 @@ export default class Game extends Component {
                         ); // Remove it if its full for now
                       }
                       
+                      let idToSet = (Math.abs(REAL_WORLD_Y - n)<2 ? ((REAL_WORLD_Y < 1) ? "3" : "4") : "1");
                       this.data.set(
                         "" +
                           REAL_WORLD_X +
@@ -535,8 +613,8 @@ export default class Game extends Component {
                           REAL_WORLD_Y +
                           "," +
                           REAL_WORLD_Z,
-                        "1"
-                      ); // Real this.world level (micro)
+                        idToSet
+                      );  // Real this.world level (micro)
                       // try {
                       //   const docRef = addDoc(collection(db, "blocks"), {
                       //     x: REAL_WORLD_X,
@@ -580,6 +658,7 @@ export default class Game extends Component {
                         34.425,
                         REAL_WORLD_Z / 25.65
                       ) * 15;
+
                       if (
                         !this.ishandledmarks.has("" + i + "," + j + "," + k)
                       ) {
@@ -599,7 +678,7 @@ export default class Game extends Component {
                           "1"
                         ); // Remove it if its full for now
                       }
-                      
+                      let idToSet = (Math.abs(REAL_WORLD_Y - n)<2 ? ((REAL_WORLD_Y < 1) ? "3" : "4") : "1");
                       this.data.set(
                         "" +
                           REAL_WORLD_X +
@@ -607,7 +686,7 @@ export default class Game extends Component {
                           REAL_WORLD_Y +
                           "," +
                           REAL_WORLD_Z,
-                        "1"
+                        idToSet
                       ); // Real this.world level (micro)
                       // try {
                       //   const docRef = addDoc(collection(db, "blocks"), {
@@ -924,12 +1003,12 @@ export default class Game extends Component {
                     )
                   ) {
                     let v = 0;
+                    v += addVert(i+1, j, k);
                     v += addVert(i, j, k);
                     v += addVert(i, j + 1, k);
-                    v += addVert(i + 1, j + 1, k);
-                    v += addVert(i + 1, j + 1, k);
-                    v += addVert(i + 1, j, k);
-                    v += addVert(i, j, k);add4UVs(ID, "sides");
+                    v += addVert(i, j + 1, k);
+                    v += addVert(i + 1, j+1, k);
+                    v += addVert(i+1, j, k);         add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 0, -1);
                     }
@@ -945,12 +1024,13 @@ export default class Game extends Component {
                     )
                   ) {
                     let v = 0;
-                    v += addVert(i + 1, j, k);
-                    v += addVert(i + 1, j + 1, k);
-                    v += addVert(i + 1, j + 1, k + 1);
-                    v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j, k + 1);
-                    v += addVert(i + 1, j, k);add4UVs(ID, "sides");
+                    v += addVert(i + 1, j, k)
+      
+                    v += addVert(i + 1, j + 1, k);
+                    v += addVert(i + 1, j+1, k);
+                    v += addVert(i + 1, j + 1, k + 1);
+                    v += addVert(i + 1, j, k + 1);add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(1, 0, 0);
                     }
@@ -1246,12 +1326,12 @@ export default class Game extends Component {
                     )
                   ) {
                     let v = 0;
+                    v += addVert(i+1, j, k);
                     v += addVert(i, j, k);
                     v += addVert(i, j + 1, k);
-                    v += addVert(i + 1, j + 1, k);
-                    v += addVert(i + 1, j + 1, k);
-                    v += addVert(i + 1, j, k);
-                    v += addVert(i, j, k);add4UVs(ID, "sides");
+                    v += addVert(i, j + 1, k);
+                    v += addVert(i + 1, j+1, k);
+                    v += addVert(i+1, j, k);  add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(0, 0, -1);
                     }
@@ -1267,12 +1347,14 @@ export default class Game extends Component {
                     )
                   ) {
                     let v = 0;
-                    v += addVert(i + 1, j, k);
+                    v += addVert(i + 1, j, k + 1);
+                    v += addVert(i + 1, j, k)
+      
                     v += addVert(i + 1, j + 1, k);
-                    v += addVert(i + 1, j + 1, k + 1);
+                    v += addVert(i + 1, j+1, k);
                     v += addVert(i + 1, j + 1, k + 1);
                     v += addVert(i + 1, j, k + 1);
-                    v += addVert(i + 1, j, k);add4UVs(ID, "sides");
+                   ;add4UVs(ID, "sides");
                     for (let h = 0; h < v; h++) {
                       newNorms.push(1, 0, 0);
                     }
@@ -1383,7 +1465,34 @@ export default class Game extends Component {
       this.chunkQueueTimer = 0;
       const needed = Array.from(this.neededChunks.values());
 
+      needed.sort(
+        (a,b)=> 
+        {
+          return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
+          <
+          this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
+          ) ? -1 : 1;
+          
+        }
+      );
+
+      /*needed.sort(
+        (a,b) => {
+          return (this.isCameraFacingThis(this.getCameraDirection(), a.x, a.y, a.z)) ? -1: 1;
+        }
+      );*/
+
       const neededSpot = needed[0];
+      this.chunkpool.sort(
+        (a,b)=> 
+        {
+          return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
+          <
+          this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
+          ) ? -1 : 1;
+          
+        }
+      );
 
       let grabbedMesh = this.chunkpool.pop();
       if (grabbedMesh !== null && grabbedMesh !== undefined) {
@@ -1426,10 +1535,9 @@ export default class Game extends Component {
             k < this.chunk_width * 4;
             k += this.chunk_width
           ) {
-
-            let THERIGHTX = this.camera.position.x - (this.camera.position.x%this.chunk_width);
-            let THERIGHTY = this.camera.position.y -  (this.camera.position.y%this.chunk_width);
-            let THERIGHTZ = this.camera.position.z - (this.camera.position.z%this.chunk_width);
+            let THERIGHTX = this.camera.position.x;
+            let THERIGHTY = this.camera.position.y ;
+            let THERIGHTZ = this.camera.position.z ;
             let x = Math.round((i + THERIGHTX) / this.chunk_width);
             let z = Math.round((k + THERIGHTZ) / this.chunk_width);
             let yy = Math.round((y + THERIGHTY) /  this.chunk_width);
@@ -1669,7 +1777,7 @@ export default class Game extends Component {
         this.surveyNeededChunks();
 
       } else {
-        this.surveyNeededChunksTimer += this.delt;
+        this.surveyNeededChunksTimer += .01;
       }
 
       this.rebuildQueuedMeshes();
