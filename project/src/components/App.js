@@ -128,7 +128,6 @@ class App extends Component {
   }
 
   signOut = () => {
-    this.playerRef.remove();
     this.changeState()("gameButtonVisible")(false);
     this.changeState()("messageToClient")("signin");
   }

@@ -11,6 +11,7 @@ import { generateUUID } from "three/src/math/MathUtils.js";
 //import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
 import LinkedHashMap from "../linkHashMap.js";
 import ChatView from "./ChatVIew.js";
+import UpAndDownArrow from "./UpAndDownArrow.js";
 
 let saturn;
 
@@ -126,6 +127,9 @@ export default class Game extends Component {
     this.width = 1024;
     this.height = 640;
     this.fov = 100;
+
+        // Create the Neck object and add it to the scene
+
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
       this.width /this.height,
@@ -163,10 +167,13 @@ export default class Game extends Component {
     this.state = {
       chat: "",
       chats: [],
-      maxChatLines: 12
+      maxChatLines: 12,
+      smallMode: false
     }
     this.chatBoxRef = React.createRef();
     this.canvasRef = React.createRef();
+    this.thingyDown = false;
+    this.neck = null;
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -203,7 +210,7 @@ export default class Game extends Component {
            left:"50%",
            transform: "translate(-50%, -50%)"
         }}src="/textures/hairsmall.png" alt=""/>
-          
+          <UpAndDownArrow isHidden={!this.state.smallMode}/>
           <canvas 
           ref={this.canvasRef}
           style={{
@@ -442,27 +449,69 @@ export default class Game extends Component {
   onWindowResize = () => {
     this.camera.aspect = this.props.width / this.props.height;
     this.camera.updateProjectionMatrix();
-
+    this.width = this.props.width
+    this.height = this.props.height
     this.renderer.setSize( this.props.width, this.props.height );
-
+    
+    this.setSmallMode();
 }
+
+  setSmallMode = () => {
+    if(window.innerWidth < 700) {
+      this.setState({
+        smallMode: true
+      });
+    } else {
+      this.setState({
+        smallMode: false
+      });
+    }
+  }
 
   onTouchStart = (event) => {
     this.currentTouchX = event.touches[0].clientX
     this.currentTouchY = event.touches[0].clientY
+    if(this.state.smallMode)
+    {
+      const element = document.getElementById("uad");
+      const clientRect = element.getBoundingClientRect();
+      const thingyX = clientRect.left;
+      const thingyY = clientRect.top;
+      const thingyWidth = clientRect.width;
+      const thingyHeight = clientRect.height;
+      if(this.currentTouchX >= thingyX && this.currentTouchX <= thingyX+thingyWidth
+        && this.currentTouchY >= thingyY && this.currentTouchY <= thingyY+thingyHeight)
+        {
+          this.thingyDown = true;
+        } else {
+          this.thingyDown = false;
+        }
+    }
+
   }
 
   onTouchMove = (event) => {
+    event.preventDefault();
     if(event.touches[0].clientX !== this.currentTouchX)
     {
-      this.camera.rotation.y += (event.touches[0].clientX - this.currentTouchX);
+      let differenceX = (event.touches[0].clientX - this.currentTouchX);
+      this.neck.rotation.y -= differenceX/20;
 
       this.currentTouchX = event.touches[0].clientX;
     }
-    if(event.touches[0].clientY !== this.currentTouchY)
+    if(this.thingyDown && event.touches[0].clientY !== this.currentTouchY)
     {
-      this.camera.rotation.x += (event.touches[0].clientY - this.currentTouchY);
+      let differenceY = -(event.touches[0].clientY - this.currentTouchY);
+      // First, calculate the camera's up vector and right vector
+        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
 
+        // Then, create a quaternion representing the desired rotation
+        const quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle(right, differenceY/20); // angle is the amount of rotation in radians
+
+        // Finally, apply the quaternion to the camera's quaternion
+        this.camera.quaternion.multiplyQuaternions(quaternion, this.camera.quaternion);
       this.currentTouchY = event.touches[0].clientY;
     }
   }
@@ -528,7 +577,7 @@ export default class Game extends Component {
     }
   };
   componentDidMount = () => {
-    
+    this.setSmallMode();
     this.scene.fog = new THREE.Fog(0x000000, 20, 160)
     const gltfLoader = new GLTFLoader();
     const loadAsync = url => {
@@ -786,9 +835,16 @@ export default class Game extends Component {
 
     this.world = new World();
 
-    this.camera.position.z = 4;
-    this.camera.position.y += 4;
-    this.scene.add(this.camera);
+    this.camera.position.z = 0;
+    this.camera.position.y = 0;
+    this.camera.position.x = 0;
+    
+    this.neck = new THREE.Object3D();
+    this.neck.position.y += 4;
+    this.scene.add(this.neck);
+
+    this.neck.add(this.camera);
+
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
