@@ -14,6 +14,7 @@ import ChatView from "./ChatVIew.js";
 import UpAndDownArrow from "./UpAndDownArrow.js";
 import MoveArrow from "./MoveArrow.js";
 import Inventory from "./Inventory.js";
+import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
@@ -164,8 +165,9 @@ export default class Game extends Component {
     this.clock = new THREE.Clock();
     this.delt = 0;
     this.isReady = false;
-    this.currentTouchX = 0;
-    this.currentTouchY = 0;
+    this.currentTouchX = {};
+    this.currentTouchY = {};
+    this.touchIndex = 0;
     this.state = {
       chat: "",
       chats: [],
@@ -469,7 +471,7 @@ export default class Game extends Component {
 }
 
   setSmallMode = () => {
-    if(window.innerWidth < 700) {
+    if(window.innerWidth < 1200) {
       this.setState({
         smallMode: true
       });
@@ -481,8 +483,11 @@ export default class Game extends Component {
   }
 
   onTouchStart = (event) => {
-    this.currentTouchX = event.touches[0].clientX
-    this.currentTouchY = event.touches[0].clientY
+    this.touchIndex = 0;
+    for(let i = 0; i < Array.from(event.touches).length; i++)
+    {
+      this.currentTouchX[i] = event.touches[i].clientX
+    this.currentTouchY[i] = event.touches[i].clientY
     if(this.state.smallMode)
     {
       const element = document.getElementById("uad");
@@ -499,58 +504,46 @@ export default class Game extends Component {
       const thingyY2 = clientRectMove.top;
       const thingyWidth2 = clientRectMove.width;
       const thingyHeight2 = clientRectMove.height;
-      if(this.currentTouchX >= thingyX && this.currentTouchX <= thingyX+thingyWidth
-        && this.currentTouchY >= thingyY && this.currentTouchY <= thingyY+thingyHeight)
+      if(this.currentTouchX[i] >= thingyX && this.currentTouchX[i] <= thingyX+thingyWidth
+        && this.currentTouchY[i] >= thingyY && this.currentTouchY[i] <= thingyY+thingyHeight)
         {
           this.thingyDown = true;
-        } else {
-          this.thingyDown = false;
-        }
-        if(this.currentTouchX >= thingyX2 && this.currentTouchX <= thingyX2+thingyWidth2
-          && this.currentTouchY >= thingyY2 && this.currentTouchY <= thingyY2+thingyHeight2)
+          this.input.ActiveState.jump = true;
+          this.input.ActiveState.isGrounded = false;
+        } 
+        if(this.currentTouchX[i] >= thingyX2 && this.currentTouchX[i] <= thingyX2+thingyWidth2
+          && this.currentTouchY[i] >= thingyY2 && this.currentTouchY[i] <= thingyY2+thingyHeight2)
           {
+
+            
+      this.touchIndex += 1;
             this.moveyDown = true;
-          } else {
-            this.moveyDown = false;
-          }
+          } 
+    }
     }
 
   }
 
   onTouchMove = (event) => {
-    event.preventDefault();
-    let touchIndex = 0;
-    if(event.touches[0].clientX !== this.currentTouchX)
-    {
-      let differenceX = (event.touches[0].clientX - this.currentTouchX);
-      //this.neck.rotation.y -= differenceX/20;
+    //event.preventDefault();
 
-      this.currentTouchX = event.touches[0].clientX;
-    }
-    if(this.thingyDown && event.touches[0].clientY !== this.currentTouchY)
-    {
-      touchIndex += 1;
-      let differenceY = -(event.touches[0].clientY - this.currentTouchY);
-      // First, calculate the camera's up vector and right vector
-        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
-        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+    // if(event.touches[0].clientX !== this.currentTouchX)
+    // {
+    //   let differenceX = (event.touches[0].clientX - this.currentTouchX);
+    //   //this.neck.rotation.y -= differenceX/20;
 
-        // Then, create a quaternion representing the desired rotation
-        const quaternion = new THREE.Quaternion();
-        quaternion.setFromAxisAngle(right, differenceY/20); // angle is the amount of rotation in radians
+    //   this.currentTouchX = event.touches[0].clientX;
+    // }
 
-        // Finally, apply the quaternion to the camera's quaternion
-        this.camera.quaternion.multiplyQuaternions(quaternion, this.camera.quaternion);
-      this.currentTouchY = event.touches[0].clientY;
-    }
     if(this.moveyDown)
     {
+      event.preventDefault();
             this.input.jump = true;
       this.input.isGrounded = false;
-    if(event.touches[0].clientY !== this.currentTouchY || event.touches[0].clientX !== this.currentTouchX)
+    if(event.touches[0].clientY !== this.currentTouchY[0] || event.touches[0].clientX !== this.currentTouchX[0])
     {
-      let differenceX = (event.touches[0].clientX - this.currentTouchX);
-      let differenceY = -(event.touches[0].clientY - this.currentTouchY);
+      let differenceX = (event.touches[0].clientX - this.currentTouchX[0]);
+      let differenceY = -(event.touches[0].clientY - this.currentTouchY[0]);
       if(differenceX > 0)
       {
         this.input.ActiveState.right = true;
@@ -580,6 +573,36 @@ export default class Game extends Component {
     this.input.ActiveState.forward = false;
     
     this.input.ActiveState.back = false;
+    const element = document.getElementById("uad");
+    const element2 = document.getElementById("ma");
+    if(element !== null && element2 !== null) {
+    const clientRect = element.getBoundingClientRect();
+    const clientRectMove = element2.getBoundingClientRect();
+    const thingyX = clientRect.left;
+    const thingyY = clientRect.top;
+    const thingyWidth = clientRect.width;
+    const thingyHeight = clientRect.height;
+
+
+    const thingyX2 = clientRectMove.left;
+    const thingyY2 = clientRectMove.top;
+    const thingyWidth2 = clientRectMove.width;
+    const thingyHeight2 = clientRectMove.height;
+
+      delete this.currentTouchX[this.touchIndex];
+      delete this.currentTouchY[this.touchIndex];
+    if(this.currentTouchX[this.touchIndex] >= thingyX && this.currentTouchX[this.touchIndex] <= thingyX+thingyWidth
+      && this.currentTouchY[this.touchIndex] >= thingyY && this.currentTouchY[this.touchIndex] <= thingyY+thingyHeight)
+      {
+        this.thingyDown = false;
+      } 
+      if(this.currentTouchX[this.touchIndex] >= thingyX2 && this.currentTouchX[this.touchIndex] <= thingyX2+thingyWidth2
+        && this.currentTouchY[this.touchIndex] >= thingyY2 && this.currentTouchY[this.touchIndex] <= thingyY2+thingyHeight2)
+        {
+          this.moveyDown = false;
+        }
+      }
+
 
   }
   onKeyDown = (event) => {
@@ -925,7 +948,7 @@ export default class Game extends Component {
     this.renderer.setClearColor(0x000000, 1);
 
 
-    this.controls = new PointerLockControls(this.camera, this.canvas);
+    this.controls = new PointerLockControls2(this.camera, this.canvas);
     //MAIN STUFF
 
     this.world.generate();
