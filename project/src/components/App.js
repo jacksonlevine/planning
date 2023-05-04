@@ -72,12 +72,11 @@ class App extends Component {
 
 
 
-      backgroundColor: "rgb(80, 170, 80)",
+      backgroundColor: "rgb(190, 170, 80)",
 
       padding: "0px 0px",
       margin: "0% 0%",
-      borderRadius: "50px",
-      border: "40px solid lightgreen",
+      border: "20px solid rgb(250, 230, 150)",
       fontFamily: "Tahoma",
       overflow: "hidden"
     };
