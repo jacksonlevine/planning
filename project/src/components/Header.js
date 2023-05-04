@@ -12,6 +12,6 @@ export default function Header() {
         margin: "0 0"
     }
     return (
-        <h1 style = {headStyle}><img style={imgStyle} src="logo192.png"/>JacksonGame</h1>
+        <h1 style = {headStyle}><img style={imgStyle} src="logo192.png" alt=""/>JacksonGame</h1>
     );
 }

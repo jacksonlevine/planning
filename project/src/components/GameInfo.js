@@ -10,7 +10,7 @@ export default function GameInfo(props) {
         break;
         case "signin":
         messageElement = 
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
             <h3>Welcome!</h3>
             <h4>You need to sign in.</h4>
         </div>

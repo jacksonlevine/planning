@@ -58,24 +58,28 @@ class App extends Component {
     this.playerRef = null;
     this.socket = null;
     this.db = null;
+    this.canvRef = React.createRef();
     this.state = {
       gameButtonVisible: false,
       pageVisible: "default",
       messageToClient: "signin",
       chat: [],
+      width: 0,
+      height: 0,
     };
 
     this.styles = {
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
+
+
+
       backgroundColor: "rgb(80, 170, 80)",
-      alignItems: "center",
-      padding: "40px 0px",
-      margin: "0% 20%",
+
+      padding: "0px 0px",
+      margin: "0% 0%",
       borderRadius: "50px",
       border: "40px solid lightgreen",
       fontFamily: "Tahoma",
+      overflow: "hidden"
     };
   }
 
@@ -84,6 +88,25 @@ class App extends Component {
       [property]: newValue,
     });
   };
+
+  componentDidMount()
+  {
+    this.setState(
+      {
+        width: document.getElementById("App").offsetWidth*.70,
+        height: window.innerHeight/1.5
+      }
+    )
+    window.addEventListener( 'resize', this.callForResize, false );
+  }
+
+
+  callForResize = () => {
+    this.changeState()("width")(document.getElementById("App").offsetWidth*.70)
+    this.changeState()("height")((window.innerHeight/1.5))
+  }
+
+  
 
   initializeAuth = () => {
     Login().then(
@@ -158,6 +181,9 @@ class App extends Component {
               handle={this.changeState}
               db={this.db}
               socket={this.socket}
+              width={this.state.width}
+              height={this.state.height}
+              resize={this.callForResize}
             />
             <GameInfo message={this.state.messageToClient} />
           </React.Fragment>
@@ -168,7 +194,7 @@ class App extends Component {
     }
 
     return (
-      <div style={this.styles} className="App">
+      <div ref={this.canvRef} style={this.styles} id="App">
         {mainElement}
       </div>
     );

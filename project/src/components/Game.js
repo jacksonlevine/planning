@@ -10,6 +10,7 @@ import ImprovedNoise from "./../perlin.js";
 import { generateUUID } from "three/src/math/MathUtils.js";
 //import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
 import LinkedHashMap from "../linkHashMap.js";
+import ChatView from "./ChatVIew.js";
 
 let saturn;
 
@@ -116,8 +117,8 @@ const blockTypes = {
 }
 
 export default class Game extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.allPlayerModels = new Map();
     this.allPlayersRef = firebase.database().ref("players");
     this.allBlockActionsRef = firebase.database().ref("blockActions");
@@ -159,6 +160,13 @@ export default class Game extends Component {
     this.isReady = false;
     this.currentTouchX = 0;
     this.currentTouchY = 0;
+    this.state = {
+      chat: "",
+      chats: [],
+      maxChatLines: 12
+    }
+    this.chatBoxRef = React.createRef();
+    this.canvasRef = React.createRef();
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -176,18 +184,43 @@ export default class Game extends Component {
         <div style = {{
           textAlign: "center"
         }}>
-        <img style = {{
-           position:"fixed",
+        
+        <div
+        style={{
+          display:"flex",
+          flexDirection:"column",
+          alignItems:"center"
+        }}>
+
+          <div style={{
+            position:"relative"
+          }}>
+          <img style = {{
+           position:"absolute",
            zIndex:"10",
            margin:"0px",
            top:"50%",
            left:"50%",
            transform: "translate(-50%, -50%)"
         }}src="/textures/hairsmall.png" alt=""/>
-        <canvas style={{
-          zIndex:"-1"
-        }} id="canvas"></canvas>
+          
+          <canvas 
+          ref={this.canvasRef}
+          style={{
+            zIndex:"-1"
+          }} id="canvas"></canvas>
+          </div>
+          <p>Chat: Press 't' to type and 'Enter' to send.</p>
+          <ChatView chats = {this.state.chats}/>
         </div>
+        </div>
+        <form onSubmit={this.sendChat}>
+          <input ref = {this.chatBoxRef} value={this.state.chat} tabIndex={1} type="text" id="inp" name="inp"
+          onChange={(e)=>{this.setState({
+            chat: e.target.value
+          })}}></input>
+          <button type="submit">Send chat</button>
+        </form>
         <button
           onClick={() => {
             this.isOpen = false;
@@ -383,7 +416,6 @@ export default class Game extends Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener("mousedown", this.onClick);
     window.removeEventListener("keydown", this.onKeyDown, false);
 
     window.removeEventListener("keyup", this.onKeyUp, false);
@@ -391,21 +423,29 @@ export default class Game extends Component {
     window.removeEventListener("touchstart", this.onTouchStart, false)
     window.removeEventListener("touchmove", this.onTouchMove, false)
     window.removeEventListener("touchend", this.onTouchEnd, false)
-
+    window.removeEventListener("mousedown", this.onClick);
   }
 
-  mountListeners() {
+  mountListeners = () => {
     window.setInterval(()=>{
       this.surveyNeededChunks()}, 2000);
-    window.addEventListener("mousedown", this.onClick, false);
 
+      window.addEventListener( 'resize', this.onWindowResize, false );
+      
     window.addEventListener("keydown", this.onKeyDown, false);
-
+    window.addEventListener("mousedown", this.onClick, false);
     window.addEventListener("keyup", this.onKeyUp, false);
     window.addEventListener("touchstart", this.onTouchStart, false)
     window.addEventListener("touchmove", this.onTouchMove, false)
     window.addEventListener("touchend", this.onTouchEnd, false)
   }
+  onWindowResize = () => {
+    this.camera.aspect = this.props.width / this.props.height;
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize( this.props.width, this.props.height );
+
+}
 
   onTouchStart = (event) => {
     this.currentTouchX = event.touches[0].clientX
@@ -444,6 +484,13 @@ export default class Game extends Component {
       case "KeyD":
         this.input.ActiveState.right = true;
         break;
+      case "KeyT":
+        if(document.activeElement !== document.getElementById("inp"))
+        {
+          event.preventDefault();
+        }
+        this.chatBoxRef.current.focus();
+        break;
       case "Space":
         this.input.ActiveState.jump = true;
         this.input.ActiveState.isGrounded = false;
@@ -480,7 +527,8 @@ export default class Game extends Component {
         break;
     }
   };
-  componentDidMount() {
+  componentDidMount = () => {
+    
     this.scene.fog = new THREE.Fog(0x000000, 20, 160)
     const gltfLoader = new GLTFLoader();
     const loadAsync = url => {
@@ -494,6 +542,21 @@ export default class Game extends Component {
         models => {
             saturn = models[0].scene.children[0];
             saturn.scale.set(2,2,2);
+
+    this.props.socket.on("chat", (theChat) => {
+      let key = generateUUID();
+      this.setState(prevState => {
+        return {chats: [...prevState.chats, { key,
+                                              id: theChat.id, 
+                                              message: theChat.message }] }
+      })
+      window.setTimeout(()=>{
+        this.setState({chats: this.state.chats.filter((chat) => { 
+          return chat.key !== key
+
+      })});
+      console.log("DOINGTHIS")}, 2000);
+    });
             
     this.props.socket.on("playerUpdate", (data) => {
 
@@ -786,8 +849,12 @@ export default class Game extends Component {
     // }
 
     this.populateChunkPool();
+    
 
     this.runGameLoop(this.input);
+
+    this.props.resize();
+    this.onWindowResize();
   }
 
   populateChunkPool() {
@@ -1640,6 +1707,29 @@ export default class Game extends Component {
     }
   
     return null;
+  }
+
+  sendChat = (event) => {
+    event.preventDefault();
+    const key = generateUUID();
+    const chat = {
+      id: this.props.pid,
+      message: this.state.chat,
+      key
+    }
+    this.props.socket.emit('chat', chat);
+    this.setState(prevState => {
+      return {chats: [...prevState.chats, chat] }
+    })
+    window.setTimeout(()=>{
+      this.setState({chats: this.state.chats.filter((chat) => { 
+        return chat.key !== key
+
+    })});}, 10000)
+    this.setState({
+      chat: ""
+    });
+    this.chatBoxRef.current.blur();
   }
 
 

@@ -23,10 +23,16 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
+
     delete players[socket.id];
     console.log(`Players connected now: ${Object.keys(players).length}`)
     socket.broadcast.emit('playerDisconnect', socket.id);
   });
+
+  socket.on('chat', (data) => {
+    console.log(`${data.id}: ${data.message}`);
+    socket.broadcast.emit('chat', data);
+  })
 });
 
 httpServer.listen(3001, () => {
