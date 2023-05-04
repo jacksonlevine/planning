@@ -12,6 +12,7 @@ import { generateUUID } from "three/src/math/MathUtils.js";
 import LinkedHashMap from "../linkHashMap.js";
 import ChatView from "./ChatVIew.js";
 import UpAndDownArrow from "./UpAndDownArrow.js";
+import MoveArrow from "./MoveArrow.js";
 
 let saturn;
 
@@ -172,8 +173,8 @@ export default class Game extends Component {
     }
     this.chatBoxRef = React.createRef();
     this.canvasRef = React.createRef();
-    this.thingyDown = false;
-    this.neck = null;
+    this.thingyDown = false; //small mode thing
+    this.moveyDown = false; //small mode thing
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -211,6 +212,8 @@ export default class Game extends Component {
            transform: "translate(-50%, -50%)"
         }}src="/textures/hairsmall.png" alt=""/>
           <UpAndDownArrow isHidden={!this.state.smallMode}/>
+          <MoveArrow isHidden={!this.state.smallMode}/>
+          <p><strong>WARNING:</strong> The site is in development and may have strange issues or random interruptions. We are working to solve your issues!</p>
           <canvas 
           ref={this.canvasRef}
           style={{
@@ -474,11 +477,19 @@ export default class Game extends Component {
     if(this.state.smallMode)
     {
       const element = document.getElementById("uad");
+      const element2 = document.getElementById("ma");
       const clientRect = element.getBoundingClientRect();
+      const clientRectMove = element2.getBoundingClientRect();
       const thingyX = clientRect.left;
       const thingyY = clientRect.top;
       const thingyWidth = clientRect.width;
       const thingyHeight = clientRect.height;
+
+
+      const thingyX2 = clientRectMove.left;
+      const thingyY2 = clientRectMove.top;
+      const thingyWidth2 = clientRectMove.width;
+      const thingyHeight2 = clientRectMove.height;
       if(this.currentTouchX >= thingyX && this.currentTouchX <= thingyX+thingyWidth
         && this.currentTouchY >= thingyY && this.currentTouchY <= thingyY+thingyHeight)
         {
@@ -486,21 +497,30 @@ export default class Game extends Component {
         } else {
           this.thingyDown = false;
         }
+        if(this.currentTouchX >= thingyX2 && this.currentTouchX <= thingyX2+thingyWidth2
+          && this.currentTouchY >= thingyY2 && this.currentTouchY <= thingyY2+thingyHeight2)
+          {
+            this.moveyDown = true;
+          } else {
+            this.moveyDown = false;
+          }
     }
 
   }
 
   onTouchMove = (event) => {
     event.preventDefault();
+    let touchIndex = 0;
     if(event.touches[0].clientX !== this.currentTouchX)
     {
       let differenceX = (event.touches[0].clientX - this.currentTouchX);
-      this.neck.rotation.y -= differenceX/20;
+      //this.neck.rotation.y -= differenceX/20;
 
       this.currentTouchX = event.touches[0].clientX;
     }
     if(this.thingyDown && event.touches[0].clientY !== this.currentTouchY)
     {
+      touchIndex += 1;
       let differenceY = -(event.touches[0].clientY - this.currentTouchY);
       // First, calculate the camera's up vector and right vector
         const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
@@ -514,10 +534,44 @@ export default class Game extends Component {
         this.camera.quaternion.multiplyQuaternions(quaternion, this.camera.quaternion);
       this.currentTouchY = event.touches[0].clientY;
     }
+    if(this.moveyDown)
+    {
+            this.input.jump = true;
+      this.input.isGrounded = false;
+    if(event.touches[0].clientY !== this.currentTouchY || event.touches[0].clientX !== this.currentTouchX)
+    {
+      let differenceX = (event.touches[0].clientX - this.currentTouchX);
+      let differenceY = -(event.touches[0].clientY - this.currentTouchY);
+      if(differenceX > 0)
+      {
+        this.input.ActiveState.right = true;
+      }
+      if(differenceX < 0)
+      {
+        this.input.ActiveState.left = true;
+      }
+      if(differenceY > 0)
+      {
+        this.input.ActiveState.forward = true;
+      }
+      if(differenceY < 0)
+      {
+        this.input.ActiveState.back = true;
+      }
+
+    }
+  }
   }
 
   onTouchEnd = (event) => {
+    this.input.ActiveState.right = false;
     
+    this.input.ActiveState.left = false;
+    
+    this.input.ActiveState.forward = false;
+    
+    this.input.ActiveState.back = false;
+
   }
   onKeyDown = (event) => {
     switch (event.code) {
@@ -839,11 +893,8 @@ export default class Game extends Component {
     this.camera.position.y = 0;
     this.camera.position.x = 0;
     
-    this.neck = new THREE.Object3D();
-    this.neck.position.y += 4;
-    this.scene.add(this.neck);
 
-    this.neck.add(this.camera);
+    this.scene.add(this.camera);
 
 
     // Lights
@@ -866,7 +917,6 @@ export default class Game extends Component {
 
 
     this.controls = new PointerLockControls(this.camera, this.canvas);
-
     //MAIN STUFF
 
     this.world.generate();
@@ -1799,6 +1849,7 @@ export default class Game extends Component {
     };
     const collisionDistance = 0.1;
     const animate = () => {
+      
       this.input.ActiveState.isGrounded = (!this.isReady || this.castRayBlocking(this.camera.position.x,
         this.camera.position.y-1,
         this.camera.position.z, 0, -1, 0, collisionDistance) !== null)
