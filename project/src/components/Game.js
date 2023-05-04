@@ -13,6 +13,7 @@ import LinkedHashMap from "../linkHashMap.js";
 import ChatView from "./ChatVIew.js";
 import UpAndDownArrow from "./UpAndDownArrow.js";
 import MoveArrow from "./MoveArrow.js";
+import Inventory from "./Inventory.js";
 
 let saturn;
 
@@ -169,7 +170,8 @@ export default class Game extends Component {
       chat: "",
       chats: [],
       maxChatLines: 12,
-      smallMode: false
+      smallMode: false,
+      currentlyPlacingId: 2
     }
     this.chatBoxRef = React.createRef();
     this.canvasRef = React.createRef();
@@ -222,6 +224,7 @@ export default class Game extends Component {
           </div>
           <p>Chat: Press 't' to type and 'Enter' to send.</p>
           <ChatView chats = {this.state.chats}/>
+          <Inventory id={this.state.currentlyPlacingId} />
         </div>
         </div>
         <form onSubmit={this.sendChat}>
@@ -325,7 +328,7 @@ export default class Game extends Component {
         this.camera.position.z, vector.x,
         vector.y, vector.z, 5, .3)
         .then((pos) => {
-          let placed = "2";
+          let placed = `${this.state.currentlyPlacingId}`;
           this.placeBlock(pos, placed);
           let actionRef = firebase.database().ref(`blockActions/${generateUUID()}`);
           actionRef.set(
@@ -437,6 +440,12 @@ export default class Game extends Component {
   }
 
   mountListeners = () => {
+    window.addEventListener("wheel", (event) => {
+
+       this.setState({
+         currentlyPlacingId: Math.max(Math.min(this.state.currentlyPlacingId + (event.deltaY/100), 4), 1)
+      })
+    });
     window.setInterval(()=>{
       this.surveyNeededChunks()}, 2000);
 
@@ -961,6 +970,13 @@ export default class Game extends Component {
 
     this.props.resize();
     this.onWindowResize();
+  }
+
+  addPointLight(x, y, z) 
+  {
+    const pointLight = new THREE.DirectionalLight(0xffffff, 1);
+    pointLight.position.set(x, y , z);
+    this.scene.add(pointLight);
   }
 
   populateChunkPool() {
