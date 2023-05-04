@@ -6,9 +6,15 @@ export default function Inventory(props)
     left: "85%",
     zIndex: "10"
   }
+  const names = {
+    1: "Stone",
+    2: "Bricks",
+    3: "Sand",
+    4: "Grass"
+  }
   return (
     <div style={styles}>
-      <p>{props.id}</p>
+      <p>{props.id} ({names[`${props.id}`]})</p>
     </div>
   );
 }
