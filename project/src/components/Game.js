@@ -734,7 +734,14 @@ export default class Game extends Component {
             this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z});
             break;
           case "place":
-            this.placeBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z}, addedAct.type || "1");
+            if(addedAct.type === "light")
+            {
+              this.addPointLight(addedAct.x, addedAct.y, addedAct.z);
+            }
+            else{
+
+              this.placeBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z}, addedAct.type || "1");
+            }
             break;
           default:
             break;
@@ -1766,13 +1773,13 @@ export default class Game extends Component {
     if (this.camera !== null && this.camera !== undefined) {
       let y = -this.chunk_width * 2
         for (
-          let i = -this.chunk_width * 3;
-          i < this.chunk_width * 3;
+          let i = -this.chunk_width * 5;
+          i < this.chunk_width * 5;
           i += this.chunk_width
         ) {
           for (
-            let k = -this.chunk_width * 3;
-            k < this.chunk_width * 3;
+            let k = -this.chunk_width * 5;
+            k < this.chunk_width * 5;
             k += this.chunk_width
           ) {
             let THERIGHTX = this.camera.position.x - (this.camera.position.x%this.chunk_width);
