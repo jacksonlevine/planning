@@ -45,12 +45,14 @@ texture.minFilter = THREE.LinearFilter;
 texture.generateMipmaps = false;
 texture.antialias = false;
 
-const meshMaterial = new THREE.MeshLambertMaterial({
+const meshMaterial = new THREE.MeshStandardMaterial( {
   color: 0xffffff,
-  depthWrite: true
-});
+  metalness: 0,
+  roughness: 0.7,
+} );
+
 meshMaterial.map = texture;
-meshMaterial.emissiveIntensity = 1;
+meshMaterial.emissiveIntensity = 20;
 
 class PrevAndNewPosition {
     constructor(vector1,vector2)
@@ -947,11 +949,11 @@ export default class Game extends Component {
 
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
     ambientLight.position.set(0, 0, 0);
     this.scene.add(ambientLight);
 
-    const pointLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    const pointLight = new THREE.PointLight(0xffffff, 1);
     pointLight.position.set(0, 50, 0);
     //this.scene.add(pointLight);
     this.canvas = document.getElementById("canvas");
@@ -1014,9 +1016,9 @@ export default class Game extends Component {
 
   addPointLight(x, y, z) 
   {
-    const pointLight = new THREE.DirectionalLight(0xffffff, 0.7, 500);
+    const pointLight = new THREE.PointLight(0xffffff, 0.7, 10);
     pointLight.distance = 3;
-    pointLight.position.set(x, y , z);
+    pointLight.position.set(x, y + 1 , z);
     this.scene.add(pointLight);
   }
 

@@ -10,7 +10,8 @@ export default function MoveArrow(props)
       {
         position:"absolute",
         top: "70%",
-        left: "60%"
+        left: "60%",
+        pointerEvents: "none"
       }
     } src="/textures/move.png" alt=""/>
   }

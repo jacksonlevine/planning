@@ -10,7 +10,8 @@ export default function UpAndDownArrow(props)
       {
         position:"absolute",
         top: "65%",
-        left: "7%"
+        left: "7%",
+        pointerEvents: "none"
       }
     } src="/textures/upanddown.png" alt=""/>
   }
