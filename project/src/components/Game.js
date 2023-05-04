@@ -50,7 +50,7 @@ const meshMaterial = new THREE.MeshLambertMaterial({
   depthWrite: true
 });
 meshMaterial.map = texture;
-meshMaterial.emissiveIntensity = 0;
+meshMaterial.emissiveIntensity = 1;
 
 class PrevAndNewPosition {
     constructor(vector1,vector2)
@@ -404,7 +404,11 @@ export default class Game extends Component {
 
   placeBlock(pos, id)
   {
-    
+
+    if(id === "light")
+    {
+      this.addPointLight(pos.x, pos.y, pos.z);
+    } else {
     let [chunkx, chunky, chunkz] = [Math.floor(pos.x/this.chunk_width), Math.floor(pos.y/this.chunk_width), Math.floor(pos.z/this.chunk_width)];
 
     if(!this.world.ishandledmarks.has(
@@ -428,6 +432,7 @@ export default class Game extends Component {
           else{
             this.neededChunks.set(`${chunkX},${chunkY},${chunkZ}`, {x:chunkX, y:chunkY, z:chunkZ})
           }
+        }
   }
 
   componentWillUnmount() {
@@ -607,6 +612,11 @@ export default class Game extends Component {
   }
   onKeyDown = (event) => {
     switch (event.code) {
+      // case "KeyL":
+      //   this.setState({
+      //     currentlyPlacingId: "light"
+      //   });
+      //   break;
       case "KeyW":
         this.input.ActiveState.forward = true;
         break;
@@ -943,7 +953,7 @@ export default class Game extends Component {
 
     const pointLight = new THREE.DirectionalLight(0xffffff, 0.5);
     pointLight.position.set(0, 50, 0);
-    this.scene.add(pointLight);
+    //this.scene.add(pointLight);
     this.canvas = document.getElementById("canvas");
 
     this.renderer = new THREE.WebGLRenderer({
@@ -1004,7 +1014,8 @@ export default class Game extends Component {
 
   addPointLight(x, y, z) 
   {
-    const pointLight = new THREE.DirectionalLight(0xffffff, 1);
+    const pointLight = new THREE.DirectionalLight(0xffffff, 0.7, 500);
+    pointLight.distance = 3;
     pointLight.position.set(x, y , z);
     this.scene.add(pointLight);
   }
