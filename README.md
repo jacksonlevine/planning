@@ -58,6 +58,7 @@
 
 * 8:00 Researching Google auth
 * 9:20 Still trying to Google auth
+* Google auth!
 * 9:30 Research Github authentication with firebase,
 to confirm if Google is the issue
 * 2:00 - 2:30 Researching PayPal SDK

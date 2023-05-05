@@ -3,3 +3,9 @@ body{
     font-size:17px;
     
 }
+
+.red {
+  display: inline;
+  color: red;
+  font-weight: bold;
+}
