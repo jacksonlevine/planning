@@ -2021,7 +2021,7 @@ export default class Game extends Component {
     event.preventDefault();
     const key = generateUUID();
     const chat = {
-      id: this.props.pid,
+      id: this.props.name,
       message: this.state.chat,
       key
     }

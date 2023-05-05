@@ -12,31 +12,6 @@ import io from 'socket.io-client';
 
 
 
-const Login = async () => {
-
-  return new Promise(async (resolve, reject) => {
-   
-
-    const provider = new GoogleAuthProvider();
-    
-    await signInWithRedirect(auth, provider);
-    
-    console.log("why is it")
-    
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("huh")
-        const playerId = user.uid;
-        const socket = io("67.58.229.227:3001");
-        
-        //playerRef.onDisconnect().remove();
-        resolve({ user, app, playerId, auth, socket});
-      } else {
-        reject("You need to sign in.");
-      }
-    });
-  });
-};
 
 
 
@@ -49,6 +24,7 @@ class App extends Component {
     this.socket = null;
     this.db = null;
     this.auth = null;
+    this.name = "";
     this.canvRef = React.createRef();
     this.state = {
       gameButtonVisible: false,
@@ -72,6 +48,28 @@ class App extends Component {
       overflow: "hidden"
     };
   }
+  Login = async () => {
+
+    return new Promise(async (resolve, reject) => {
+     
+  
+      const provider = new GoogleAuthProvider();
+      
+      const userCred = await signInWithPopup(this.auth, provider);
+      onAuthStateChanged(this.auth, (user) => {
+        if (user) {
+          const playerId = user.uid;
+          const socket = io("67.58.229.227:3001");
+          const details = getAdditionalUserInfo(userCred);
+          console.log(details);
+          //playerRef.onDisconnect().remove();
+          resolve({ user, app:this.app, name: details.profile.name, playerId, auth: this.auth, socket});
+        } else {
+          reject("You need to sign in.");
+        }
+      });
+    });
+  };
 
   changeState = () => (property) => (newValue) => {
     this.setState({
@@ -95,12 +93,12 @@ class App extends Component {
       measurementId: process.env.REACT_APP_measurementId,
     };
     // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = getAuth();
+    this.app = firebase.initializeApp(firebaseConfig);
+    this.auth = getAuth();
     // When the page loads
     const debugRedirectResult = async () => {
       try {
-        const result = await getRedirectResult(auth)
+        const result = await getRedirectResult(this.auth)
         if (result) {
           const details = getAdditionalUserInfo(result)
           console.log(details) // details.isNewUser to determine if a new or returning user
@@ -130,12 +128,13 @@ class App extends Component {
   
 
   initializeAuth = () => {
-    Login().then(
+    this.Login().then(
       result => {
         this.playerId = result.playerId;
         this.app = result.app;
         this.socket = result.socket;
         this.user = result.user;
+        this.name = result.name;
         this.db = getFirestore(this.app);
         this.changeState()("gameButtonVisible")(true);
         this.changeState()("messageToClient")("none");
@@ -151,7 +150,6 @@ class App extends Component {
   signOut = () => {
     this.changeState()("gameButtonVisible")(false);
     this.changeState()("messageToClient")("signin");
-    this.socket.active = false;
     this.socket.close();
     let t = io();
     
@@ -208,6 +206,7 @@ class App extends Component {
               width={this.state.width}
               height={this.state.height}
               resize={this.callForResize}
+              name={this.name}
             />
             <GameInfo message={this.state.messageToClient} />
           </React.Fragment>
