@@ -3,7 +3,7 @@ import Game from "./Game.js";
 import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
 import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
 import io from 'socket.io-client';
