@@ -26,13 +26,17 @@ const Login = () => {
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const auth = getAuth();
-    signInAnonymously(auth)
-      .then(() => {
-        // Signed in..
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    auth.signInWithPopup(provider);
+    // signInAnonymously(auth)
+    //   .then(() => {
+    //     // Signed in..
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
     onAuthStateChanged(auth, (user) => {
       if (user) {
         const playerId = user.uid;
