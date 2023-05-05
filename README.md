@@ -54,6 +54,10 @@
 * 1:00 - 2:00 Researching authentication.
 * 4:30 - 5:00 Researching realtime database limits and usage.
 
+#### Friday, 05/05/2023
+
+* 8:00 Researching Google auth
+
 ## License:
 
 Copyright Jackson Levine 2023
