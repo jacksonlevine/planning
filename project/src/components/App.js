@@ -178,7 +178,6 @@ class App extends Component {
             <button onClick = {
               this.signOut
             }>Sign Out</button>
-            <PayPalDonate />
           </React.Fragment>
           
         );}
@@ -188,7 +187,7 @@ class App extends Component {
             <GameInfo message={this.state.messageToClient} />
             <button onClick={
               this.initializeAuth
-            }>Sign in</button>
+            }>Sign in with Google</button>
           </React.Fragment>;
         }
 
