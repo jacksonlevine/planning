@@ -3,8 +3,7 @@ import Game from "./Game.js";
 import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
-import { getAuth, getRedirectResult, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
-import "firebase/auth";
+import { getAuth, getRedirectResult, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, getAdditionalUserInfo, signInWithPopup } from "firebase/auth";
 import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
 import io from 'socket.io-client';
@@ -13,29 +12,14 @@ import io from 'socket.io-client';
 
 
 
-const Login = () => {
+const Login = async () => {
 
-  return new Promise((resolve, reject) => {
-    const firebaseConfig = {
-      apiKey:
-        process.env.NODE_ENV === "development"
-          ? process.env.REACT_APP_apiKeyDev
-          : process.env.REACT_APP_apiKeyProd,
-      authDomain: process.env.REACT_APP_authDomain,
-      databaseURL: process.env.REACT_APP_databaseUrl,
-      projectId: process.env.REACT_APP_projectId,
-      storageBucket: process.env.REACT_APP_storageBucket,
-      messagingSenderId: process.env.REACT_APP_messageSenderId,
-      appId: process.env.REACT_APP_appId,
-      measurementId: process.env.REACT_APP_measurementId,
-    };
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = getAuth();
+  return new Promise(async (resolve, reject) => {
+   
 
-    const provider = firebase.auth.GoogleAuthProvider();
+    const provider = new GoogleAuthProvider();
     
-    signInWithRedirect(auth, provider);
+    await signInWithRedirect(auth, provider);
     
     console.log("why is it")
     
@@ -97,6 +81,37 @@ class App extends Component {
 
   componentDidMount()
   {
+    const firebaseConfig = {
+      apiKey:
+        process.env.NODE_ENV === "development"
+          ? process.env.REACT_APP_apiKeyDev
+          : process.env.REACT_APP_apiKeyProd,
+      authDomain: process.env.REACT_APP_authDomain,
+      databaseURL: process.env.REACT_APP_databaseUrl,
+      projectId: process.env.REACT_APP_projectId,
+      storageBucket: process.env.REACT_APP_storageBucket,
+      messagingSenderId: process.env.REACT_APP_messageSenderId,
+      appId: process.env.REACT_APP_appId,
+      measurementId: process.env.REACT_APP_measurementId,
+    };
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = getAuth();
+    // When the page loads
+    const debugRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result) {
+          const details = getAdditionalUserInfo(result)
+          console.log(details) // details.isNewUser to determine if a new or returning user
+        } else {
+          // Everything is fine
+        }
+      } catch (error) {
+        console.log(error) // Debug errors from redirect response
+      }
+    }
+    debugRedirectResult();
     this.setState(
       {
         width: document.getElementById("App").offsetWidth*.70,
