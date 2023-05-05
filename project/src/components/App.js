@@ -7,6 +7,7 @@ import { getAuth, getRedirectResult, onAuthStateChanged, GoogleAuthProvider, sig
 import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
 import io from 'socket.io-client';
+import PayPalDonate from "./PayPalDonate.js";
 
 
 
@@ -177,6 +178,7 @@ class App extends Component {
             <button onClick = {
               this.signOut
             }>Sign Out</button>
+            <PayPalDonate />
           </React.Fragment>
           
         );}
