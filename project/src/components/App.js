@@ -3,7 +3,7 @@ import Game from "./Game.js";
 import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
-import { getAuth, signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, signInWithPopup, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
 import io from 'socket.io-client';
@@ -27,18 +27,29 @@ const Login = () => {
     const app = firebase.initializeApp(firebaseConfig);
     const auth = getAuth();
 
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider = GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    auth.signInWithPopup(provider);
-    // signInAnonymously(auth)
-    //   .then(() => {
-    //     // Signed in..
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
+    signInWithPopup(auth, provider)
+    .then((result) => {
+      
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      console.log(user);
+      const user = result.user;
+      
+    }).catch((error) => {
+      
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      
+      const email = error.customData.email;
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      console.log(errorCode, errorMessage, email, credential);
+
+    });
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        console.log("huh")
         const playerId = user.uid;
         let playerRef;
         const socket = io("67.58.229.227:3001");
