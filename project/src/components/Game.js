@@ -46,9 +46,7 @@ texture.generateMipmaps = false;
 texture.antialias = false;
 
 const meshMaterial = new THREE.MeshBasicMaterial( {
-  color: 0xffffff,
-  metalness: 0,
-  roughness: 0.7,
+  color: 0xffffff
 } );
 
 meshMaterial.map = texture;
@@ -151,7 +149,7 @@ export default class Game extends Component {
     };
     this.canvas = null;
     this.controls = null;
-    this.chunk_width = 11;
+    this.chunkWidth = 11;
     this.scene = new THREE.Scene();
     this.world = null;
     this.surveyNeededChunksTimer = 0;
@@ -175,13 +173,13 @@ export default class Game extends Component {
       chat: "",
       chats: [],
       maxChatLines: 12,
-      smallMode: false,
+      mobileMode: false,
       currentlyPlacingId: 2
     }
     this.chatBoxRef = React.createRef();
     this.canvasRef = React.createRef();
-    this.thingyDown = false; //small mode thing
-    this.moveyDown = false; //small mode thing
+    this.mobileVerticalOrientatorDown = false;
+    this.mobileMoverDown = false; 
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -192,8 +190,6 @@ export default class Game extends Component {
   }
 
   render() {
-
-    //console.log(this.props.pid)
     return (
       <div style={this.styles}>
         <div style = {{
@@ -218,8 +214,8 @@ export default class Game extends Component {
            left:"50%",
            transform: "translate(-50%, -50%)"
         }}src="/textures/hairsmall.png" alt=""/>
-          <UpAndDownArrow isHidden={!this.state.smallMode}/>
-          <MoveArrow isHidden={!this.state.smallMode}/>
+          <UpAndDownArrow isHidden={!this.state.mobileMode}/>
+          <MoveArrow isHidden={!this.state.mobileMode}/>
           <p><strong>WARNING:</strong> The site is in development and may have strange issues or random interruptions. We are working to solve your issues!</p>
           <canvas 
           ref={this.canvasRef}
@@ -357,16 +353,16 @@ export default class Game extends Component {
     const blockKey = `${pos.x},${pos.y},${pos.z}`; 
           this.world.data.delete(blockKey);
           
-          const chunkX = Math.floor((pos.x)/this.chunk_width);
-          const chunkY = Math.floor((pos.y)/this.chunk_width);
-          const chunkZ = Math.floor((pos.z)/this.chunk_width);
-          if(this.world.fullblockmarks.has(`${chunkX},${chunkY},${chunkZ}`)){
-            this.world.fullblockmarks.delete(`${chunkX},${chunkY},${chunkZ}`);
+          const chunkX = Math.floor((pos.x)/this.chunkWidth);
+          const chunkY = Math.floor((pos.y)/this.chunkWidth);
+          const chunkZ = Math.floor((pos.z)/this.chunkWidth);
+          if(this.world.fullBlockMarks.has(`${chunkX},${chunkY},${chunkZ}`)){
+            this.world.fullBlockMarks.delete(`${chunkX},${chunkY},${chunkZ}`);
           }
           if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`))
           {
            const chunk = this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`);
-            chunk.buildmeshinplace();
+            chunk.buildMeshInPlace();
             
           
           } else {
@@ -376,32 +372,32 @@ export default class Game extends Component {
             if(this.mappedChunks.has(`${chunkX-1},${chunkY},${chunkZ}`))
           {
             this.mappedChunks.get(`${chunkX-1},${chunkY},${chunkZ}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
           if(this.mappedChunks.has(`${chunkX+1},${chunkY},${chunkZ}`))
           {
             this.mappedChunks.get(`${chunkX+1},${chunkY},${chunkZ}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
           if(this.mappedChunks.has(`${chunkX},${chunkY-1},${chunkZ}`))
           {
             this.mappedChunks.get(`${chunkX},${chunkY-1},${chunkZ}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
           if(this.mappedChunks.has(`${chunkX},${chunkY+1},${chunkZ}`))
           {
             this.mappedChunks.get(`${chunkX},${chunkY+1},${chunkZ}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
           if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ-1}`))
           {
             this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ-1}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
             if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ+1}`))
           {
             this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ+1}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
   }
 
@@ -412,7 +408,7 @@ export default class Game extends Component {
     {
       this.addPointLight(pos.x, pos.y, pos.z);
     } else {
-    let [chunkx, chunky, chunkz] = [Math.floor(pos.x/this.chunk_width), Math.floor(pos.y/this.chunk_width), Math.floor(pos.z/this.chunk_width)];
+    let [chunkx, chunky, chunkz] = [Math.floor(pos.x/this.chunkWidth), Math.floor(pos.y/this.chunkWidth), Math.floor(pos.z/this.chunkWidth)];
 
     if(!this.world.ishandledmarks.has(
       `${chunkx},${chunky},${chunkz}`
@@ -421,16 +417,16 @@ export default class Game extends Component {
     }
     const blockKey = `${pos.x},${pos.y},${pos.z}`; 
           this.world.data.set(blockKey, id);
-          const chunkX = Math.floor(pos.x/this.chunk_width);
-          const chunkY = Math.floor(pos.y/this.chunk_width);
-          const chunkZ = Math.floor(pos.z/this.chunk_width);
-          if(!this.world.hasblockmarks.has(`${chunkX},${chunkY},${chunkZ}`)){
-            this.world.hasblockmarks.set(`${chunkX},${chunkY},${chunkZ}`, "1");
+          const chunkX = Math.floor(pos.x/this.chunkWidth);
+          const chunkY = Math.floor(pos.y/this.chunkWidth);
+          const chunkZ = Math.floor(pos.z/this.chunkWidth);
+          if(!this.world.hasBlocksMarks.has(`${chunkX},${chunkY},${chunkZ}`)){
+            this.world.hasBlocksMarks.set(`${chunkX},${chunkY},${chunkZ}`, "1");
           }
           if(this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`))
           {
             this.mappedChunks.get(`${chunkX},${chunkY},${chunkZ}`)
-            .buildmeshinplace();
+            .buildMeshInPlace();
           }
           else{
             this.neededChunks.set(`${chunkX},${chunkY},${chunkZ}`, {x:chunkX, y:chunkY, z:chunkZ})
@@ -481,11 +477,11 @@ export default class Game extends Component {
   setSmallMode = () => {
     if(window.innerWidth < 1200) {
       this.setState({
-        smallMode: true
+        mobileMode: true
       });
     } else {
       this.setState({
-        smallMode: false
+        mobileMode: false
       });
     }
   }
@@ -496,36 +492,36 @@ export default class Game extends Component {
     {
       this.currentTouchX[i] = event.touches[i].clientX
     this.currentTouchY[i] = event.touches[i].clientY
-    if(this.state.smallMode)
+    if(this.state.mobileMode)
     {
       const element = document.getElementById("uad");
       const element2 = document.getElementById("ma");
       const clientRect = element.getBoundingClientRect();
       const clientRectMove = element2.getBoundingClientRect();
-      const thingyX = clientRect.left;
-      const thingyY = clientRect.top;
-      const thingyWidth = clientRect.width;
-      const thingyHeight = clientRect.height;
+      const mobileVerticalOrientatorX = clientRect.left;
+      const mobileVerticalOrientatorY = clientRect.top;
+      const mobileVerticalOrientatorWidth = clientRect.width;
+      const mobileVerticalOrientatorHeight = clientRect.height;
 
 
-      const thingyX2 = clientRectMove.left;
-      const thingyY2 = clientRectMove.top;
-      const thingyWidth2 = clientRectMove.width;
-      const thingyHeight2 = clientRectMove.height;
-      if(this.currentTouchX[i] >= thingyX && this.currentTouchX[i] <= thingyX+thingyWidth
-        && this.currentTouchY[i] >= thingyY && this.currentTouchY[i] <= thingyY+thingyHeight)
+      const mobileVerticalOrientatorX2 = clientRectMove.left;
+      const mobileVerticalOrientatorY2 = clientRectMove.top;
+      const mobileVerticalOrientatorWidth2 = clientRectMove.width;
+      const mobileVerticalOrientatorHeight2 = clientRectMove.height;
+      if(this.currentTouchX[i] >= mobileVerticalOrientatorX && this.currentTouchX[i] <= mobileVerticalOrientatorX+mobileVerticalOrientatorWidth
+        && this.currentTouchY[i] >= mobileVerticalOrientatorY && this.currentTouchY[i] <= mobileVerticalOrientatorY+mobileVerticalOrientatorHeight)
         {
-          this.thingyDown = true;
+          this.mobileVerticalOrientatorDown = true;
           this.input.ActiveState.jump = true;
           this.input.ActiveState.isGrounded = false;
         } 
-        if(this.currentTouchX[i] >= thingyX2 && this.currentTouchX[i] <= thingyX2+thingyWidth2
-          && this.currentTouchY[i] >= thingyY2 && this.currentTouchY[i] <= thingyY2+thingyHeight2)
+        if(this.currentTouchX[i] >= mobileVerticalOrientatorX2 && this.currentTouchX[i] <= mobileVerticalOrientatorX2+mobileVerticalOrientatorWidth2
+          && this.currentTouchY[i] >= mobileVerticalOrientatorY2 && this.currentTouchY[i] <= mobileVerticalOrientatorY2+mobileVerticalOrientatorHeight2)
           {
 
             
       this.touchIndex += 1;
-            this.moveyDown = true;
+            this.mobileMoverDown = true;
           } 
     }
     }
@@ -543,7 +539,7 @@ export default class Game extends Component {
     //   this.currentTouchX = event.touches[0].clientX;
     // }
 
-    if(this.moveyDown)
+    if(this.mobileMoverDown)
     {
       event.preventDefault();
             this.input.jump = true;
@@ -586,28 +582,28 @@ export default class Game extends Component {
     if(element !== null && element2 !== null) {
     const clientRect = element.getBoundingClientRect();
     const clientRectMove = element2.getBoundingClientRect();
-    const thingyX = clientRect.left;
-    const thingyY = clientRect.top;
-    const thingyWidth = clientRect.width;
-    const thingyHeight = clientRect.height;
+    const mobileVerticalOrientatorX = clientRect.left;
+    const mobileVerticalOrientatorY = clientRect.top;
+    const mobileVerticalOrientatorWidth = clientRect.width;
+    const mobileVerticalOrientatorHeight = clientRect.height;
 
 
-    const thingyX2 = clientRectMove.left;
-    const thingyY2 = clientRectMove.top;
-    const thingyWidth2 = clientRectMove.width;
-    const thingyHeight2 = clientRectMove.height;
+    const mobileVerticalOrientatorX2 = clientRectMove.left;
+    const mobileVerticalOrientatorY2 = clientRectMove.top;
+    const mobileVerticalOrientatorWidth2 = clientRectMove.width;
+    const mobileVerticalOrientatorHeight2 = clientRectMove.height;
 
       delete this.currentTouchX[this.touchIndex];
       delete this.currentTouchY[this.touchIndex];
-    if(this.currentTouchX[this.touchIndex] >= thingyX && this.currentTouchX[this.touchIndex] <= thingyX+thingyWidth
-      && this.currentTouchY[this.touchIndex] >= thingyY && this.currentTouchY[this.touchIndex] <= thingyY+thingyHeight)
+    if(this.currentTouchX[this.touchIndex] >= mobileVerticalOrientatorX && this.currentTouchX[this.touchIndex] <= mobileVerticalOrientatorX+mobileVerticalOrientatorWidth
+      && this.currentTouchY[this.touchIndex] >= mobileVerticalOrientatorY && this.currentTouchY[this.touchIndex] <= mobileVerticalOrientatorY+mobileVerticalOrientatorHeight)
       {
-        this.thingyDown = false;
+        this.mobileVerticalOrientatorDown = false;
       } 
-      if(this.currentTouchX[this.touchIndex] >= thingyX2 && this.currentTouchX[this.touchIndex] <= thingyX2+thingyWidth2
-        && this.currentTouchY[this.touchIndex] >= thingyY2 && this.currentTouchY[this.touchIndex] <= thingyY2+thingyHeight2)
+      if(this.currentTouchX[this.touchIndex] >= mobileVerticalOrientatorX2 && this.currentTouchX[this.touchIndex] <= mobileVerticalOrientatorX2+mobileVerticalOrientatorWidth2
+        && this.currentTouchY[this.touchIndex] >= mobileVerticalOrientatorY2 && this.currentTouchY[this.touchIndex] <= mobileVerticalOrientatorY2+mobileVerticalOrientatorHeight2)
         {
-          this.moveyDown = false;
+          this.mobileMoverDown = false;
         }
       }
 
@@ -615,11 +611,11 @@ export default class Game extends Component {
   }
   onKeyDown = (event) => {
     switch (event.code) {
-      case "KeyL":
-        this.setState({
-          currentlyPlacingId: "light"
-        });
-        break;
+      // case "KeyL":
+      //   this.setState({
+      //     currentlyPlacingId: "light"
+      //   });
+      //   break;
       case "KeyW":
         this.input.ActiveState.forward = true;
         break;
@@ -778,14 +774,14 @@ export default class Game extends Component {
 
 
     this.mountListeners();
-    const chunk_width = this.chunk_width;
+    const chunkWidth = this.chunkWidth;
     class World {
       constructor() {
         this.data = new LinkedHashMap();
-        this.hasblockmarks = new LinkedHashMap();
-        this.fullblockmarks = new LinkedHashMap();
+        this.hasBlocksMarks = new LinkedHashMap();
+        this.fullBlockMarks = new LinkedHashMap();
         this.ishandledmarks = new LinkedHashMap();
-        this.lightmarks = new LinkedHashMap();
+        this.lightMarks = new LinkedHashMap();
       }
       // load = (string) => {
 
@@ -800,18 +796,18 @@ export default class Game extends Component {
       {
 
         let blockCount = 0;
-              for (var o = 0+(A*chunk_width); o < chunk_width+(A*chunk_width); o++) {
-                for (var o2 = 0+(B*chunk_width); o2 < chunk_width+(B*chunk_width); o2++) {
-                  for (var o3 = 0+(C*chunk_width); o3 < chunk_width+(C*chunk_width); o3++) {
-                    let REAL_WORLD_X =  o;
-                    let REAL_WORLD_Z = o3;
-                    let REAL_WORLD_Y =o2;
+              for (var o = 0+(A*chunkWidth); o < chunkWidth+(A*chunkWidth); o++) {
+                for (var o2 = 0+(B*chunkWidth); o2 < chunkWidth+(B*chunkWidth); o2++) {
+                  for (var o3 = 0+(C*chunkWidth); o3 < chunkWidth+(C*chunkWidth); o3++) {
+                    let realWorldX =  o;
+                    let realWorldZ = o3;
+                    let realWorldY =o2;
 
                     let n =
                       ImprovedNoise.noise(
-                        REAL_WORLD_X / 25.34,
+                        realWorldX / 25.34,
                         34.425,
-                        REAL_WORLD_Z / 25.65
+                        realWorldZ / 25.65
                       ) * 15;
 
                       if (
@@ -820,36 +816,36 @@ export default class Game extends Component {
                         this.ishandledmarks.set("" + A + "," + B + "," + C, "1")
                       }
 
-                    if (REAL_WORLD_Y < n) {
+                    if (realWorldY < n) {
                       blockCount++;
-                      if (!this.hasblockmarks.has("" + A + "," + B + "," + C)) {
-                        this.hasblockmarks.set("" +A + "," + B + "," + C, "1"); //Chunk level (zoomed out)
+                      if (!this.hasBlocksMarks.has("" + A + "," + B + "," + C)) {
+                        this.hasBlocksMarks.set("" +A + "," + B + "," + C, "1"); //Chunk level (zoomed out)
                       }
                       if (
                         blockCount >=
-                        chunk_width * chunk_width * chunk_width
+                        chunkWidth * chunkWidth * chunkWidth
                       ) {
-                        this.fullblockmarks.set(
+                        this.fullBlockMarks.set(
                           "" + A + "," + B + "," + C,
                           "1"
                         ); // Remove it if its full for now
                       }
                       
-                      let idToSet = (Math.abs(REAL_WORLD_Y - n)<2 ? ((REAL_WORLD_Y < 1) ? "3" : "4") : "1");
+                      let idToSet = (Math.abs(realWorldY - n)<2 ? ((realWorldY < 1) ? "3" : "4") : "1");
                       this.data.set(
                         "" +
-                          REAL_WORLD_X +
+                          realWorldX +
                           "," +
-                          REAL_WORLD_Y +
+                          realWorldY +
                           "," +
-                          REAL_WORLD_Z,
+                          realWorldZ,
                         idToSet
                       );  // Real this.world level (micro)
                       // try {
                       //   const docRef = addDoc(collection(db, "blocks"), {
-                      //     x: REAL_WORLD_X,
-                      //     y: REAL_WORLD_Y,
-                      //     z: REAL_WORLD_Z,
+                      //     x: realWorldX,
+                      //     y: realWorldY,
+                      //     z: realWorldZ,
                       //     id: 1
                       //   });
         
@@ -867,26 +863,26 @@ export default class Game extends Component {
         }
       }
       generate = () => {
-        let REAL_WORLD_X;
-        let REAL_WORLD_Y;
-        let REAL_WORLD_Z;
+        let realWorldX;
+        let realWorldY;
+        let realWorldZ;
 
         for (let j = -2; j < 2; j++) {
           for (let i = -5; i < 5; i++) {
             for (let k = -5; k < 5; k++) {
               let blockCount = 0;
-              for (var o = 0; o < chunk_width; o++) {
-                for (var o2 = 0; o2 < chunk_width; o2++) {
-                  for (var o3 = 0; o3 < chunk_width; o3++) {
-                    REAL_WORLD_X = i * chunk_width + o;
-                    REAL_WORLD_Z = k * chunk_width + o3;
-                    REAL_WORLD_Y = j * chunk_width + o2;
+              for (var o = 0; o < chunkWidth; o++) {
+                for (var o2 = 0; o2 < chunkWidth; o2++) {
+                  for (var o3 = 0; o3 < chunkWidth; o3++) {
+                    realWorldX = i * chunkWidth + o;
+                    realWorldZ = k * chunkWidth + o3;
+                    realWorldY = j * chunkWidth + o2;
 
                     let n =
                       ImprovedNoise.noise(
-                        REAL_WORLD_X / 25.34,
+                        realWorldX / 25.34,
                         34.425,
-                        REAL_WORLD_Z / 25.65
+                        realWorldZ / 25.65
                       ) * 15;
 
                       if (
@@ -894,41 +890,30 @@ export default class Game extends Component {
                       ) {
                         this.ishandledmarks.set("" + i + "," + j + "," + k, "1")
                       }
-                    if (REAL_WORLD_Y < n) {
+                    if (realWorldY < n) {
                       blockCount++;
-                      if (!this.hasblockmarks.has("" + i + "," + j + "," + k)) {
-                        this.hasblockmarks.set("" + i + "," + j + "," + k, "1"); //Chunk level (zoomed out)
+                      if (!this.hasBlocksMarks.has("" + i + "," + j + "," + k)) {
+                        this.hasBlocksMarks.set("" + i + "," + j + "," + k, "1"); 
                       }
                       if (
                         blockCount >=
-                        chunk_width * chunk_width * chunk_width
+                        chunkWidth * chunkWidth * chunkWidth
                       ) {
-                        this.fullblockmarks.set(
+                        this.fullBlockMarks.set(
                           "" + i + "," + j + "," + k,
                           "1"
-                        ); // Remove it if its full for now
+                        ); 
                       }
-                      let idToSet = (Math.abs(REAL_WORLD_Y - n)<2 ? ((REAL_WORLD_Y < 1) ? "3" : "4") : "1");
+                      let idToSet = (Math.abs(realWorldY - n)<2 ? ((realWorldY < 1) ? "3" : "4") : "1");
                       this.data.set(
                         "" +
-                          REAL_WORLD_X +
+                          realWorldX +
                           "," +
-                          REAL_WORLD_Y +
+                          realWorldY +
                           "," +
-                          REAL_WORLD_Z,
+                          realWorldZ,
                         idToSet
-                      ); // Real this.world level (micro)
-                      // try {
-                      //   const docRef = addDoc(collection(db, "blocks"), {
-                      //     x: REAL_WORLD_X,
-                      //     y: REAL_WORLD_Y,
-                      //     z: REAL_WORLD_Z,
-                      //     id: 1
-                      //   });
-        
-                      // } catch (e) {
-                      //   console.error("Error adding document: ", e);
-                      // }
+                      ); 
                     }
                   }
                 }
@@ -936,7 +921,6 @@ export default class Game extends Component {
             }
           }
         }
-        //console.log("Done generating this.world.");
       };
     }
 
@@ -955,9 +939,10 @@ export default class Game extends Component {
     ambientLight.position.set(0, 0, 0);
     this.scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.set(0, 50, 0);
+    //const pointLight = new THREE.PointLight(0xffffff, 1);
+    //pointLight.position.set(0, 50, 0);
     //this.scene.add(pointLight);
+
     this.canvas = document.getElementById("canvas");
 
     this.renderer = new THREE.WebGLRenderer({
@@ -968,44 +953,9 @@ export default class Game extends Component {
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(0x000000, 1);
 
-
     this.controls = new PointerLockControls2(this.camera, this.canvas);
-    //MAIN STUFF
 
     this.world.generate();
-   // const docRef = doc(db, "blobs", "1");
-    // try {
-    //   const docSnap = getDoc(docRef);
-    //   docSnap.then(result =>
-    //     {
-    //       console.log("Result", result);
-    //       let x = result._document.data.value.mapValue.fields.data.stringValue;
-    //       //console.log(x);
-    //       //this.world.load(""+x);
-    //     }).catch(error => {console.log(error)});
-      
-    //   } catch(error) {
-    //       console.log(error)
-    //   }
- 
-    // let gms = new GiantMapSaver(this.world.data);
-    // let deconstructedWorld = gms.deconstruct();
-    // for(let i = 0; i < deconstructedWorld.length; ++i)
-    // {
-    //   let s = JSON.stringify(deconstructedWorld[i]);
-    //   //console.log(s);
-    //   let u8arr = LZString.compressToUint8Array(s);
-    //   let kson = JSON.stringify(u8arr);
-    //   try {
-    //     setDoc(doc(db, "blobs", `${i}`), {
-    //       data:kson
-    //     });
-
-
-    //     } catch (e) {
-    //       console.error("Error adding document: ", e);
-    //     }
-    // }
 
     this.populateChunkPool();
     
@@ -1022,13 +972,13 @@ export default class Game extends Component {
     // pointLight.distance = 3;
     // pointLight.position.set(x, y + 1 , z);
     // this.scene.add(pointLight);
-    this.world.lightmarks.set(`${x},${y},${z}`, "1");
-    const i = Math.floor(x/this.chunk_width)
-    const j = Math.floor(y/this.chunk_width)
-    const k = Math.floor(z/this.chunk_width)
+    this.world.lightMarks.set(`${x},${y},${z}`, "1");
+    const i = Math.floor(x/this.chunkWidth)
+    const j = Math.floor(y/this.chunkWidth)
+    const k = Math.floor(z/this.chunkWidth)
     if(this.mappedChunks.has(`${i},${j},${k}`))
     {
-      this.mappedChunks.get(`${i},${j},${k}`).buildmeshinplace();
+      this.mappedChunks.get(`${i},${j},${k}`).buildMeshInPlace();
     }
     else{
       if(!this.neededChunks.has(`${i},${j},${k}`)) {
@@ -1038,7 +988,7 @@ export default class Game extends Component {
   }
 
   populateChunkPool() {
-    const chunk_width = this.chunk_width;
+    const chunkWidth = this.chunkWidth;
     const world = this.world;
     const clock = this.clock
 
@@ -1052,14 +1002,15 @@ export default class Game extends Component {
         this.y = 2000;
         this.timeLastMeshed = 0;
       }
-      buildmesh(newx, newy, newz) {
+      buildMesh(newX, newY, newZ) {
         this.timeLastMeshed = Date.now();
-        this.x = newx;
-        this.z = newz;
-        this.y = newy;
-        this.buildmeshinplace();
+        this.x = newX;
+        this.z = newZ;
+        this.y = newY;
+        this.mesh.position.set(this.x * chunkWidth, this.y * chunkWidth, this.z * chunkWidth);
+        this.buildMeshInPlace();
       }
-      buildmeshinplace() {
+      buildMeshInPlace() {
         
         let newVerts = [];
         let newNorms = [];
@@ -1070,12 +1021,12 @@ export default class Game extends Component {
         
         const setLight = (i,j,k) => {
           const bright = 1;
-          const x = Math.floor((this.x*chunk_width)+i);
-          const y = Math.floor((this.y*chunk_width)+j);
-          const z = Math.floor((this.z*chunk_width)+k);
+          const x = Math.floor((this.x*chunkWidth)+i);
+          const y = Math.floor((this.y*chunkWidth)+j);
+          const z = Math.floor((this.z*chunkWidth)+k);
           const ky = `${x},${y+1},${z}`;
 
-          if(world.lightmarks.has(ky)) {
+          if(world.lightMarks.has(ky)) {
 
             //console.log("SHOULD BE");
             for(let o = 0; o < 7; o++)
@@ -1140,158 +1091,158 @@ export default class Game extends Component {
       }
 
         if (
-          world.fullblockmarks.has("" + this.x + "," + this.y + "," + this.z)
+          world.fullBlockMarks.has("" + this.x + "," + this.y + "," + this.z)
         ) {
           if (
-            !world.fullblockmarks.has(
+            !world.fullBlockMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             ) ||
-            !world.hasblockmarks.has(
+            !world.hasBlocksMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             )
           ) {
             //left
             let v = 0;
             v += addVert(this.x, this.y, this.z,0, 0, 0);
-            v += addVert(this.x, this.y, this.z,0, 0, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, 0);
+            v += addVert(this.x, this.y, this.z,0, 0, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, 0);
             v += addVert(this.x, this.y, this.z,0, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(-1, 0, 0);
             }
           }
           if (
-            !world.fullblockmarks.has(
+            !world.fullBlockMarks.has(
               "" + this.x + "," + this.y + "," + (this.z - 1)
             ) ||
-            !world.hasblockmarks.has(
+            !world.hasBlocksMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             )
           ) {
             //front
             let v = 0;
             v += addVert(this.x, this.y, this.z,0, 0, 0);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, 0);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, 0);
             v += addVert(this.x, this.y, this.z,0, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, -1);
             }
           }
           if (
-            !world.fullblockmarks.has(
+            !world.fullBlockMarks.has(
               "" + (this.x + 1) + "," + this.y + "," + this.z
             ) ||
-            !world.hasblockmarks.has(
+            !world.hasBlocksMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             )
           ) {
             //right
             let v = 0;
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, 0);add4UVs("1", "all");
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(1, 0, 0);
             }
           }
           if (
-            !world.fullblockmarks.has(
+            !world.fullBlockMarks.has(
               "" + this.x + "," + this.y + "," + this.z + 1
             ) ||
-            !world.hasblockmarks.has(
+            !world.hasBlocksMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             )
           ) {
             //back
             let v = 0;
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, 0, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, chunk_width);add4UVs("1", "all");
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, 0, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, chunkWidth);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, 1);
             }
           }
           if (
-            !world.fullblockmarks.has(
+            !world.fullBlockMarks.has(
               "" + this.x + "," + (this.y - 1) + "," + this.z
             ) ||
-            !world.hasblockmarks.has(
+            !world.hasBlocksMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             )
           ) {
             //bottom
             let v = 0;
-            v += addVert(this.x, this.y, this.z,0, 0, chunk_width);
+            v += addVert(this.x, this.y, this.z,0, 0, chunkWidth);
             v += addVert(this.x, this.y, this.z,0, 0, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, 0);
-            v += addVert(this.x, this.y, this.z,chunk_width, 0, chunk_width);
-            v += addVert(this.x, this.y, this.z,0, 0, chunk_width);add4UVs("1", "all");
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, 0);
+            v += addVert(this.x, this.y, this.z,chunkWidth, 0, chunkWidth);
+            v += addVert(this.x, this.y, this.z,0, 0, chunkWidth);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, -1, 0);
             }
           }
           if (
-            !world.fullblockmarks.has(
+            !world.fullBlockMarks.has(
               "" + this.x + "," + (this.y + 1) + "," + this.z
             ) ||
-            !world.hasblockmarks.has(
+            !world.hasBlocksMarks.has(
               "" + (this.x - 1) + "," + this.y + "," + this.z
             )
           ) {
             //top
             let v = 0;
-            v += addVert(this.x, this.y, this.z,0, chunk_width, 0);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, chunk_width);
-            v += addVert(this.x, this.y, this.z,chunk_width, chunk_width, 0);
-            v += addVert(this.x, this.y, this.z,0, chunk_width, 0);add4UVs("1", "all");
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, 0);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, chunkWidth);
+            v += addVert(this.x, this.y, this.z,chunkWidth, chunkWidth, 0);
+            v += addVert(this.x, this.y, this.z,0, chunkWidth, 0);add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 1, 0);
             }
           }
         } else {
-          for (let j = 0; j < chunk_width; j++) {
-            for (let i = 0; i < chunk_width; i++) {
-              for (let k = 0; k < chunk_width; k++) {
+          for (let j = 0; j < chunkWidth; j++) {
+            for (let i = 0; i < chunkWidth; i++) {
+              for (let k = 0; k < chunkWidth; k++) {
                 if (
                   world.data.has(
                     "" +
-                      (this.x * chunk_width + i) +
+                      (this.x * chunkWidth + i) +
                       "," +
-                      (this.y * chunk_width + j) +
+                      (this.y * chunkWidth + j) +
                       "," +
-                      (this.z * chunk_width + k)
+                      (this.z * chunkWidth + k)
                   )
                 ) {
                   const ID = world.data.get(
                     "" +
-                      (this.x * chunk_width + i) +
+                      (this.x * chunkWidth + i) +
                       "," +
-                      (this.y * chunk_width + j) +
+                      (this.y * chunkWidth + j) +
                       "," +
-                      (this.z * chunk_width + k)
+                      (this.z * chunkWidth + k)
                   );
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * chunk_width + i - 1) +
+                        (this.x * chunkWidth + i - 1) +
                         "," +
-                        (this.y * chunk_width + j) +
+                        (this.y * chunkWidth + j) +
                         "," +
-                        (this.z * chunk_width + k)
+                        (this.z * chunkWidth + k)
                     )
                   ) {
                     let v = 0;
@@ -1309,11 +1260,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * chunk_width + i) +
+                        (this.x * chunkWidth + i) +
                         "," +
-                        (this.y * chunk_width + j) +
+                        (this.y * chunkWidth + j) +
                         "," +
-                        (this.z * chunk_width + k - 1)
+                        (this.z * chunkWidth + k - 1)
                     )
                   ) {
                     let v = 0;
@@ -1331,11 +1282,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * chunk_width + i + 1) +
+                        (this.x * chunkWidth + i + 1) +
                         "," +
-                        (this.y * chunk_width + j) +
+                        (this.y * chunkWidth + j) +
                         "," +
-                        (this.z * chunk_width + k)
+                        (this.z * chunkWidth + k)
                     )
                   ) {
                     let v = 0;
@@ -1354,11 +1305,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * chunk_width + i) +
+                        (this.x * chunkWidth + i) +
                         "," +
-                        (this.y * chunk_width + j) +
+                        (this.y * chunkWidth + j) +
                         "," +
-                        (this.z * chunk_width + k + 1)
+                        (this.z * chunkWidth + k + 1)
                     )
                   ) {
                     let v = 0;
@@ -1375,11 +1326,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * chunk_width + i) +
+                        (this.x * chunkWidth + i) +
                         "," +
-                        (this.y * chunk_width + j - 1) +
+                        (this.y * chunkWidth + j - 1) +
                         "," +
-                        (this.z * chunk_width + k)
+                        (this.z * chunkWidth + k)
                     )
                   ) {
                     let v = 0;
@@ -1396,11 +1347,11 @@ export default class Game extends Component {
                   if (
                     !world.data.has(
                       "" +
-                        (this.x * chunk_width + i) +
+                        (this.x * chunkWidth + i) +
                         "," +
-                        (this.y * chunk_width + j + 1) +
+                        (this.y * chunkWidth + j + 1) +
                         "," +
-                        (this.z * chunk_width + k)
+                        (this.z * chunkWidth + k)
                     )
                   ) {
                     let v = 0;
@@ -1513,7 +1464,7 @@ export default class Game extends Component {
           );
         }
         this.scene.remove(grabbedMesh.mesh);
-        grabbedMesh.buildmesh(neededSpot.x, neededSpot.y, neededSpot.z);
+        grabbedMesh.buildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
         this.scene.add(grabbedMesh.mesh);
         this.mappedChunks.set(
           "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
@@ -1525,7 +1476,7 @@ export default class Game extends Component {
       }
     } else {
       //console.log("Mapped chunks already has", neededSpot.x, neededSpot.y, neededSpot.z)
-      this.mappedChunks.get(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`).buildmeshinplace();
+      this.mappedChunks.get(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`).buildMeshInPlace();
       this.neededChunks.delete(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`)
     }
     } else {
@@ -1535,26 +1486,26 @@ export default class Game extends Component {
 
   surveyNeededChunks() {
     if (this.camera !== null && this.camera !== undefined) {
-      let y = -this.chunk_width * 2
+      let y = -this.chunkWidth * 2
         for (
-          let i = -this.chunk_width * 5;
-          i < this.chunk_width * 5;
-          i += this.chunk_width
+          let i = -this.chunkWidth * 5;
+          i < this.chunkWidth * 5;
+          i += this.chunkWidth
         ) {
           for (
-            let k = -this.chunk_width * 5;
-            k < this.chunk_width * 5;
-            k += this.chunk_width
+            let k = -this.chunkWidth * 5;
+            k < this.chunkWidth * 5;
+            k += this.chunkWidth
           ) {
-            let THERIGHTX = this.camera.position.x - (this.camera.position.x%this.chunk_width);
-            let THERIGHTY = this.camera.position.y -  (this.camera.position.y%this.chunk_width);
-            let THERIGHTZ = this.camera.position.z - (this.camera.position.z%this.chunk_width);
-            let x = Math.round((i + THERIGHTX) / this.chunk_width);
-            let z = Math.round((k + THERIGHTZ) / this.chunk_width);
-            let yy = Math.round((y + THERIGHTY) /  this.chunk_width);
+            let THERIGHTX = this.camera.position.x - (this.camera.position.x%this.chunkWidth);
+            let THERIGHTY = this.camera.position.y -  (this.camera.position.y%this.chunkWidth);
+            let THERIGHTZ = this.camera.position.z - (this.camera.position.z%this.chunkWidth);
+            let x = Math.round((i + THERIGHTX) / this.chunkWidth);
+            let z = Math.round((k + THERIGHTZ) / this.chunkWidth);
+            let yy = Math.round((y + THERIGHTY) /  this.chunkWidth);
             if(this.world.ishandledmarks.has("" + x + "," + yy + "," + z)) {
             if (
-              this.world.hasblockmarks.has("" + x + "," + yy + "," + z) &&
+              this.world.hasBlocksMarks.has("" + x + "," + yy + "," + z) &&
               !this.mappedChunks.has("" + x + "," + yy + "," + z)
             ) {
               let obj = { x: x, y: yy, z: z };
@@ -1564,7 +1515,7 @@ export default class Game extends Component {
                 this.neededChunks.set("" + x + "," + yy + "," + z, obj);
                 let h = 1;
      
-                while(this.world.hasblockmarks.has("" + x + "," + (yy+h) + "," + z)) {
+                while(this.world.hasBlocksMarks.has("" + x + "," + (yy+h) + "," + z)) {
                   this.neededChunks.set("" + x + "," + (yy+h) + "," + z,
                   {x, y: yy+h, z});
                   h+=1;
