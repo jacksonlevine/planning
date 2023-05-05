@@ -56,11 +56,10 @@ const Login = () => {
       if (user) {
         console.log("huh")
         const playerId = user.uid;
-        let playerRef;
         const socket = io("67.58.229.227:3001");
         
         //playerRef.onDisconnect().remove();
-        resolve({ app, playerRef, playerId, auth, socket});
+        resolve({ user, app, playerId, auth, socket});
       } else {
         reject("You need to sign in.");
       }
@@ -73,11 +72,12 @@ const Login = () => {
 class App extends Component {
   constructor() {
     super();
+    this.user = null;
     this.app = null;
     this.playerId = null;
-    this.playerRef = null;
     this.socket = null;
     this.db = null;
+    this.auth = null;
     this.canvRef = React.createRef();
     this.state = {
       gameButtonVisible: false,
@@ -131,9 +131,9 @@ class App extends Component {
     Login().then(
       result => {
         this.playerId = result.playerId;
-        this.playerRef = result.playerRef;
         this.app = result.app;
         this.socket = result.socket;
+        this.user = result.user;
         this.db = getFirestore(this.app);
         this.changeState()("gameButtonVisible")(true);
         this.changeState()("messageToClient")("none");
@@ -149,6 +149,10 @@ class App extends Component {
   signOut = () => {
     this.changeState()("gameButtonVisible")(false);
     this.changeState()("messageToClient")("signin");
+    this.socket.active = false;
+    this.socket.close();
+    let t = io();
+    
   }
 
   switchPage = (newPage) => {
