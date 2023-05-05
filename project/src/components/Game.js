@@ -251,7 +251,7 @@ export default class Game extends Component {
               <MoveArrow isHidden={!this.state.mobileMode} />
               <p>
                 <strong>WARNING:</strong> Server is in development, the game
-                world will potentially be reset.
+                world will likely be reset multiple times, until 1.0.0.
               </p>
               <canvas
                 ref={this.canvasRef}

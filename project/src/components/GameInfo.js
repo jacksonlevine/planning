@@ -14,7 +14,7 @@ export default function GameInfo(props) {
         messageElement = 
         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
             <h3>Welcome!</h3>
-            <h4>You need to sign in.</h4>
+            <h4>Sign in to join the public server!</h4>
         </div>
     }
     return (

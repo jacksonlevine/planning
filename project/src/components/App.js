@@ -151,8 +151,6 @@ class App extends Component {
     this.changeState()("gameButtonVisible")(false);
     this.changeState()("messageToClient")("signin");
     this.socket.close();
-    let t = io();
-    
   }
 
   switchPage = (newPage) => {
