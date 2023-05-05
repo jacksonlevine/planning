@@ -216,7 +216,7 @@ export default class Game extends Component {
         }}src="/textures/hairsmall.png" alt=""/>
           <UpAndDownArrow isHidden={!this.state.mobileMode}/>
           <MoveArrow isHidden={!this.state.mobileMode}/>
-          <p><strong>WARNING:</strong> The site is in development and may have strange issues or random interruptions. We are working to solve your issues!</p>
+          <p><strong>WARNING:</strong> Server is in development, the game world will potentially be reset.</p>
           <canvas 
           ref={this.canvasRef}
           style={{
