@@ -57,6 +57,9 @@
 #### Friday, 05/05/2023
 
 * 8:00 Researching Google auth
+* 9:20 Still trying to Google auth
+* 9:30 Research Github authentication with firebase,
+to confirm if Google is the issue
 
 ## License:
 
