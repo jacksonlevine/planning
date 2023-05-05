@@ -61,7 +61,6 @@ class App extends Component {
           const playerId = user.uid;
           const socket = io("67.58.229.227:3001");
           const details = getAdditionalUserInfo(userCred);
-          console.log(details);
           //playerRef.onDisconnect().remove();
           resolve({ user, app:this.app, name: details.profile.name, playerId, auth: this.auth, socket});
         } else {
