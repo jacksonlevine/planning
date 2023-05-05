@@ -4,11 +4,17 @@ import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import { getAuth, getRedirectResult, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import "firebase/auth";
 import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
 import io from 'socket.io-client';
 
+
+
+
+
 const Login = () => {
+
   return new Promise((resolve, reject) => {
     const firebaseConfig = {
       apiKey:
@@ -27,15 +33,14 @@ const Login = () => {
     const app = firebase.initializeApp(firebaseConfig);
     const auth = getAuth();
 
-    const provider = GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    signInWithRedirect(auth, provider);
+    const provider = firebase.auth.GoogleAuthProvider();
     
-
-    getRedirectResult(auth)
+    signInWithRedirect(auth, provider).then(
+      () => {
+        getRedirectResult(auth)
       .then((result) => {
         // This gives you a Google Access Token. You can use it to access Google APIs.
-        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
         const token = credential.accessToken;
 
         // The signed-in user info.
@@ -49,9 +54,14 @@ const Login = () => {
         // The email of the user's account used.
         const email = error.customData.email;
         // The AuthCredential type that was used.
-        const credential = GoogleAuthProvider.credentialFromError(error);
+        const credential = firebase.auth.GoogleAuthProvider.credentialFromError(error);
         // ...
       });
+      }
+    )
+    
+
+    
     onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log("huh")
