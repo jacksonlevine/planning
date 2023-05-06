@@ -600,6 +600,7 @@ export default class Game extends Component {
 
     if (this.mobileMoverDown) {
       event.preventDefault();
+      this.controls.mobileMoverDown = true;
       this.input.jump = true;
       this.input.isGrounded = false;
       if (
@@ -625,6 +626,7 @@ export default class Game extends Component {
   };
 
   onTouchEnd = (event) => {
+    this.controls.mobileMoverDown = false;
     this.input.ActiveState.right = false;
 
     this.input.ActiveState.left = false;
@@ -659,16 +661,9 @@ export default class Game extends Component {
       ) {
         this.mobileVerticalOrientatorDown = false;
       }
-      if (
-        this.currentTouchX[this.touchIndex] >= mobileVerticalOrientatorX2 &&
-        this.currentTouchX[this.touchIndex] <=
-          mobileVerticalOrientatorX2 + mobileVerticalOrientatorWidth2 &&
-        this.currentTouchY[this.touchIndex] >= mobileVerticalOrientatorY2 &&
-        this.currentTouchY[this.touchIndex] <=
-          mobileVerticalOrientatorY2 + mobileVerticalOrientatorHeight2
-      ) {
+
         this.mobileMoverDown = false;
-      }
+
     }
   };
   onKeyDown = (event) => {
