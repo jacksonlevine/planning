@@ -138,7 +138,7 @@ class App extends Component {
         this.db = getFirestore(this.app);
         this.changeState()("gameButtonVisible")(true);
         this.changeState()("messageToClient")("none");
-        this.switchPage("default");
+        this.switchPage("game");
       }
     ).catch(
       error=> {
@@ -173,9 +173,7 @@ class App extends Component {
             >
               Go to game
             </button>
-            <button onClick = {
-              this.signOut
-            }>Sign Out</button>
+            
           </React.Fragment>
           
         );}
@@ -206,7 +204,8 @@ class App extends Component {
               resize={this.callForResize}
               name={this.name}
             />
-            <GameInfo message={this.state.messageToClient} />
+            <div style={{margin: "0px",display:"flex",flexDirection:"row",justifyContent:"space-between", alignItems:"flex-start"}}>
+              <GameInfo message={this.state.messageToClient} /><button onClick = {this.signOut}>Sign Out</button></div>
           </React.Fragment>
         );
 
