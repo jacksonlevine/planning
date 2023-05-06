@@ -1022,15 +1022,189 @@ export default class Game extends Component {
     // pointLight.distance = 3;
     // pointLight.position.set(x, y + 1 , z);
     // this.scene.add(pointLight);
-    this.world.lightMarks.set(`${x},${y},${z}`, "1");
+    const b = [1, .8, .6, .4, .2]
+    const spots = [
+      {x:x,y:y,z:z, b: b[0]},
+
+      {x:x+1,y:y,z:z, b: b[1]},
+      {x:x-1,y:y,z:z, b: b[1]},
+      {x:x,y:y,z:z+1, b: b[1]},
+      {x:x,y:y,z:z-1, b: b[1]},
+      {x:x,y:y+1,z:z, b: b[1]},
+      {x:x,y:y-1,z:z, b: b[1]},
+
+      {x:x+2,y:y,z:z, b: b[2]},
+      {x:x-2,y:y,z:z, b: b[2]},
+      {x:x,y:y,z:z+2, b: b[2]},
+      {x:x,y:y,z:z-2, b: b[2]},
+      {x:x,y:y+2,z:z, b: b[2]},
+      {x:x,y:y-2,z:z, b: b[2]},
+
+      {x:x+3,y:y,z:z, b: b[3]},
+      {x:x-3,y:y,z:z, b: b[3]},
+      {x:x,y:y,z:z+3, b: b[3]},
+      {x:x,y:y,z:z-3, b: b[3]},
+      {x:x,y:y+3,z:z, b: b[3]},
+      {x:x,y:y-3,z:z, b: b[3]},
+
+      {x:x+4,y:y,z:z, b: b[4]},
+      {x:x-4,y:y,z:z, b: b[4]},
+      {x:x,y:y,z:z+4, b: b[4]},
+      {x:x,y:y,z:z-4, b: b[4]},
+      {x:x,y:y+4,z:z, b: b[4]},
+      {x:x,y:y-4,z:z, b: b[4]},
+
+      {x:x+1,y:y,z:z+1, b: b[2]},
+      {x:x+2,y:y,z:z+1, b: b[3]},
+      {x:x+3,y:y,z:z+1, b: b[4]},
+
+      {x:x+2,y:y,z:z+2, b: b[3]},
+
+      {x:x+1,y:y,z:z+1, b: b[2]},
+      {x:x+1,y:y,z:z+2, b: b[3]},
+      {x:x+1,y:y,z:z+3, b: b[4]},
+
+      {x:x+1,y:y,z:z-1, b: b[2]},
+      {x:x+2,y:y,z:z-1, b: b[3]},
+      {x:x+3,y:y,z:z-1, b: b[4]},
+
+      {x:x+2,y:y,z:z-2, b: b[3]},
+
+      {x:x+1,y:y,z:z-1, b: b[2]},
+      {x:x+1,y:y,z:z-2, b: b[3]},
+      {x:x+1,y:y,z:z-3, b: b[4]},
+
+      {x:x-1,y:y,z:z+1, b: b[2]},
+      {x:x-2,y:y,z:z+1, b: b[3]},
+      {x:x-3,y:y,z:z+1, b: b[4]},
+
+      {x:x-2,y:y,z:z+2, b: b[3]},
+
+      {x:x-1,y:y,z:z+1, b: b[2]},
+      {x:x-1,y:y,z:z+2, b: b[3]},
+      {x:x-1,y:y,z:z+3, b: b[4]},
+
+
+      {x:x-1,y:y,z:z-1, b: b[2]},
+      {x:x-2,y:y,z:z-1, b: b[3]},
+      {x:x-3,y:y,z:z-1, b: b[4]},
+
+      {x:x-2,y:y,z:z-2, b: b[3]},
+      
+      {x:x-1,y:y,z:z-1, b: b[2]},
+      {x:x-1,y:y,z:z-2, b: b[3]},
+      {x:x-1,y:y,z:z-3, b: b[4]},
+
+      //  
+
+      {x:x+1,y:y+1,z:z, b: b[2]},
+      {x:x-1,y:y+1,z:z, b: b[2]},
+      {x:x,y:y+1,z:z+1, b: b[2]},
+      {x:x,y:y+1,z:z-1, b: b[2]},
+      {x:x+2,y:y+1,z:z, b: b[3]},
+      {x:x-2,y:y+1,z:z, b: b[3]},
+      {x:x,y:y+1,z:z+2, b: b[3]},
+      {x:x,y:y+1,z:z-2, b: b[3]},
+      {x:x+1,y:y+1,z:z+1, b: b[2]},
+      {x:x+2,y:y+1,z:z+1, b: b[3]},
+      {x:x+1,y:y+1,z:z+1, b: b[2]},
+      {x:x+1,y:y+1,z:z+2, b: b[3]},
+      {x:x+1,y:y+1,z:z-1, b: b[2]},
+      {x:x+2,y:y+1,z:z-1, b: b[3]},
+      {x:x+1,y:y+1,z:z-1, b: b[2]},
+      {x:x+1,y:y+1,z:z-2, b: b[3]},
+      {x:x-1,y:y+1,z:z+1, b: b[2]},
+      {x:x-2,y:y+1,z:z+1, b: b[3]},
+      {x:x-1,y:y+1,z:z+1, b: b[2]},
+      {x:x-1,y:y+1,z:z+2, b: b[3]},
+      {x:x-1,y:y+1,z:z-1, b: b[2]},
+      {x:x-2,y:y+1,z:z-1, b: b[3]},
+      {x:x-1,y:y+1,z:z-1, b: b[2]},
+      {x:x-1,y:y+1,z:z-2, b: b[3]},
+       //  
+
+       {x:x+1,y:y+2,z:z, b: b[3]},
+       {x:x-1,y:y+2,z:z, b: b[3]},
+       {x:x,y:y+2,z:z+1, b: b[3]},
+       {x:x,y:y+2,z:z-1, b: b[3]},
+       {x:x+1,y:y+2,z:z+1, b: b[3]},
+       {x:x+1,y:y+2,z:z+1, b: b[3]},
+       {x:x+1,y:y+2,z:z-1, b: b[3]},
+       {x:x+1,y:y+2,z:z-1, b: b[3]},
+       {x:x-1,y:y+2,z:z+1, b: b[3]},
+       {x:x-1,y:y+2,z:z+1, b: b[3]},
+       {x:x-1,y:y+2,z:z-1, b: b[3]},
+       {x:x-1,y:y+2,z:z-1, b: b[3]},
+             //  
+
+      {x:x+1,y:y-1,z:z, b: b[2]},
+      {x:x-1,y:y-1,z:z, b: b[2]},
+      {x:x,y:y-1,z:z+1, b: b[2]},
+      {x:x,y:y-1,z:z-1, b: b[2]},
+      {x:x+2,y:y-1,z:z, b: b[3]},
+      {x:x-2,y:y-1,z:z, b: b[3]},
+      {x:x,y:y-1,z:z+2, b: b[3]},
+      {x:x,y:y-1,z:z-2, b: b[3]},
+      {x:x+1,y:y-1,z:z+1, b: b[3]},
+      {x:x+2,y:y-1,z:z+1, b: b[4]},
+      {x:x+1,y:y-1,z:z+1, b: b[3]},
+      {x:x+1,y:y-1,z:z+2, b: b[4]},
+      {x:x+1,y:y-1,z:z-1, b: b[3]},
+      {x:x+2,y:y-1,z:z-1, b: b[4]},
+      {x:x+1,y:y-1,z:z-1, b: b[3]},
+      {x:x+1,y:y-1,z:z-2, b: b[4]},
+      {x:x-1,y:y-1,z:z+1, b: b[3]},
+      {x:x-2,y:y-1,z:z+1, b: b[4]},
+      {x:x-1,y:y-1,z:z+1, b: b[3]},
+      {x:x-1,y:y-1,z:z+2, b: b[4]},
+      {x:x-1,y:y-1,z:z-1, b: b[3]},
+      {x:x-2,y:y-1,z:z-1, b: b[4]},
+      {x:x-1,y:y-1,z:z-1, b: b[3]},
+      {x:x-1,y:y-1,z:z-2, b: b[4]},
+       //  
+
+       {x:x+1,y:y-2,z:z, b: b[3]},
+       {x:x-1,y:y-2,z:z, b: b[3]},
+       {x:x,y:y-2,z:z+1, b: b[3]},
+       {x:x,y:y-2,z:z-1, b: b[3]},
+       {x:x+1,y:y-2,z:z+1, b: b[4]},
+       {x:x+1,y:y-2,z:z+1, b: b[4]},
+       {x:x+1,y:y-2,z:z-1, b: b[4]},
+       {x:x+1,y:y-2,z:z-1, b: b[4]},
+       {x:x-1,y:y-2,z:z+1, b: b[4]},
+       {x:x-1,y:y-2,z:z+1, b: b[4]},
+       {x:x-1,y:y-2,z:z-1, b: b[4]},
+       {x:x-1,y:y-2,z:z-1, b: b[4]},
+
+    ];
+    for(let i of spots)
+    {
+      let existingLight = this.world.lightMarks.get(`${i.x},${i.y},${i.z}`) || 0;
+      this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, Math.max(i.b, existingLight));
+    }
     const i = Math.floor(x / this.chunkWidth);
     const j = Math.floor(y / this.chunkWidth);
     const k = Math.floor(z / this.chunkWidth);
-    if (this.mappedChunks.has(`${i},${j},${k}`)) {
-      this.mappedChunks.get(`${i},${j},${k}`).buildMeshInPlace();
-    } else {
-      if (!this.neededChunks.has(`${i},${j},${k}`)) {
-        this.neededChunks.set(`${i},${j},${k}`, { x: i, y: j, z: k });
+    const chunkSpots = [
+      {x:i, y:j, z:k},
+      {x:i+1, y:j, z:k},
+      {x:i-1, y:j, z:k},
+      {x:i, y:j+1, z:k},
+      {x:i, y:j-1, z:k},
+      {x:i, y:j, z:k+1},
+      {x:i, y:j, z:k-1},
+      {x:i+1, y:j, z:k+1},
+      {x:i-1, y:j, z:k-1},
+      {x:i+1, y:j, z:k-1},
+      {x:i-1, y:j, z:k+1},
+    ];
+    for(let c of chunkSpots) {
+      if (this.mappedChunks.has(`${c.x},${c.y},${c.z}`)) {
+        this.mappedChunks.get(`${c.x},${c.y},${c.z}`).buildMeshInPlace();
+      } else {
+        if (!this.neededChunks.has(`${c.x},${c.y},${c.z}`)) {
+          this.neededChunks.set(`${c.x},${c.y},${c.z}`, { x: c.x, y: c.y, z: c.z });
+        }
       }
     }
   }
@@ -1067,54 +1241,28 @@ export default class Game extends Component {
         let newNorms = [];
 
         let newUVs = [];
-        let preCols = new Map(); //string, object{ brightness: number, verts: array of numbers   }
         let newCols = [];
 
         const setLight = (i, j, k) => {
-          const bright = 1;
+          let bright = .1;
           const x = Math.floor(this.x * chunkWidth + i);
           const y = Math.floor(this.y * chunkWidth + j);
           const z = Math.floor(this.z * chunkWidth + k);
           const ky = `${x},${y + 1},${z}`;
 
           if (world.lightMarks.has(ky)) {
-            //console.log("SHOULD BE");
-            for (let o = 0; o < 7; o++) {
-              for (let o2 = 0; o2 < 7; o2++) {
-                for (let o3 = 0; o3 < 7; o3++) {
-                  const distance = Math.sqrt(
-                    (o - 3 - 4) ** 2 + (o2 - 3 - 4) ** 2 + (o3 - 3 - 4) ** 2
-                  );
-
-                  if (
-                    preCols.has(
-                      `${i + (o - 3)},${j + (o2 - 3)},${k + (o3 - 3)}`
-                    )
-                  ) {
-                    preCols.get(
-                      `${i + (o - 3)},${j + (o2 - 3)},${k + (o3 - 3)}`
-                    ).brightness = parseFloat(distance) / 20;
-                  }
-                }
-              }
-            }
+            bright = Math.max(world.lightMarks.get(ky), bright);
           }
+
+          newCols.push(bright, bright, bright, bright);
+          newCols.push(bright, bright, bright, bright);
+          newCols.push(bright, bright, bright, bright);
+          newCols.push(bright, bright, bright, bright);
+          newCols.push(bright, bright, bright, bright);
+          newCols.push(bright, bright, bright, bright);
         };
 
-        const finalizeBrightness = () => {
-          for (const value of preCols.values()) {
-            //console.log(value);
-            let num = value.brightness || 0.2;
-            for (let i = 0; i < value.verts.length; i += 3) {
-              newVerts.push(
-                value.verts[i],
-                value.verts[i + 1],
-                value.verts[i + 2]
-              );
-              newCols.push(num, num, num, num);
-            }
-          }
-        };
+
         const add4UVs = (id, side) => {
           const values = blockTypes[id].texture.uniform
             ? blockTypes[id].texture.all
@@ -1128,12 +1276,7 @@ export default class Game extends Component {
           newUVs.push(values[0], values[1]);
         };
         const addVert = (i, j, k, x, y, z) => {
-          const ky = `${i},${j},${k}`;
-          if (preCols.has(ky)) {
-            preCols.get(ky).verts.push(x, y, z);
-          } else {
-            preCols.set(ky, { verts: [x, y, z] });
-          }
+          newVerts.push(x,y,z);
           return 1;
         };
 
@@ -1467,7 +1610,6 @@ export default class Game extends Component {
             }
           }
         }
-        finalizeBrightness();
         this.vertices = new Float32Array(newVerts);
         this.meshGeometry.setAttribute(
           "position",
