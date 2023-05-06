@@ -5,6 +5,7 @@ export default function Header() {
 
     }
     let headStyle = {
+        color: "white",
         alignItems: "center",
         display: "flex",
         flexDirection: "row",
@@ -12,6 +13,6 @@ export default function Header() {
         margin: "0 0"
     }
     return (
-        <h1 style = {headStyle}><img style={imgStyle} src="logo192.png" alt=""/>JacksonGame</h1>
+        <h1 style = {headStyle}><img style={imgStyle} src="logo192.png" alt=""/>MimosDono</h1>
     );
 }

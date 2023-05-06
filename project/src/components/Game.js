@@ -282,14 +282,6 @@ export default class Game extends Component {
           ></input>
           <button type="submit">Send chat</button>
         </form>
-        <button
-          onClick={() => {
-            this.isOpen = false;
-            this.props.switcher("default");
-          }}
-        >
-          Back to main
-        </button>
       </div>
     );
   }
