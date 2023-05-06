@@ -14,8 +14,8 @@ export default function Footer() {
   }
   return (
     <div>
+        <PayPalDonate />
         <p>
-          <PayPalDonate />
           <span className="small">Donations are hugely appreciated!</span>
         </p>
     </div>
