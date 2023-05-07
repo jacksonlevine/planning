@@ -3,7 +3,6 @@ import "firebase/app";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import * as THREE from "three";
-import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import ImprovedNoise from "./../perlin.js";
 //import LZString from "lz-string/libs/lz-string.js";
@@ -32,6 +31,8 @@ class InputState {
   }
 }
 
+const b = [1, .8, .6, .4, .2] //torch brightnesses
+
 class InputHandler {
   constructor() {
     this.ActiveState = new InputState();
@@ -54,14 +55,14 @@ meshMaterial.emissiveIntensity = 20;
 class PrevAndNewPosition {
   constructor(vector1, vector2) {
     this.prevPosition = vector1;
-    this.newPosition = vector2;
+    this.newPosition = vector2; 
   }
 }
 const texPad = 0.0015;
 
 const blockTypes = {
-  1: {
-    //stone
+  count: 5,
+  /*stone*/1: {
     texture: {
       uniform: true,
       all: [
@@ -76,8 +77,7 @@ const blockTypes = {
       ],
     },
   },
-  2: {
-    //b rick
+  /*brick*/2: {
     texture: {
       uniform: true,
       all: [
@@ -92,8 +92,7 @@ const blockTypes = {
       ],
     },
   },
-  3: {
-    //sand
+  /*sand*/3: {
     texture: {
       uniform: true,
       all: [
@@ -108,8 +107,7 @@ const blockTypes = {
       ],
     },
   },
-  4: {
-    //grass
+  /*grass*/4: {
     texture: {
       uniform: false,
       top: [
@@ -144,6 +142,22 @@ const blockTypes = {
       ],
     },
   },
+  /*light*/5: {
+    texture: {
+      uniform: true,
+      all: [
+        0.0625 * 6 + 0.0 + 0.0625 - texPad,
+        1.0 - 0.0625 + texPad,
+        0.0625 * 6 + 0.0 + texPad,
+        1.0 - 0.0625 + texPad,
+        0.0625 * 6 + 0.0 + texPad,
+        1.0 - texPad,
+        0.0625 * 6 + 0.0 + 0.0625 - texPad,
+        1.0 - texPad,
+      ],
+    },
+    isLight: true
+  },
 };
 
 export default class Game extends Component {
@@ -156,8 +170,6 @@ export default class Game extends Component {
     this.width = 1024;
     this.height = 640;
     this.fov = 100;
-
-    // Create the Neck object and add it to the scene
 
     this.camera = new THREE.PerspectiveCamera(
       this.fov,
@@ -400,6 +412,12 @@ export default class Game extends Component {
 
   breakBlock(pos) {
     const blockKey = `${pos.x},${pos.y},${pos.z}`;
+    if(this.world.data.has(blockKey)) {
+      if(blockTypes[this.world.data.get(blockKey)].isLight)
+      {
+        this.removePointLight();
+      }
+    }
     this.world.data.delete(blockKey);
 
     const chunkX = Math.floor(pos.x / this.chunkWidth);
@@ -452,36 +470,38 @@ export default class Game extends Component {
   }
 
   placeBlock(pos, id) {
-    if (id === "light") {
-      this.addPointLight(pos.x, pos.y, pos.z);
-    } else {
-      let [chunkx, chunky, chunkz] = [
-        Math.floor(pos.x / this.chunkWidth),
-        Math.floor(pos.y / this.chunkWidth),
-        Math.floor(pos.z / this.chunkWidth),
-      ];
-
-      if (!this.world.ishandledmarks.has(`${chunkx},${chunky},${chunkz}`)) {
-        this.world.generateOneChunk(chunkx, chunky, chunkz);
-      }
-      const blockKey = `${pos.x},${pos.y},${pos.z}`;
-      this.world.data.set(blockKey, id);
-      const chunkX = Math.floor(pos.x / this.chunkWidth);
-      const chunkY = Math.floor(pos.y / this.chunkWidth);
-      const chunkZ = Math.floor(pos.z / this.chunkWidth);
-      if (!this.world.hasBlocksMarks.has(`${chunkX},${chunkY},${chunkZ}`)) {
-        this.world.hasBlocksMarks.set(`${chunkX},${chunkY},${chunkZ}`, "1");
-      }
-      if (this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`)) {
-        this.mappedChunks
-          .get(`${chunkX},${chunkY},${chunkZ}`)
-          .buildMeshInPlace();
+    if(blockTypes[id]) {
+      if (blockTypes[id].isLight) {
+        this.addPointLight(pos.x, pos.y, pos.z);
       } else {
-        this.neededChunks.set(`${chunkX},${chunkY},${chunkZ}`, {
-          x: chunkX,
-          y: chunkY,
-          z: chunkZ,
-        });
+        let [chunkx, chunky, chunkz] = [
+          Math.floor(pos.x / this.chunkWidth),
+          Math.floor(pos.y / this.chunkWidth),
+          Math.floor(pos.z / this.chunkWidth),
+        ];
+
+        if (!this.world.ishandledmarks.has(`${chunkx},${chunky},${chunkz}`)) {
+          this.world.generateOneChunk(chunkx, chunky, chunkz);
+        }
+        const blockKey = `${pos.x},${pos.y},${pos.z}`;
+        this.world.data.set(blockKey, id);
+        const chunkX = Math.floor(pos.x / this.chunkWidth);
+        const chunkY = Math.floor(pos.y / this.chunkWidth);
+        const chunkZ = Math.floor(pos.z / this.chunkWidth);
+        if (!this.world.hasBlocksMarks.has(`${chunkX},${chunkY},${chunkZ}`)) {
+          this.world.hasBlocksMarks.set(`${chunkX},${chunkY},${chunkZ}`, "1");
+        }
+        if (this.mappedChunks.has(`${chunkX},${chunkY},${chunkZ}`)) {
+          this.mappedChunks
+            .get(`${chunkX},${chunkY},${chunkZ}`)
+            .buildMeshInPlace();
+        } else {
+          this.neededChunks.set(`${chunkX},${chunkY},${chunkZ}`, {
+            x: chunkX,
+            y: chunkY,
+            z: chunkZ,
+          });
+        }
       }
     }
   }
@@ -501,7 +521,7 @@ export default class Game extends Component {
     window.addEventListener("wheel", (event) => {
       this.setState({
         currentlyPlacingId: Math.max(
-          Math.min(this.state.currentlyPlacingId + event.deltaY / 100, 4),
+          Math.min(this.state.currentlyPlacingId + event.deltaY / 100, blockTypes.count),
           1
         ),
       });
@@ -1027,8 +1047,8 @@ export default class Game extends Component {
     // pointLight.distance = 3;
     // pointLight.position.set(x, y + 1 , z);
     // this.scene.add(pointLight);
-    const b = [1, .8, .6, .4, .2]
-    const spots = [
+
+    const lightSpots = [
       {x:x,y:y,z:z, b: b[0]},
 
       {x:x+1,y:y,z:z, b: b[1]},
@@ -1182,7 +1202,7 @@ export default class Game extends Component {
        {x:x-1,y:y-2,z:z-1, b: b[4]},
 
     ];
-    for(let i of spots)
+    for(let i of lightSpots)
     {
       let existingLight = this.world.lightMarks.get(`${i.x},${i.y},${i.z}`) || 0;
       this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, Math.max(i.b, existingLight));
@@ -1190,7 +1210,7 @@ export default class Game extends Component {
     const i = Math.floor(x / this.chunkWidth);
     const j = Math.floor(y / this.chunkWidth);
     const k = Math.floor(z / this.chunkWidth);
-    const chunkSpots = [
+    const chunkReloadSpots = [
       {x:i, y:j, z:k},
       {x:i+1, y:j, z:k},
       {x:i-1, y:j, z:k},
@@ -1203,7 +1223,199 @@ export default class Game extends Component {
       {x:i+1, y:j, z:k-1},
       {x:i-1, y:j, z:k+1},
     ];
-    for(let c of chunkSpots) {
+    for(let c of chunkReloadSpots) {
+      if (this.mappedChunks.has(`${c.x},${c.y},${c.z}`)) {
+        this.mappedChunks.get(`${c.x},${c.y},${c.z}`).buildMeshInPlace();
+      } else {
+        if (!this.neededChunks.has(`${c.x},${c.y},${c.z}`)) {
+          this.neededChunks.set(`${c.x},${c.y},${c.z}`, { x: c.x, y: c.y, z: c.z });
+        }
+      }
+    }
+  }
+
+  removePointLight(x, y, z) {
+    // const pointLight = new THREE.PointLight(0xffffff, 0.7, 10);
+    // pointLight.distance = 3;
+    // pointLight.position.set(x, y + 1 , z);
+    // this.scene.add(pointLight);
+
+    const lightSpots = [
+      {x:x,y:y,z:z, b: b[0]},
+
+      {x:x+1,y:y,z:z, b: b[1]},
+      {x:x-1,y:y,z:z, b: b[1]},
+      {x:x,y:y,z:z+1, b: b[1]},
+      {x:x,y:y,z:z-1, b: b[1]},
+      {x:x,y:y+1,z:z, b: b[1]},
+      {x:x,y:y-1,z:z, b: b[1]},
+
+      {x:x+2,y:y,z:z, b: b[2]},
+      {x:x-2,y:y,z:z, b: b[2]},
+      {x:x,y:y,z:z+2, b: b[2]},
+      {x:x,y:y,z:z-2, b: b[2]},
+      {x:x,y:y+2,z:z, b: b[2]},
+      {x:x,y:y-2,z:z, b: b[2]},
+
+      {x:x+3,y:y,z:z, b: b[3]},
+      {x:x-3,y:y,z:z, b: b[3]},
+      {x:x,y:y,z:z+3, b: b[3]},
+      {x:x,y:y,z:z-3, b: b[3]},
+      {x:x,y:y+3,z:z, b: b[3]},
+      {x:x,y:y-3,z:z, b: b[3]},
+
+      {x:x+4,y:y,z:z, b: b[4]},
+      {x:x-4,y:y,z:z, b: b[4]},
+      {x:x,y:y,z:z+4, b: b[4]},
+      {x:x,y:y,z:z-4, b: b[4]},
+      {x:x,y:y+4,z:z, b: b[4]},
+      {x:x,y:y-4,z:z, b: b[4]},
+
+      {x:x+1,y:y,z:z+1, b: b[2]},
+      {x:x+2,y:y,z:z+1, b: b[3]},
+      {x:x+3,y:y,z:z+1, b: b[4]},
+
+      {x:x+2,y:y,z:z+2, b: b[3]},
+
+      {x:x+1,y:y,z:z+1, b: b[2]},
+      {x:x+1,y:y,z:z+2, b: b[3]},
+      {x:x+1,y:y,z:z+3, b: b[4]},
+
+      {x:x+1,y:y,z:z-1, b: b[2]},
+      {x:x+2,y:y,z:z-1, b: b[3]},
+      {x:x+3,y:y,z:z-1, b: b[4]},
+
+      {x:x+2,y:y,z:z-2, b: b[3]},
+
+      {x:x+1,y:y,z:z-1, b: b[2]},
+      {x:x+1,y:y,z:z-2, b: b[3]},
+      {x:x+1,y:y,z:z-3, b: b[4]},
+
+      {x:x-1,y:y,z:z+1, b: b[2]},
+      {x:x-2,y:y,z:z+1, b: b[3]},
+      {x:x-3,y:y,z:z+1, b: b[4]},
+
+      {x:x-2,y:y,z:z+2, b: b[3]},
+
+      {x:x-1,y:y,z:z+1, b: b[2]},
+      {x:x-1,y:y,z:z+2, b: b[3]},
+      {x:x-1,y:y,z:z+3, b: b[4]},
+
+
+      {x:x-1,y:y,z:z-1, b: b[2]},
+      {x:x-2,y:y,z:z-1, b: b[3]},
+      {x:x-3,y:y,z:z-1, b: b[4]},
+
+      {x:x-2,y:y,z:z-2, b: b[3]},
+      
+      {x:x-1,y:y,z:z-1, b: b[2]},
+      {x:x-1,y:y,z:z-2, b: b[3]},
+      {x:x-1,y:y,z:z-3, b: b[4]},
+
+      //  
+
+      {x:x+1,y:y+1,z:z, b: b[2]},
+      {x:x-1,y:y+1,z:z, b: b[2]},
+      {x:x,y:y+1,z:z+1, b: b[2]},
+      {x:x,y:y+1,z:z-1, b: b[2]},
+      {x:x+2,y:y+1,z:z, b: b[3]},
+      {x:x-2,y:y+1,z:z, b: b[3]},
+      {x:x,y:y+1,z:z+2, b: b[3]},
+      {x:x,y:y+1,z:z-2, b: b[3]},
+      {x:x+1,y:y+1,z:z+1, b: b[2]},
+      {x:x+2,y:y+1,z:z+1, b: b[3]},
+      {x:x+1,y:y+1,z:z+1, b: b[2]},
+      {x:x+1,y:y+1,z:z+2, b: b[3]},
+      {x:x+1,y:y+1,z:z-1, b: b[2]},
+      {x:x+2,y:y+1,z:z-1, b: b[3]},
+      {x:x+1,y:y+1,z:z-1, b: b[2]},
+      {x:x+1,y:y+1,z:z-2, b: b[3]},
+      {x:x-1,y:y+1,z:z+1, b: b[2]},
+      {x:x-2,y:y+1,z:z+1, b: b[3]},
+      {x:x-1,y:y+1,z:z+1, b: b[2]},
+      {x:x-1,y:y+1,z:z+2, b: b[3]},
+      {x:x-1,y:y+1,z:z-1, b: b[2]},
+      {x:x-2,y:y+1,z:z-1, b: b[3]},
+      {x:x-1,y:y+1,z:z-1, b: b[2]},
+      {x:x-1,y:y+1,z:z-2, b: b[3]},
+       //  
+
+       {x:x+1,y:y+2,z:z, b: b[3]},
+       {x:x-1,y:y+2,z:z, b: b[3]},
+       {x:x,y:y+2,z:z+1, b: b[3]},
+       {x:x,y:y+2,z:z-1, b: b[3]},
+       {x:x+1,y:y+2,z:z+1, b: b[3]},
+       {x:x+1,y:y+2,z:z+1, b: b[3]},
+       {x:x+1,y:y+2,z:z-1, b: b[3]},
+       {x:x+1,y:y+2,z:z-1, b: b[3]},
+       {x:x-1,y:y+2,z:z+1, b: b[3]},
+       {x:x-1,y:y+2,z:z+1, b: b[3]},
+       {x:x-1,y:y+2,z:z-1, b: b[3]},
+       {x:x-1,y:y+2,z:z-1, b: b[3]},
+             //  
+
+      {x:x+1,y:y-1,z:z, b: b[2]},
+      {x:x-1,y:y-1,z:z, b: b[2]},
+      {x:x,y:y-1,z:z+1, b: b[2]},
+      {x:x,y:y-1,z:z-1, b: b[2]},
+      {x:x+2,y:y-1,z:z, b: b[3]},
+      {x:x-2,y:y-1,z:z, b: b[3]},
+      {x:x,y:y-1,z:z+2, b: b[3]},
+      {x:x,y:y-1,z:z-2, b: b[3]},
+      {x:x+1,y:y-1,z:z+1, b: b[3]},
+      {x:x+2,y:y-1,z:z+1, b: b[4]},
+      {x:x+1,y:y-1,z:z+1, b: b[3]},
+      {x:x+1,y:y-1,z:z+2, b: b[4]},
+      {x:x+1,y:y-1,z:z-1, b: b[3]},
+      {x:x+2,y:y-1,z:z-1, b: b[4]},
+      {x:x+1,y:y-1,z:z-1, b: b[3]},
+      {x:x+1,y:y-1,z:z-2, b: b[4]},
+      {x:x-1,y:y-1,z:z+1, b: b[3]},
+      {x:x-2,y:y-1,z:z+1, b: b[4]},
+      {x:x-1,y:y-1,z:z+1, b: b[3]},
+      {x:x-1,y:y-1,z:z+2, b: b[4]},
+      {x:x-1,y:y-1,z:z-1, b: b[3]},
+      {x:x-2,y:y-1,z:z-1, b: b[4]},
+      {x:x-1,y:y-1,z:z-1, b: b[3]},
+      {x:x-1,y:y-1,z:z-2, b: b[4]},
+       //  
+
+       {x:x+1,y:y-2,z:z, b: b[3]},
+       {x:x-1,y:y-2,z:z, b: b[3]},
+       {x:x,y:y-2,z:z+1, b: b[3]},
+       {x:x,y:y-2,z:z-1, b: b[3]},
+       {x:x+1,y:y-2,z:z+1, b: b[4]},
+       {x:x+1,y:y-2,z:z+1, b: b[4]},
+       {x:x+1,y:y-2,z:z-1, b: b[4]},
+       {x:x+1,y:y-2,z:z-1, b: b[4]},
+       {x:x-1,y:y-2,z:z+1, b: b[4]},
+       {x:x-1,y:y-2,z:z+1, b: b[4]},
+       {x:x-1,y:y-2,z:z-1, b: b[4]},
+       {x:x-1,y:y-2,z:z-1, b: b[4]},
+
+    ];
+    for(let i of lightSpots)
+    {
+      let existingLight = this.world.lightMarks.get(`${i.x},${i.y},${i.z}`) || 0;
+      this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, Math.max(0.2, existingLight-i.b));
+    }
+    const i = Math.floor(x / this.chunkWidth);
+    const j = Math.floor(y / this.chunkWidth);
+    const k = Math.floor(z / this.chunkWidth);
+    const chunkReloadSpots = [
+      {x:i, y:j, z:k},
+      {x:i+1, y:j, z:k},
+      {x:i-1, y:j, z:k},
+      {x:i, y:j+1, z:k},
+      {x:i, y:j-1, z:k},
+      {x:i, y:j, z:k+1},
+      {x:i, y:j, z:k-1},
+      {x:i+1, y:j, z:k+1},
+      {x:i-1, y:j, z:k-1},
+      {x:i+1, y:j, z:k-1},
+      {x:i-1, y:j, z:k+1},
+    ];
+    for(let c of chunkReloadSpots) {
       if (this.mappedChunks.has(`${c.x},${c.y},${c.z}`)) {
         this.mappedChunks.get(`${c.x},${c.y},${c.z}`).buildMeshInPlace();
       } else {
