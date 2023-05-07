@@ -362,14 +362,14 @@ export default class Game extends Component {
           )
             .then((pos) => {
               this.breakBlock(pos);
-              let actionRef = firebase
+              if(!this.props.isSinglePlayer){let actionRef = firebase
                 .database()
                 .ref(`blockActions/${generateUUID()}`);
               actionRef.set({
                 action: "break",
                 time: new Date().getTime(),
                 ...pos,
-              });
+              });}
             })
             .catch((error) => {
               console.log(error);
@@ -393,7 +393,7 @@ export default class Game extends Component {
           .then((pos) => {
             let placed = `${this.state.currentlyPlacingId}`;
             this.placeBlock(pos, placed);
-            let actionRef = firebase
+            if(!this.props.isSinglePlayer){let actionRef = firebase
               .database()
               .ref(`blockActions/${generateUUID()}`);
             actionRef.set({
@@ -401,7 +401,7 @@ export default class Game extends Component {
               type: placed,
               time: new Date().getTime(),
               ...pos,
-            });
+            });}
           })
           .catch((error) => {});
         break;
@@ -521,7 +521,7 @@ export default class Game extends Component {
     window.addEventListener("wheel", (event) => {
       this.setState({
         currentlyPlacingId: Math.max(
-          Math.min(this.state.currentlyPlacingId + event.deltaY / 100, blockTypes.count),
+          Math.min(this.state.currentlyPlacingId + event.deltaY, blockTypes.count),
           1
         ),
       });
@@ -620,6 +620,7 @@ export default class Game extends Component {
 
     if (this.mobileMoverDown) {
       event.preventDefault();
+      this.controls.mobileMoverDown = true;
       this.input.jump = true;
       this.input.isGrounded = false;
       if (
@@ -645,6 +646,7 @@ export default class Game extends Component {
   };
 
   onTouchEnd = (event) => {
+    this.controls.mobileMoverDown = false;
     this.input.ActiveState.right = false;
 
     this.input.ActiveState.left = false;
@@ -679,16 +681,9 @@ export default class Game extends Component {
       ) {
         this.mobileVerticalOrientatorDown = false;
       }
-      if (
-        this.currentTouchX[this.touchIndex] >= mobileVerticalOrientatorX2 &&
-        this.currentTouchX[this.touchIndex] <=
-          mobileVerticalOrientatorX2 + mobileVerticalOrientatorWidth2 &&
-        this.currentTouchY[this.touchIndex] >= mobileVerticalOrientatorY2 &&
-        this.currentTouchY[this.touchIndex] <=
-          mobileVerticalOrientatorY2 + mobileVerticalOrientatorHeight2
-      ) {
+
         this.mobileMoverDown = false;
-      }
+
     }
   };
   onKeyDown = (event) => {
@@ -744,9 +739,6 @@ export default class Game extends Component {
       case "KeyD":
         this.input.ActiveState.right = false;
         break;
-      // case "Space":
-      //   this.input.ActiveState.up = false;
-      //   break;
       case "ShiftLeft":
         this.input.ActiveState.crouch = false;
         break;
@@ -766,92 +758,89 @@ export default class Game extends Component {
     Promise.all([loadAsync("/player/scene.gltf")]).then((models) => {
       saturn = models[0].scene.children[0];
       saturn.scale.set(2, 2, 2);
-
-      this.props.socket.on("chat", (theChat) => {
-        let key = generateUUID();
-        this.setState((prevState) => {
-          return {
-            chats: [
-              ...prevState.chats,
-              {
-                key,
-                id: theChat.id,
-                message: theChat.message,
-              },
-            ],
-          };
-        });
-        window.setTimeout(() => {
-          this.setState({
-            chats: this.state.chats.filter((chat) => {
-              return chat.key !== key;
-            }),
+      if(!this.props.isSinglePlayer) {
+        this.props.socket.on("chat", (theChat) => {
+          let key = generateUUID();
+          this.setState((prevState) => {
+            return {
+              chats: [
+                ...prevState.chats,
+                {
+                  key,
+                  id: theChat.id,
+                  message: theChat.message,
+                },
+              ],
+            };
           });
-        }, 2000);
-      });
+          window.setTimeout(() => {
+            this.setState({
+              chats: this.state.chats.filter((chat) => {
+                return chat.key !== key;
+              }),
+            });
+          }, 2000);
+        });
 
-      this.props.socket.on("playerUpdate", (data) => {
-        const key = data.id;
-        const playerState = data;
-        //console.log(data);
-        if (this.allPlayerModels.has(key)) {
-          let model = this.allPlayerModels.get(key);
-          //console.log("Model", model);
+        this.props.socket.on("playerUpdate", (data) => {
+          const key = data.id;
+          const playerState = data;
+          //console.log(data);
+          if (this.allPlayerModels.has(key)) {
+            let model = this.allPlayerModels.get(key);
+            //console.log("Model", model);
 
-          model.rotation.z = playerState.zrotation;
-          this.playerOldAndNewPositions.set(
-            key,
-            new PrevAndNewPosition(
-              model.position,
-              new THREE.Vector3(data.x, data.y - 1.6, data.z)
-            )
-          );
-          // model.position.x = data.x;
-          //   model.position.y = data.y-1.6; //odd positioning problem on the model I'm using atm, this will be gone!
-          //   model.position.z = data.z;
+            model.rotation.z = playerState.zrotation;
+            this.playerOldAndNewPositions.set(
+              key,
+              new PrevAndNewPosition(
+                model.position,
+                new THREE.Vector3(data.x, data.y - 1.6, data.z)
+              )
+            );
+            // model.position.x = data.x;
+            //   model.position.y = data.y-1.6; //odd positioning problem on the model I'm using atm, this will be gone!
+            //   model.position.z = data.z;
 
-          this.allPlayerModels.set(key, model);
-        } else {
-          const newPlayer = saturn.clone();
-          this.scene.add(newPlayer);
-          this.allPlayerModels.set(data.id, newPlayer);
-          newPlayer.position.x = data.x;
-          newPlayer.position.y = data.y - 1.6; //odd positioning problem on the model I'm using atm, this will be gone!
-          newPlayer.position.z = data.z;
-        }
-      });
+            this.allPlayerModels.set(key, model);
+          } else {
+            const newPlayer = saturn.clone();
+            this.scene.add(newPlayer);
+            this.allPlayerModels.set(data.id, newPlayer);
+            newPlayer.position.x = data.x;
+            newPlayer.position.y = data.y - 1.6; //odd positioning problem on the model I'm using atm, this will be gone!
+            newPlayer.position.z = data.z;
+          }
+        });
 
-      this.allBlockActionsRef.on("child_added", (snapshot) => {
-        const addedAct = snapshot.val();
-        switch (addedAct.action) {
-          case "break":
-            this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z });
-            break;
-          case "place":
-            if (addedAct.type === "light") {
-              this.addPointLight(addedAct.x, addedAct.y, addedAct.z);
-            } else {
-              this.placeBlock(
-                { x: addedAct.x, y: addedAct.y, z: addedAct.z },
-                addedAct.type || "1"
-              );
-            }
-            break;
-          default:
-            break;
-        }
-      });
+        this.allBlockActionsRef.on("child_added", (snapshot) => {
+          const addedAct = snapshot.val();
+          switch (addedAct.action) {
+            case "break":
+              this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z });
+              break;
+            case "place":
+              if (addedAct.type === "light") {
+                this.addPointLight(addedAct.x, addedAct.y, addedAct.z);
+              } else {
+                this.placeBlock(
+                  { x: addedAct.x, y: addedAct.y, z: addedAct.z },
+                  addedAct.type || "1"
+                );
+              }
+              break;
+            default:
+              break;
+          }
+        });
 
-      // this.allPlayersRef.on("child_added", (snapshot) => {
-
-      // });
-
-      this.props.socket.on("playerDisconnect", (id) => {
-        if (this.allPlayerModels.has(id)) {
-          this.scene.remove(this.allPlayerModels.get(id));
-          this.allPlayerModels.delete(id);
-        }
-      });
+        this.props.socket.on("playerDisconnect", (id) => {
+          if (this.allPlayerModels.has(id)) {
+            this.scene.remove(this.allPlayerModels.get(id));
+            this.allPlayerModels.delete(id);
+          }
+        });
+      }
     });
 
     this.mountListeners();
@@ -2053,6 +2042,8 @@ export default class Game extends Component {
 
   sendChat = (event) => {
     event.preventDefault();
+    if(!this.props.isSinglePlayer)
+    {
     const key = generateUUID();
     const chat = {
       id: this.props.name,
@@ -2074,6 +2065,7 @@ export default class Game extends Component {
       chat: "",
     });
     this.chatBoxRef.current.blur();
+  }
   };
 
   runGameLoop(input) {
@@ -2108,6 +2100,7 @@ export default class Game extends Component {
         this.props.handle()("messageToClient")("none");
         this.isReady = true;
       }
+      if(!this.props.isSinglePlayer) {
       if (this.updatePlayersTimer > this.updatePlayersInterval) {
         this.updatePlayersTimer = 0;
         if (
@@ -2143,6 +2136,7 @@ export default class Game extends Component {
           }
         }
       }
+    }
       if (this.isReady) {
         if (input.ActiveState.forward) {
           let dir = this.getCameraDirection();

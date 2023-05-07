@@ -38,6 +38,8 @@ class PointerLockControls2 extends EventDispatcher {
 
     this.camera = camera;
     this.domElement = domElement;
+    
+    this.mobileMoverDown = false;
 
     this.connect();
   }
@@ -55,7 +57,7 @@ class PointerLockControls2 extends EventDispatcher {
         break;
     }
 
-    if (!touch) return;
+    if (!touch || this.mobileMoverDown === true) return;
 
     //console.log(touch.target);
 
