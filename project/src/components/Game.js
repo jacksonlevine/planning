@@ -17,6 +17,9 @@ import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
+const minBrightness = 0.1;
+const maxBrightness = 1;
+
 class InputState {
   constructor() {
     this.left = false;
@@ -415,7 +418,8 @@ export default class Game extends Component {
     if(this.world.data.has(blockKey)) {
       if(blockTypes[this.world.data.get(blockKey)].isLight)
       {
-        this.removePointLight();
+        this.removePointLight(pos.x, pos.y, pos.z);
+
       }
     }
     this.world.data.delete(blockKey);
@@ -473,7 +477,7 @@ export default class Game extends Component {
     if(blockTypes[id]) {
       if (blockTypes[id].isLight) {
         this.addPointLight(pos.x, pos.y, pos.z);
-      } else {
+      } 
         let [chunkx, chunky, chunkz] = [
           Math.floor(pos.x / this.chunkWidth),
           Math.floor(pos.y / this.chunkWidth),
@@ -502,7 +506,7 @@ export default class Game extends Component {
             z: chunkZ,
           });
         }
-      }
+      
     }
   }
 
@@ -521,7 +525,7 @@ export default class Game extends Component {
     window.addEventListener("wheel", (event) => {
       this.setState({
         currentlyPlacingId: Math.max(
-          Math.min(this.state.currentlyPlacingId + event.deltaY, blockTypes.count),
+          Math.min(this.state.currentlyPlacingId + ((event.deltaY > 0) ? 1 : -1), blockTypes.count),
           1
         ),
       });
@@ -1194,7 +1198,7 @@ export default class Game extends Component {
     for(let i of lightSpots)
     {
       let existingLight = this.world.lightMarks.get(`${i.x},${i.y},${i.z}`) || 0;
-      this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, Math.max(i.b, existingLight));
+      this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, existingLight + i.b);
     }
     const i = Math.floor(x / this.chunkWidth);
     const j = Math.floor(y / this.chunkWidth);
@@ -1386,7 +1390,7 @@ export default class Game extends Component {
     for(let i of lightSpots)
     {
       let existingLight = this.world.lightMarks.get(`${i.x},${i.y},${i.z}`) || 0;
-      this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, Math.max(0.2, existingLight-i.b));
+      this.world.lightMarks.set(`${i.x},${i.y},${i.z}`, Math.max(minBrightness, existingLight-i.b));
     }
     const i = Math.floor(x / this.chunkWidth);
     const j = Math.floor(y / this.chunkWidth);
@@ -1450,14 +1454,14 @@ export default class Game extends Component {
         let newCols = [];
 
         const setLight = (i, j, k) => {
-          let bright = .1;
+          let bright = minBrightness;
           const x = Math.floor(this.x * chunkWidth + i);
           const y = Math.floor(this.y * chunkWidth + j);
           const z = Math.floor(this.z * chunkWidth + k);
           const ky = `${x},${y + 1},${z}`;
 
           if (world.lightMarks.has(ky)) {
-            bright = Math.max(world.lightMarks.get(ky), bright);
+            bright = Math.min(Math.max(world.lightMarks.get(ky), bright), maxBrightness);
           }
 
           newCols.push(bright, bright, bright, bright);
@@ -2136,6 +2140,8 @@ export default class Game extends Component {
           }
         }
       }
+    } else {
+      this.delt = this.clock.getDelta();
     }
       if (this.isReady) {
         if (input.ActiveState.forward) {
