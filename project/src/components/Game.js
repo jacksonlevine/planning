@@ -17,7 +17,7 @@ import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
-const minBrightness = 0.1;
+let minBrightness = 0.1;
 const maxBrightness = 1;
 
 class InputState {
@@ -167,8 +167,9 @@ export default class Game extends Component {
   constructor(props) {
     super(props);
     this.allPlayerModels = new Map();
-    this.allPlayersRef = firebase.database().ref("players");
-    this.allBlockActionsRef = firebase.database().ref("blockActions");
+    this.allPlayersRef = (props.isSinglePlayer ? null : firebase.database().ref("players"));
+    this.allBlockActionsRef = (props.isSinglePlayer ? null : firebase.database().ref("blockActions"));
+
 
     this.width = 1024;
     this.height = 640;
@@ -198,6 +199,7 @@ export default class Game extends Component {
     this.chunkQueueInterval = 0;
     this.mappedChunks = new Map();
     this.neededChunks = new Map();
+    this.lightedChunks = new Map();
     this.chunkpool = [];
     this.input = new InputHandler();
     this.playerOldAndNewPositions = new Map(); // uid , PrevAndNewPosiotn
@@ -220,6 +222,7 @@ export default class Game extends Component {
     this.canvasRef = React.createRef();
     this.mobileVerticalOrientatorDown = false;
     this.mobileMoverDown = false;
+    this.blockChangeRequested = false;
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -690,13 +693,31 @@ export default class Game extends Component {
 
     }
   };
+  changeBrightness = (newMinBrightness) => {
+    minBrightness = newMinBrightness;
+    //this.mappedChunks.clear();
+    this.lightedChunks.clear();
+    //this.neededChunks.clear();
+    for(const i of this.mappedChunks.values())
+    {
+      if(!this.neededChunks.has(`${i.x},${i.y},${i.z}`))
+       this.neededChunks.set(`${i.x},${i.y},${i.z}`, {x: i.x, y: i.y, z: i.z});
+    }
+    // this.blockChangeRequested = true;
+    // window.setTimeout(()=> {
+    //   this.blockChangeRequested = false;
+    // }, 40000);
+    this.surveyNeededChunks();
+  };
+
   onKeyDown = (event) => {
     switch (event.code) {
-      // case "KeyL":
-      //   this.setState({
-      //     currentlyPlacingId: "light"
-      //   });
-      //   break;
+      case "KeyL":
+        this.changeBrightness(minBrightness+0.1);
+        break;
+        case "KeyP":
+          this.changeBrightness(minBrightness-0.1);
+          break;
       case "KeyW":
         this.input.ActiveState.forward = true;
         break;
@@ -784,6 +805,10 @@ export default class Game extends Component {
               }),
             });
           }, 2000);
+        });
+
+        this.props.socket.on("brightness", (theUpdate) => {
+          this.changeBrightness(theUpdate.newMinBrightness);
         });
 
         this.props.socket.on("playerUpdate", (data) => {
@@ -1508,7 +1533,7 @@ export default class Game extends Component {
             v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
             v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
             v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, 0, 0, 0);
+            v += addVert(this.x, this.y, this.z, 0, 0, 0);                    setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
             add4UVs("1", "all");
             for (let h = 0; h < v; h++) {
               newNorms.push(-1, 0, 0);
@@ -1530,7 +1555,7 @@ export default class Game extends Component {
             v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
             v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
             v += addVert(this.x, this.y, this.z, 0, 0, 0);
-            add4UVs("1", "all");
+            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, -1);
             }
@@ -1565,7 +1590,7 @@ export default class Game extends Component {
             );
             v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
             v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
-            add4UVs("1", "all");
+            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
             for (let h = 0; h < v; h++) {
               newNorms.push(1, 0, 0);
             }
@@ -1593,7 +1618,7 @@ export default class Game extends Component {
             v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
             v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
             v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
-            add4UVs("1", "all");
+            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 0, 1);
             }
@@ -1614,7 +1639,7 @@ export default class Game extends Component {
             v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
             v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
             v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
-            add4UVs("1", "all");
+            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
             for (let h = 0; h < v; h++) {
               newNorms.push(0, -1, 0);
             }
@@ -1649,12 +1674,13 @@ export default class Game extends Component {
             );
             v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
             v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
-            add4UVs("1", "all");
+            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
             for (let h = 0; h < v; h++) {
               newNorms.push(0, 1, 0);
             }
           }
-        } else {
+        } else 
+        {
           for (let j = 0; j < chunkWidth; j++) {
             for (let i = 0; i < chunkWidth; i++) {
               for (let k = 0; k < chunkWidth; k++) {
@@ -1913,12 +1939,16 @@ export default class Game extends Component {
               "" + grabbedMesh.x + "," + grabbedMesh.y + "," + grabbedMesh.z
             );
           }
-          this.scene.remove(grabbedMesh.mesh);
+          //this.scene.remove(grabbedMesh.mesh);
           grabbedMesh.buildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
-          this.scene.add(grabbedMesh.mesh);
+          //this.scene.add(grabbedMesh.mesh);
           this.mappedChunks.set(
             "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
             grabbedMesh
+          );
+          this.lightedChunks.set(
+            "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
+            "i"
           );
           this.neededChunks.delete(
             "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z
@@ -1960,12 +1990,13 @@ export default class Game extends Component {
           let x = Math.round((i + THERIGHTX) / this.chunkWidth);
           let z = Math.round((k + THERIGHTZ) / this.chunkWidth);
           let yy = Math.round((y + THERIGHTY) / this.chunkWidth);
+          let obj = { x: x, y: yy, z: z };
           if (this.world.ishandledmarks.has("" + x + "," + yy + "," + z)) {
             if (
               this.world.hasBlocksMarks.has("" + x + "," + yy + "," + z) &&
               !this.mappedChunks.has("" + x + "," + yy + "," + z)
             ) {
-              let obj = { x: x, y: yy, z: z };
+              
 
               if (!this.neededChunks.has("" + x + "," + yy + "," + z)) {
                 // if it needs to tell neededchunks it needs this
@@ -1976,6 +2007,27 @@ export default class Game extends Component {
                   this.world.hasBlocksMarks.has(
                     "" + x + "," + (yy + h) + "," + z
                   )
+                  
+                ) {
+                  this.neededChunks.set("" + x + "," + (yy + h) + "," + z, {
+                    x,
+                    y: yy + h,
+                    z,
+                  });
+                  h += 1;
+                }
+              }
+            } else if(!this.lightedChunks.has("" + x + "," + yy + "," + z)){
+              if (!this.neededChunks.has("" + x + "," + yy + "," + z)) {
+                // if it needs to tell neededchunks it needs this
+                this.neededChunks.set("" + x + "," + yy + "," + z, obj);
+                let h = 1;
+
+                while (
+                  this.world.hasBlocksMarks.has(
+                    "" + x + "," + (yy + h) + "," + z
+                  )
+                  && !this.lightedChunks.has("" + x + "," + (yy + h) + "," + z)
                 ) {
                   this.neededChunks.set("" + x + "," + (yy + h) + "," + z, {
                     x,

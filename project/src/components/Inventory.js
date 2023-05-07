@@ -11,7 +11,7 @@ export default function Inventory(props)
     2: "Bricks",
     3: "Sand",
     4: "Grass",
-    light: "Light"
+    5: "Light"
   }
   return (
     <div style={styles}>
