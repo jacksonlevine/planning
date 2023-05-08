@@ -712,12 +712,12 @@ export default class Game extends Component {
 
   onKeyDown = (event) => {
     switch (event.code) {
-      case "KeyL":
-        this.changeBrightness(minBrightness+0.1);
-        break;
-        case "KeyP":
-          this.changeBrightness(minBrightness-0.1);
-          break;
+      // case "KeyL":
+      //   this.changeBrightness(minBrightness+0.1);
+      //   break;
+      //   case "KeyP":
+      //     this.changeBrightness(minBrightness-0.1);
+      //     break;
       case "KeyW":
         this.input.ActiveState.forward = true;
         break;
