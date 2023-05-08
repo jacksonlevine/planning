@@ -849,11 +849,12 @@ export default class Game extends Component {
               this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z });
               break;
             case "place":
-
+                if(!this.world.data.has(`${addedAct.x},${addedAct.y},${addedAct.z}`)) {
                 this.placeBlock(
                   { x: addedAct.x, y: addedAct.y, z: addedAct.z },
                   addedAct.type || "1"
                 );
+                }
 
               break;
             default:
