@@ -721,13 +721,12 @@ export default class Game extends Component {
   onKeyDown = (event) => {
 
     switch (event.code) {
-
-      case "KeyL":
-        this.changeBrightness(minBrightness+0.1);
-        break;
-      case "KeyP":
-        this.changeBrightness(minBrightness-0.1);
-        break;
+      // case "KeyL":
+      //   this.changeBrightness(minBrightness+0.1);
+      //   break;
+      //   case "KeyP":
+      //     this.changeBrightness(minBrightness-0.1);
+      //     break;
       case "KeyW":
         this.input.ActiveState.forward = true;
         break;
@@ -814,7 +813,7 @@ export default class Game extends Component {
                 return chat.key !== key;
               }),
             });
-          }, 2000);
+          }, 30000);
         });
 
         this.props.socket.on("brightness", (theUpdate) => {
@@ -859,14 +858,13 @@ export default class Game extends Component {
               this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z });
               break;
             case "place":
-              if (addedAct.type === "light") {
-                this.addPointLight(addedAct.x, addedAct.y, addedAct.z);
-              } else {
+                if(!this.world.data.has(`${addedAct.x},${addedAct.y},${addedAct.z}`)) {
                 this.placeBlock(
                   { x: addedAct.x, y: addedAct.y, z: addedAct.z },
                   addedAct.type || "1"
                 );
-              }
+                }
+
               break;
             default:
               break;
