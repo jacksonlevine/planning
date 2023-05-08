@@ -17,7 +17,7 @@ import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
-let minBrightness = 0.1;
+let minBrightness = 0.05;
 const maxBrightness = 1;
 
 let backFogColor = new THREE.Color((134.0/255.0)*minBrightness, (196.0/255.0)*minBrightness, (194.0/255.0)*minBrightness);
@@ -100,8 +100,8 @@ const blockTypes = {
   },
   /*sand*/3: {
     texture: {
-      uniform: true,
-      all: [
+      uniform: false,
+      top: [
         0.0625 * 2 + 0.0 + 0.0625 - texPad,
         1.0 - 0.0625 + texPad,
         0.0625 * 2 + 0.0 + texPad,
@@ -109,6 +109,26 @@ const blockTypes = {
         0.0625 * 2 + 0.0 + texPad,
         1.0 - texPad,
         0.0625 * 2 + 0.0 + 0.0625 - texPad,
+        1.0 - texPad,
+      ],
+      bottom: [
+        0.0625 * 2 + 0.0 + 0.0625 - texPad,
+        1.0 - 0.0625 + texPad,
+        0.0625 * 2 + 0.0 + texPad,
+        1.0 - 0.0625 + texPad,
+        0.0625 * 2 + 0.0 + texPad,
+        1.0 - texPad,
+        0.0625 * 2 + 0.0 + 0.0625 - texPad,
+        1.0 - texPad,
+      ],
+      sides: [
+        0.0625 * 7 + 0.0 + 0.0625 - texPad,
+        1.0 - 0.0625 + texPad,
+        0.0625 * 7 + 0.0 + texPad,
+        1.0 - 0.0625 + texPad,
+        0.0625 * 7 + 0.0 + texPad,
+        1.0 - texPad,
+        0.0625 * 7 + 0.0 + 0.0625 - texPad,
         1.0 - texPad,
       ],
     },
@@ -164,6 +184,56 @@ const blockTypes = {
     },
     isLight: true
   },
+    /*trunk*/6: {
+      texture: {
+        uniform: false,
+        top: [
+          0.0625 * 10 + 0.0 + 0.0625 - texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 10 + 0.0 + texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 10 + 0.0 + texPad,
+          1.0 - texPad,
+          0.0625 * 10 + 0.0 + 0.0625 - texPad,
+          1.0 - texPad,
+        ],
+        bottom: [
+          0.0625 * 10 + 0.0 + 0.0625 - texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 10 + 0.0 + texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 10 + 0.0 + texPad,
+          1.0 - texPad,
+          0.0625 * 10 + 0.0 + 0.0625 - texPad,
+          1.0 - texPad,
+        ],
+        sides: [
+          0.0625 * 8 + 0.0 + 0.0625 - texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 8 + 0.0 + texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 8 + 0.0 + texPad,
+          1.0 - texPad,
+          0.0625 * 8 + 0.0 + 0.0625 - texPad,
+          1.0 - texPad,
+        ],
+      },
+    },
+    /*leaves*/7: {
+      texture: {
+        uniform: true,
+        all: [
+          0.0625 * 9 + 0.0 + 0.0625 - texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 9 + 0.0 + texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 9 + 0.0 + texPad,
+          1.0 - texPad,
+          0.0625 * 9 + 0.0 + 0.0625 - texPad,
+          1.0 - texPad,
+        ],
+      },
+    },
 };
 
 export default class Game extends Component {
@@ -277,16 +347,21 @@ export default class Game extends Component {
                 ref={this.canvasRef}
                 style={{
                   zIndex: "-1",
+                  borderRadius: "25px"
                 }}
                 id="canvas"
               ></canvas>
             </div>
-            <p>Chat: Press 't' to type and 'Enter' to send.</p>
             <ChatView chats={this.state.chats} />
             <Inventory id={this.state.currentlyPlacingId} />
           </div>
         </div>
-        <form onSubmit={this.sendChat}>
+        <form 
+        style={
+          {
+            width:"100%"
+          }
+        }onSubmit={this.sendChat}>
           <input
             ref={this.chatBoxRef}
             value={this.state.chat}
@@ -294,6 +369,12 @@ export default class Game extends Component {
             type="text"
             id="inp"
             name="inp"
+            placeholder="Press 't' to type and 'Enter' to send."
+            style={
+              {
+                width:"100%"
+              }
+            }
             onChange={(e) => {
               this.setState({
                 chat: e.target.value,
@@ -898,6 +979,42 @@ export default class Game extends Component {
       //       //const map = new Map(Object.entries(json));
       //       //this.data = new Map([...map, ...this.data]);
       // }
+      placeTree(x,y,z)
+      {
+        this.data.set(`${x},${y},${z}`, "6");
+        this.data.set(`${x},${y+1},${z}`, "6");
+        this.data.set(`${x},${y+2},${z}`, "6");
+        this.data.set(`${x},${y+3},${z}`, "6");
+        this.data.set(`${x},${y+4},${z}`, "6");
+        this.data.set(`${x-1},${y+4},${z}`, "7");
+        this.data.set(`${x+1},${y+4},${z}`, "7");
+        this.data.set(`${x},${y+4},${z-1}`, "7");
+        this.data.set(`${x},${y+4},${z+1}`, "7");
+      }
+      getNoise(realWorldX, realWorldZ)
+      {
+        return ImprovedNoise.noise(
+          realWorldX / 25.34,
+          34.425,
+          realWorldZ / 25.65
+        ) * 15;
+      }
+      getNoise3D(realWorldX, realWorldY, realWorldZ)
+      {
+        return ImprovedNoise.noise(
+          realWorldX / 25.34,
+          realWorldY/ 25.34,
+          realWorldZ / 25.65
+        ) * 15;
+      }
+      getNoiseSmall(realWorldX, realWorldZ)
+      {
+        return ImprovedNoise.noise(
+          realWorldX / 5.34,
+          34.425,
+          realWorldZ / 5.65
+        ) * 15;
+      }
       generateOneChunk(A, B, C) {
         let blockCount = 0;
         for (var o = 0 + A * chunkWidth; o < chunkWidth + A * chunkWidth; o++) {
@@ -916,18 +1033,25 @@ export default class Game extends Component {
               let realWorldY = o2;
 
               let n =
-                ImprovedNoise.noise(
-                  realWorldX / 25.34,
-                  34.425,
-                  realWorldZ / 25.65
-                ) * 15;
+                this.getNoise(realWorldX, realWorldZ);
 
               if (!this.ishandledmarks.has("" + A + "," + B + "," + C)) {
                 this.ishandledmarks.set("" + A + "," + B + "," + C, "1");
               }
 
               if (realWorldY < n) {
-                blockCount++;
+                //this.getNoise3D(realWorldX, realWorldY, realWorldZ) < 5
+                if(true){blockCount++;
+                let idToSet =
+                Math.abs(realWorldY - n) < 2
+                  ? realWorldY < 1
+                    ? "3"
+                    : "4"
+                  : "1";
+              this.data.set(
+                "" + realWorldX + "," + realWorldY + "," + realWorldZ,
+                idToSet
+              );}
                 if (!this.hasBlocksMarks.has("" + A + "," + B + "," + C)) {
                   this.hasBlocksMarks.set("" + A + "," + B + "," + C, "1"); //Chunk level (zoomed out)
                 }
@@ -935,16 +1059,11 @@ export default class Game extends Component {
                   this.fullBlockMarks.set("" + A + "," + B + "," + C, "1"); // Remove it if its full for now
                 }
 
-                let idToSet =
-                  Math.abs(realWorldY - n) < 2
-                    ? realWorldY < 1
-                      ? "3"
-                      : "4"
-                    : "1";
-                this.data.set(
-                  "" + realWorldX + "," + realWorldY + "," + realWorldZ,
-                  idToSet
-                ); // Real this.world level (micro)
+  
+                // if(Math.abs(realWorldY - n) <= 1 && n+realWorldX%1   < 0.5 && n2 > 10)
+                // {
+                //   this.placeTree(realWorldX, realWorldY, realWorldZ);
+                // } // Real this.world level (micro)
                 // try {
                 //   const docRef = addDoc(collection(db, "blocks"), {
                 //     x: realWorldX,
@@ -974,54 +1093,7 @@ export default class Game extends Component {
         for (let j = -2; j < 2; j++) {
           for (let i = -5; i < 5; i++) {
             for (let k = -5; k < 5; k++) {
-              let blockCount = 0;
-              for (var o = 0; o < chunkWidth; o++) {
-                for (var o2 = 0; o2 < chunkWidth; o2++) {
-                  for (var o3 = 0; o3 < chunkWidth; o3++) {
-                    realWorldX = i * chunkWidth + o;
-                    realWorldZ = k * chunkWidth + o3;
-                    realWorldY = j * chunkWidth + o2;
-
-                    let n =
-                      ImprovedNoise.noise(
-                        realWorldX / 25.34,
-                        34.425,
-                        realWorldZ / 25.65
-                      ) * 15;
-
-                    if (!this.ishandledmarks.has("" + i + "," + j + "," + k)) {
-                      this.ishandledmarks.set("" + i + "," + j + "," + k, "1");
-                    }
-                    if (realWorldY < n) {
-                      blockCount++;
-                      if (
-                        !this.hasBlocksMarks.has("" + i + "," + j + "," + k)
-                      ) {
-                        this.hasBlocksMarks.set(
-                          "" + i + "," + j + "," + k,
-                          "1"
-                        );
-                      }
-                      if (blockCount >= chunkWidth * chunkWidth * chunkWidth) {
-                        this.fullBlockMarks.set(
-                          "" + i + "," + j + "," + k,
-                          "1"
-                        );
-                      }
-                      let idToSet =
-                        Math.abs(realWorldY - n) < 2
-                          ? realWorldY < 1
-                            ? "3"
-                            : "4"
-                          : "1";
-                      this.data.set(
-                        "" + realWorldX + "," + realWorldY + "," + realWorldZ,
-                        idToSet
-                      );
-                    }
-                  }
-                }
-              }
+              this.generateOneChunk(i,j,k);
             }
           }
         }
@@ -1523,7 +1595,7 @@ export default class Game extends Component {
         };
 
         if (
-          world.fullBlockMarks.has("" + this.x + "," + this.y + "," + this.z)
+          world.fullBlockMarks.has("" + this.x + "," + this.y + "," + this.z) && this.y < -1
         ) {
           if (
             !world.fullBlockMarks.has(
@@ -2157,12 +2229,13 @@ export default class Game extends Component {
           (6 - this.input.ActiveState.jumpTimer) * this.delt;
       }
       //console.log(this.mappedChunks.size );
-      if (this.mappedChunks.size < 125) {
-        this.props.handle()("messageToClient")("loadingworld");
-      } else {
-        this.props.handle()("messageToClient")("none");
-        this.isReady = true;
-      }
+
+        if (this.mappedChunks.size < 125) {
+        } else {
+          this.isReady = true;
+        }
+
+
       if(!this.props.isSinglePlayer) {
       if (this.updatePlayersTimer > this.updatePlayersInterval) {
         this.updatePlayersTimer = 0;

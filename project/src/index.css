@@ -1,16 +1,118 @@
 body{
     overflow: hidden;
     font-size:17px;
+    font-family: "mimosFont";
+    background-image: url("./images/background.png");
     background-color: black;
+
 }
 
 .red {
   display: inline;
   color: red;
-  font-weight: bold;
+}
+.green {
+  display: inline;
+  color: green;
+}
+.blue {
+  display: inline;
+  color: blue;
+}
+.yellow {
+  display: inline;
+  color: yellow;
+}
+.purple {
+  display: inline;
+  color: purple;
 }
 
 .small {
   font-size: small;
-  color: grey;
+  color: lightgreen;
+}
+
+@font-face {
+  font-family: "mimosFont";
+  src: local("AlbertText-Bold"),
+    url("./fonts/AlbertText-Bold.ttf") format("truetype");
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+
+@keyframes slidein1 {
+  from {
+    transform: translateX(-1000px);
+  }
+  to {
+    transform: translateX(0px);
+  }
+}
+
+@keyframes slidein2 {
+  from {
+    transform: translateX(1000px);
+  }
+  to {
+    transform: translateX(0px);
+  }
+}
+
+.payPal {
+  opacity: 0;
+  animation: fadein 1s ease-in alternate;
+  animation-delay: 10s;
+  animation-fill-mode: forwards;
+}
+
+.secondTitle {
+  opacity: 0;
+  animation: fadein 0.5s;
+  animation-delay: 1.5s;
+  animation-fill-mode: forwards;
+}
+
+.fadey {
+  opacity: 0;
+  animation: fadein 1s ease-in alternate, fadeout .5s;
+  animation-delay: 0s, 1.5s;
+  animation-fill-mode: forwards;
+}
+
+.slide1 {
+  transform: translateX(-1000px);
+  opacity: 1;
+  animation: slidein1 1s ease-in alternate;
+  animation-delay: 0.5s;
+  animation-fill-mode: forwards;
+}
+.slide2 {
+  transform: translateX(1000px);
+  opacity: 1;
+  animation: slidein2 1s ease-in alternate;
+  animation-delay: 0.5s;
+  animation-fill-mode: forwards;
+}
+
+.mainButtons {
+  position: absolute;
+  top: 42%;
 }

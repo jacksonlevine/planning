@@ -5,15 +5,14 @@ export default function Footer() {
   let footerStyle = {
       alignItems: "center",
       display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-start",
+      flexDirection: "column",
+      justifyContent: "center",
       margin: "0 0",
-      position: "absolute",
-      top: "90%",
-      left: "0%"
+      transform: "translateY(700%)"
   }
   return (
-    <div>
+    <div className="payPal" style={footerStyle}
+    >
         <PayPalDonate />
         <p>
           <span className="small">Donations are hugely appreciated!</span>

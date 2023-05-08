@@ -8,6 +8,7 @@ import GameInfo from "./GameInfo.js";
 import { getFirestore } from "firebase/firestore";
 import io from 'socket.io-client';
 import PayPalDonate from "./PayPalDonate.js";
+import { generateUUID } from "three/src/math/MathUtils.js";
 
 class App extends Component {
   constructor() {
@@ -28,15 +29,17 @@ class App extends Component {
       chat: [],
       width: 0,
       height: 0,
+      isSignedOut: true,
     };
     this.styles = {
-      backgroundColor: "rgb(20,20,20)",
       color: "white",
       padding: "0px 0px",
       margin: "0% 0%",
       //border: "20px solid rgb(250, 230, 150)",
-      fontFamily: "Tahoma",
-      overflow: "hidden"
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
     };
   }
   Login = async () => {
@@ -69,8 +72,8 @@ class App extends Component {
 
     this.setState(
       {
-        width: document.getElementById("App").offsetWidth*.70,
-        height: window.innerHeight/1.5
+        width: document.getElementById("App").offsetWidth*.80,
+        height: window.innerHeight/1.2
       }
     )
     window.addEventListener( 'resize', this.callForResize, false );
@@ -78,8 +81,8 @@ class App extends Component {
 
 
   callForResize = () => {
-    this.changeState()("width")(document.getElementById("App").offsetWidth*.70)
-    this.changeState()("height")((window.innerHeight/1.5))
+    this.changeState()("width")(document.getElementById("App").offsetWidth*.80)
+    this.changeState()("height")((window.innerHeight/1.2))
   }
 
   initializeAuth = () => {
@@ -122,13 +125,21 @@ class App extends Component {
   initializeSinglePlayer = () => {
     this.isSinglePlayer = true;
     this.changeState()("gameButtonVisible")(true);
+    this.changeState()("isSignedOut")(false);
         this.changeState()("messageToClient")("none");
         this.switchPage("game");
+
   }
 
   signOut = () => {
+    
+    this.changeState()("isSignedOut")(true);
     this.changeState()("gameButtonVisible")(false);
     this.changeState()("messageToClient")("signin");
+    this.switchPage("default")
+
+
+  
     if(this.socket)
     {
       this.socket.close();
@@ -163,12 +174,14 @@ class App extends Component {
           mainElement = 
           <React.Fragment>
             <GameInfo message={this.state.messageToClient} />
-            <button onClick={
-              this.initializeAuth
-            }>Sign in with Google</button>
-            <button onClick={
-              this.initializeSinglePlayer
-            }>Singleplayer mode</button>
+            <div className="mainButtons">
+              <button className="btn btn-outline-info slide1" onClick={
+                this.initializeAuth
+              }>Sign in with Google</button>
+              <button className="btn btn-outline-warning slide2" onClick={
+                this.initializeSinglePlayer
+              }>Singleplayer mode</button>
+            </div>
           </React.Fragment>;
         }
 
@@ -189,9 +202,10 @@ class App extends Component {
               resize={this.callForResize}
               name={this.name}
               isSinglePlayer={this.isSinglePlayer}
+              isSignedOut={this.state.isSignedOut}
             />
             <div style={{margin: "0px",display:"flex",flexDirection:"row",justifyContent:"space-between", alignItems:"flex-start"}}>
-              <GameInfo message={this.state.messageToClient} /><button onClick = {this.signOut}>Sign Out</button></div>
+              <GameInfo message={this.state.messageToClient} /><button className="btn btn-outline-danger" onClick = {this.signOut}>Sign Out</button></div>
           </React.Fragment>
         );
 
