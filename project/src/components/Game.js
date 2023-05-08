@@ -804,7 +804,7 @@ export default class Game extends Component {
                 return chat.key !== key;
               }),
             });
-          }, 2000);
+          }, 30000);
         });
 
         this.props.socket.on("brightness", (theUpdate) => {
@@ -849,14 +849,12 @@ export default class Game extends Component {
               this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z });
               break;
             case "place":
-              if (addedAct.type === "light") {
-                this.addPointLight(addedAct.x, addedAct.y, addedAct.z);
-              } else {
+
                 this.placeBlock(
                   { x: addedAct.x, y: addedAct.y, z: addedAct.z },
                   addedAct.type || "1"
                 );
-              }
+
               break;
             default:
               break;
