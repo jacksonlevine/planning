@@ -20,6 +20,9 @@ let saturn;
 let minBrightness = 0.1;
 const maxBrightness = 1;
 
+let backFogColor = new THREE.Color((134.0/255.0)*minBrightness, (196.0/255.0)*minBrightness, (194.0/255.0)*minBrightness);
+
+
 class InputState {
   constructor() {
     this.left = false;
@@ -695,6 +698,11 @@ export default class Game extends Component {
   };
   changeBrightness = (newMinBrightness) => {
     minBrightness = newMinBrightness;
+    backFogColor = new THREE.Color((134.0/255.0)*minBrightness, (196.0/255.0)*minBrightness, (194.0/255.0)*minBrightness);
+    this.scene.fog.color = backFogColor;
+
+    this.renderer.setClearColor(backFogColor, 1);
+
     //this.mappedChunks.clear();
     this.lightedChunks.clear();
     //this.neededChunks.clear();
@@ -711,13 +719,15 @@ export default class Game extends Component {
   };
 
   onKeyDown = (event) => {
+
     switch (event.code) {
+
       case "KeyL":
         this.changeBrightness(minBrightness+0.1);
         break;
-        case "KeyP":
-          this.changeBrightness(minBrightness-0.1);
-          break;
+      case "KeyP":
+        this.changeBrightness(minBrightness-0.1);
+        break;
       case "KeyW":
         this.input.ActiveState.forward = true;
         break;
@@ -771,7 +781,7 @@ export default class Game extends Component {
   };
   componentDidMount = () => {
     this.setSmallMode();
-    this.scene.fog = new THREE.Fog(0x000000, 20, 160);
+    this.scene.fog = new THREE.Fog(backFogColor, 20, 160);
     const gltfLoader = new GLTFLoader();
     const loadAsync = (url) => {
       return new Promise((resolve) => {
@@ -1046,7 +1056,7 @@ export default class Game extends Component {
     });
 
     this.renderer.setSize(this.width, this.height);
-    this.renderer.setClearColor(0x000000, 1);
+    this.renderer.setClearColor(backFogColor, 1);
 
     this.controls = new PointerLockControls2(this.camera, this.canvas);
 
