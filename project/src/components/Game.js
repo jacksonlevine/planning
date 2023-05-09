@@ -747,12 +747,13 @@ export default class Game extends Component {
 
     for(const i of event.targetTouches)
     {
-      if((this.tpCache[i.identifier] || null) !== null) {
-        if((this.tpInfo[i.identifier].isMobileMover || null) === true) //Mobile Mover
+      if((this.tpCache[i.identifier] || undefined) !== undefined) {
+        if((this.tpInfo[i.identifier].isMobileMover || undefined) === true) //Mobile Mover
         {
           event.preventDefault();
           let differenceX = i.clientX - this.tpInfo[i.identifier].initX;
           let differenceY = i.clientY - this.tpInfo[i.identifier].initY;
+          this.props.socket.emit("debug", { data: `${differenceX},${differenceY}` });
           if (differenceX > 0) {
             this.input.ActiveState.right = true;
           }
@@ -773,8 +774,8 @@ export default class Game extends Component {
   onTouchEnd = (event) => {
     for(const i of event.targetTouches)
     {
-      if((this.tpCache[i.identifier] || null) !== null) {
-        if((this.tpInfo[i.identifier].isMobileMover || null) === true) //Mobile Mover
+      if((this.tpCache[i.identifier] || undefined) !== undefined) {
+        if((this.tpInfo[i.identifier].isMobileMover || undefined) === true) //Mobile Mover
         {
           this.input.ActiveState.right = false;
           this.input.ActiveState.left = false; 
@@ -782,7 +783,7 @@ export default class Game extends Component {
           this.input.ActiveState.back = false;
           this.mobileMoverDown = false;
         }
-        if((this.tpInfo[i.identifier].isMobileJumper || null) === true) //Mobile Jumper
+        if((this.tpInfo[i.identifier].isMobileJumper || undefined) === true) //Mobile Jumper
         {
           this.input.ActiveState.jump = false;
           this.mobileJumperDown = false;

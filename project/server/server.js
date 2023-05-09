@@ -34,6 +34,9 @@ io.on('connection', (socket) => {
     console.log(`${data.id}: ${data.message}`);
     socket.broadcast.emit('chat', data);
   })
+  socket.on('debug', (data) => {
+    console.log(`${data.data}`);
+  })
 });
 
 httpServer.listen(3001, () => {
