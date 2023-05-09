@@ -48,6 +48,8 @@ body{
   }
 }
 
+
+
 @keyframes fadeout {
   from {
     opacity: 1;
@@ -85,15 +87,15 @@ body{
 
 .secondTitle {
   opacity: 0;
-  animation: fadein 0.5s;
-  animation-delay: 1.5s;
+  animation: fadein 0.35s;
+  animation-delay: 0.75s;
   animation-fill-mode: forwards;
 }
 
 .fadey {
   opacity: 0;
-  animation: fadein 1s ease-in alternate, fadeout .5s;
-  animation-delay: 0s, 1.5s;
+  animation: fadein 1s ease-in alternate, fadeout .25s;
+  animation-delay: 0s, .85s;
   animation-fill-mode: forwards;
 }
 @media screen and (max-width: 900px) {
@@ -104,14 +106,24 @@ body{
     font-size:42px;
   }
 
+  @keyframes fadeinSlam {
+    from {
+      opacity: 0;
+      transform: scale(1);
+    }
+    to {
+      opacity: 1;
+      transform: scale(0.4);
+    }
+  }
   .construct {
-    transform: scale(0.4);
+    transform: scale(1);
     position: absolute;
     top: 21%;
     left: 12%;
     opacity: 0;
-    animation: fadein 1s;
-    animation-delay: 2.2s;
+    animation: fadeinSlam 1s;
+    animation-delay: 1.5s;
     animation-fill-mode: forwards;
   }
 }
@@ -122,15 +134,25 @@ body{
   .secondTitle {
     font-size:72px;
   }
+  @keyframes fadeinSlam {
+    from {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(0.6);
+    }
+  }
 
   .construct {
-    transform: scale(0.6);
+    transform: scale(1.5);
     position: absolute;
     top: 25%;
     left: 42%;
     opacity: 0;
-    animation: fadein 1s;
-    animation-delay: 2.2s;
+    animation: fadeinSlam 0.5s;
+    animation-delay: 1.5s;
     animation-fill-mode: forwards;
   }
 }
@@ -138,15 +160,15 @@ body{
 .slide1 {
   transform: translateX(-1000px);
   opacity: 1;
-  animation: slidein1 1s ease-in alternate;
-  animation-delay: 0.5s;
+  animation: slidein1 0.5s ease-in alternate;
+  animation-delay: 0.35s;
   animation-fill-mode: forwards;
 }
 .slide2 {
   transform: translateX(1000px);
   opacity: 1;
-  animation: slidein2 1s ease-in alternate;
-  animation-delay: 0.5s;
+  animation: slidein2 0.5s ease-in alternate;
+  animation-delay: 0.35s;
   animation-fill-mode: forwards;
 }
 

@@ -295,6 +295,7 @@ export default class Game extends Component {
     this.chunkQueueTimer = 0;
     this.chunkQueueInterval = 0;
     this.mappedChunks = new Map();
+    this.chunkLoop = null;
     this.mappedWaterChunks = new Map();
     this.neededChunks = new Map();
     this.neededWaterChunks = new Map();
@@ -480,7 +481,7 @@ export default class Game extends Component {
               this.breakBlock(pos);
               if(!this.props.isSinglePlayer){let actionRef = firebase
                 .database()
-                .ref(`blockActions/${generateUUID()}`);
+                .ref(`blockActions/${pos.x},${pos.y},${pos.z}`);
               actionRef.set({
                 action: "break",
                 time: new Date().getTime(),
@@ -511,7 +512,7 @@ export default class Game extends Component {
             this.placeBlock(pos, placed);
             if(!this.props.isSinglePlayer){let actionRef = firebase
               .database()
-              .ref(`blockActions/${generateUUID()}`);
+              .ref(`blockActions/${pos.x},${pos.y},${pos.z}`);
             actionRef.set({
               action: "place",
               type: placed,
@@ -624,6 +625,8 @@ export default class Game extends Component {
   }
 
   componentWillUnmount() {
+    this.isOpen = false;
+
     window.removeEventListener("keydown", this.onKeyDown, false);
 
     window.removeEventListener("keyup", this.onKeyUp, false);
@@ -632,20 +635,27 @@ export default class Game extends Component {
     window.removeEventListener("touchmove", this.onTouchMove, false);
     window.removeEventListener("touchend", this.onTouchEnd, false);
     window.removeEventListener("mousedown", this.onClick);
+    
+    window.removeEventListener("resize", this.onWindowResize, false);
+    window.removeEventListener("wheel", this.onWheel, false);
+    
+    window.clearInterval(this.chunkLoop);
   }
 
-  mountListeners = () => {
-    window.addEventListener("wheel", (event) => {
-      this.setState({
-        currentlyPlacingId: Math.max(
-          Math.min(this.state.currentlyPlacingId + ((event.deltaY > 0) ? 1 : -1), blockTypes.count),
-          1
-        ),
-      });
+  onWheel = (event) => {
+    this.setState({
+      currentlyPlacingId: Math.max(
+        Math.min(this.state.currentlyPlacingId + ((event.deltaY > 0) ? 1 : -1), blockTypes.count),
+        1
+      ),
     });
-    window.setInterval(() => {
-      this.surveyNeededChunks();
-    }, 2000);
+  };
+
+  
+
+  mountListeners = () => {
+    window.addEventListener("wheel", this.onWheel, false);
+    this.chunkLoop = window.setInterval(()=>{this.surveyNeededChunks()}, 1000);
 
     window.addEventListener("resize", this.onWindowResize, false);
 
@@ -887,7 +897,7 @@ export default class Game extends Component {
   };
   componentDidMount = () => {
     this.setSmallMode();
-    this.scene.fog = new THREE.Fog(backFogColor, 20, 160);
+    this.scene.fog = new THREE.Fog(backFogColor, 20, 250);
     const gltfLoader = new GLTFLoader();
     const loadAsync = (url) => {
       return new Promise((resolve) => {
@@ -2200,17 +2210,25 @@ export default class Game extends Component {
   }
 
   surveyNeededChunks() {
+    let dir = this.getCameraDirection();
+    dir.y = 0;
 
+    let zSkew = (dir.z || 0.5)*2*6;
+    let xSkew = (dir.x || 0.5)*2*6;
     if (this.camera !== null && this.camera !== undefined) {
       let y = -this.chunkWidth * 1;
+      let dirxn = xSkew > 0 ? 0 : Math.round(Math.abs(xSkew));
+      let dirxp = xSkew < 0 ? 0 : Math.round(xSkew);
       for (
-        let i = -this.chunkWidth * 5;
-        i < this.chunkWidth * 5;
+        let i = -this.chunkWidth * dirxn;
+        i < this.chunkWidth * dirxp;
         i += this.chunkWidth
       ) {
+        let dirzn = zSkew > 0 ? 0 : Math.round(Math.abs(zSkew));
+        let dirzp = zSkew < 0 ? 0 : Math.round(zSkew);
         for (
-          let k = -this.chunkWidth * 5;
-          k < this.chunkWidth * 5;
+          let k = -this.chunkWidth * dirzn;
+          k < this.chunkWidth * dirzp;
           k += this.chunkWidth
         ) {
           let THERIGHTX =
@@ -2478,7 +2496,7 @@ export default class Game extends Component {
               collisionDistance
             ) === null
           ) {
-            this.controls.moveForward(this.delt * 6);
+            this.controls.moveForward(this.delt * 4);
           }
         }
         if (input.ActiveState.back) {
@@ -2504,7 +2522,7 @@ export default class Game extends Component {
               collisionDistance
             ) === null
           ) {
-            this.controls.moveForward(-this.delt * 6);
+            this.controls.moveForward(-this.delt * 4);
           }
         }
         if (input.ActiveState.right) {
@@ -2530,7 +2548,7 @@ export default class Game extends Component {
               collisionDistance
             ) === null
           ) {
-            this.controls.moveRight(this.delt * 6);
+            this.controls.moveRight(this.delt * 4);
           }
         }
         if (input.ActiveState.left) {
@@ -2556,7 +2574,7 @@ export default class Game extends Component {
               collisionDistance
             ) === null
           ) {
-            this.controls.moveRight(-this.delt * 6);
+            this.controls.moveRight(-this.delt * 4);
           }
         }
         if (input.ActiveState.jump) {

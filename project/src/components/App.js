@@ -138,10 +138,16 @@ class App extends Component {
     this.changeState()("messageToClient")("signin");
     this.switchPage("default")
 
-
-  
     if(this.socket)
     {
+      this.socket.off('chat');
+    
+      this.socket.off('brightness');
+      
+      this.socket.off('playerUpdate');
+      
+      this.socket.off('playerDisconnect');
+    this.socket.emit("playerDisconnect", this.playerId);
       this.socket.close();
     }
   }
