@@ -58,6 +58,15 @@ meshMaterial.map = texture;
 meshMaterial.vertexColors = true;
 meshMaterial.emissiveIntensity = 20;
 
+const waterMaterial = new THREE.MeshPhysicalMaterial({  
+  roughness: 0,  
+  transmission: 1
+});
+
+waterMaterial.opacity = 0.5;
+waterMaterial.map = texture;
+waterMaterial.emissiveIntensity = 20;
+
 class PrevAndNewPosition {
   constructor(vector1, vector2) {
     this.prevPosition = vector1;
@@ -234,6 +243,21 @@ const blockTypes = {
         ],
       },
     },
+    /*water*/8: {
+      texture: {
+        uniform: true,
+        all: [
+          0.0625 * 11 + 0.0 + 0.0625 - texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 11 + 0.0 + texPad,
+          1.0 - 0.0625 + texPad,
+          0.0625 * 11 + 0.0 + texPad,
+          1.0 - texPad,
+          0.0625 * 11 + 0.0 + 0.0625 - texPad,
+          1.0 - texPad,
+        ],
+      },
+    },
 };
 
 export default class Game extends Component {
@@ -271,9 +295,12 @@ export default class Game extends Component {
     this.chunkQueueTimer = 0;
     this.chunkQueueInterval = 0;
     this.mappedChunks = new Map();
+    this.mappedWaterChunks = new Map();
     this.neededChunks = new Map();
+    this.neededWaterChunks = new Map();
     this.lightedChunks = new Map();
     this.chunkpool = [];
+    this.waterchunkpool = [];
     this.input = new InputHandler();
     this.playerOldAndNewPositions = new Map(); // uid , PrevAndNewPosiotn
     this.updatePlayersTimer = parseFloat("0.0");
@@ -965,10 +992,12 @@ export default class Game extends Component {
     class World {
       constructor() {
         this.data = new LinkedHashMap();
+        this.waterdata = new LinkedHashMap();
         this.hasBlocksMarks = new LinkedHashMap();
         this.fullBlockMarks = new LinkedHashMap();
         this.ishandledmarks = new LinkedHashMap();
         this.lightMarks = new LinkedHashMap();
+        this.waterMarks = new LinkedHashMap();
       }
       // load = (string) => {
 
@@ -1015,7 +1044,7 @@ export default class Game extends Component {
           realWorldZ / 5.65
         ) * 15;
       }
-      generateOneChunk(A, B, C) {
+      generateOneChunk = (A, B, C) => {
         let blockCount = 0;
         for (var o = 0 + A * chunkWidth; o < chunkWidth + A * chunkWidth; o++) {
           for (
@@ -1033,13 +1062,13 @@ export default class Game extends Component {
               let realWorldY = o2;
 
               let n =
-                this.getNoise3D(realWorldX, realWorldY, realWorldZ);
+                this.getNoise(realWorldX, realWorldZ);
 
               if (!this.ishandledmarks.has("" + A + "," + B + "," + C)) {
                 this.ishandledmarks.set("" + A + "," + B + "," + C, "1");
               }
 
-              if (n > 5) {
+              if (realWorldY < n) {
                 //this.getNoise3D(realWorldX, realWorldY, realWorldZ) < 5
                 if(true){blockCount++;
                 let idToSet =
@@ -1075,6 +1104,21 @@ export default class Game extends Component {
                 // } catch (e) {
                 //   console.error("Error adding document: ", e);
                 // }
+              }
+              else if(realWorldY < 1)
+              {
+
+                this.waterdata.set(
+                  "" + realWorldX + "," + realWorldY + "," + realWorldZ,
+                  "8"
+                );
+                  if (!this.waterMarks.has("" + A + "," + B + "," + C)) {
+                    this.waterMarks.set("" + A + "," + B + "," + C, "8"); //Chunk level (zoomed out)
+
+                  }
+     
+  
+    
               }
             }
           }
@@ -1529,14 +1573,15 @@ export default class Game extends Component {
     const clock = this.clock;
 
     class Chunk {
-      constructor() {
+      constructor(water) {
         this.meshGeometry = new THREE.BufferGeometry();
         this.vertices = new Float32Array(3);
-        this.mesh = new THREE.Mesh(this.meshGeometry, meshMaterial);
+        this.mesh = water ? new THREE.Mesh(this.meshGeometry, waterMaterial) : new THREE.Mesh(this.meshGeometry, meshMaterial);
         this.x = 0; //multiply x and z by 16 to get real-this.world position
         this.z = 0;
         this.y = 2000;
         this.timeLastMeshed = 0;
+        this.isWater = water;
       }
       buildMesh(newX, newY, newZ) {
         this.timeLastMeshed = Date.now();
@@ -1550,7 +1595,7 @@ export default class Game extends Component {
         );
         this.buildMeshInPlace();
       }
-      buildMeshInPlace() {
+      buildMeshInPlace = () => {
         let newVerts = [];
         let newNorms = [];
 
@@ -1593,331 +1638,394 @@ export default class Game extends Component {
           newVerts.push(x,y,z);
           return 1;
         };
-
-        if (
-          world.fullBlockMarks.has("" + this.x + "," + this.y + "," + this.z) && this.y < -1
-        ) {
-          if (
-            !world.fullBlockMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            ) ||
-            !world.hasBlocksMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            )
-          ) {
-            //left
-            let v = 0;
-            v += addVert(this.x, this.y, this.z, 0, 0, 0);
-            v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, 0, 0, 0);                    setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
-            add4UVs("1", "all");
-            for (let h = 0; h < v; h++) {
-              newNorms.push(-1, 0, 0);
-            }
-          }
-          if (
-            !world.fullBlockMarks.has(
-              "" + this.x + "," + this.y + "," + (this.z - 1)
-            ) ||
-            !world.hasBlocksMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            )
-          ) {
-            //front
-            let v = 0;
-            v += addVert(this.x, this.y, this.z, 0, 0, 0);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
-            v += addVert(this.x, this.y, this.z, 0, 0, 0);
-            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
-            for (let h = 0; h < v; h++) {
-              newNorms.push(0, 0, -1);
-            }
-          }
-          if (
-            !world.fullBlockMarks.has(
-              "" + (this.x + 1) + "," + this.y + "," + this.z
-            ) ||
-            !world.hasBlocksMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            )
-          ) {
-            //right
-            let v = 0;
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
-            v += addVert(
-              this.x,
-              this.y,
-              this.z,
-              chunkWidth,
-              chunkWidth,
-              chunkWidth
-            );
-            v += addVert(
-              this.x,
-              this.y,
-              this.z,
-              chunkWidth,
-              chunkWidth,
-              chunkWidth
-            );
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
-            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
-            for (let h = 0; h < v; h++) {
-              newNorms.push(1, 0, 0);
-            }
-          }
-          if (
-            !world.fullBlockMarks.has(
-              "" + this.x + "," + this.y + "," + this.z + 1
-            ) ||
-            !world.hasBlocksMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            )
-          ) {
-            //back
-            let v = 0;
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
-            v += addVert(
-              this.x,
-              this.y,
-              this.z,
-              chunkWidth,
-              chunkWidth,
-              chunkWidth
-            );
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
-            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
-            for (let h = 0; h < v; h++) {
-              newNorms.push(0, 0, 1);
-            }
-          }
-          if (
-            !world.fullBlockMarks.has(
-              "" + this.x + "," + (this.y - 1) + "," + this.z
-            ) ||
-            !world.hasBlocksMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            )
-          ) {
-            //bottom
-            let v = 0;
-            v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, 0, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
-            v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
-            v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
-            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
-            for (let h = 0; h < v; h++) {
-              newNorms.push(0, -1, 0);
-            }
-          }
-          if (
-            !world.fullBlockMarks.has(
-              "" + this.x + "," + (this.y + 1) + "," + this.z
-            ) ||
-            !world.hasBlocksMarks.has(
-              "" + (this.x - 1) + "," + this.y + "," + this.z
-            )
-          ) {
-            //top
-            let v = 0;
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
-            v += addVert(
-              this.x,
-              this.y,
-              this.z,
-              chunkWidth,
-              chunkWidth,
-              chunkWidth
-            );
-            v += addVert(
-              this.x,
-              this.y,
-              this.z,
-              chunkWidth,
-              chunkWidth,
-              chunkWidth
-            );
-            v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
-            v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
-            add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
-            for (let h = 0; h < v; h++) {
-              newNorms.push(0, 1, 0);
-            }
-          }
-        } else 
+        if(this.isWater)
         {
-          for (let j = 0; j < chunkWidth; j++) {
-            for (let i = 0; i < chunkWidth; i++) {
-              for (let k = 0; k < chunkWidth; k++) {
+            for (let j = 0; j < chunkWidth; j++) {
+              for (let i = 0; i < chunkWidth; i++) {
+                for (let k = 0; k < chunkWidth; k++) {
+
+            if (
+              world.waterdata.has(
+                "" +
+                  (this.x * chunkWidth + i) +
+                  "," +
+                  (this.y * chunkWidth + j) +
+                  "," +
+                  (this.z * chunkWidth + k)
+              )
+            ) {
+              const ID = world.waterdata.get(
+                "" +
+                  (this.x * chunkWidth + i) +
+                  "," +
+                  (this.y * chunkWidth + j) +
+                  "," +
+                  (this.z * chunkWidth + k)
+              );
+              if(ID === '8')
+              {
                 if (
-                  world.data.has(
+                  !world.waterdata.has(
                     "" +
                       (this.x * chunkWidth + i) +
                       "," +
-                      (this.y * chunkWidth + j) +
+                      (this.y * chunkWidth + j + 1) +
                       "," +
                       (this.z * chunkWidth + k)
                   )
                 ) {
-                  const ID = world.data.get(
-                    "" +
-                      (this.x * chunkWidth + i) +
-                      "," +
-                      (this.y * chunkWidth + j) +
-                      "," +
-                      (this.z * chunkWidth + k)
-                  );
-                  if (
-                    !world.data.has(
-                      "" +
-                        (this.x * chunkWidth + i - 1) +
-                        "," +
-                        (this.y * chunkWidth + j) +
-                        "," +
-                        (this.z * chunkWidth + k)
-                    )
-                  ) {
-                    let v = 0;
-                    v += addVert(i, j, k, i, j, k);
-                    v += addVert(i, j, k, i, j, k + 1);
-                    v += addVert(i, j, k, i, j + 1, k + 1);
-                    v += addVert(i, j, k, i, j + 1, k + 1);
-                    v += addVert(i, j, k, i, j + 1, k);
-                    v += addVert(i, j, k, i, j, k);
-                    add4UVs(ID, "sides");
-                    setLight(i, j, k);
-                    for (let h = 0; h < v; h++) {
-                      newNorms.push(-1, 0, 0);
-                    }
+                  let v = 0;
+                  v += addVert(i, j, k, i, j + 0.7, k);
+                  v += addVert(i, j, k, i, j + 0.7, k + 1);
+                  v += addVert(i, j, k, i + 1, j + 0.7, k + 1);
+                  v += addVert(i, j, k, i + 1, j + 0.7, k + 1);
+                  v += addVert(i, j, k, i + 1, j + 0.7, k);
+                  v += addVert(i, j, k, i, j + 0.7, k);
+                  add4UVs("8", "top");
+                  setLight(i, j, k);
+                  for (let h = 0; h < v; h++) {
+                    newNorms.push(0, 1, 0);
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+        }
+        else
+        {
+          if (
+            world.fullBlockMarks.has("" + this.x + "," + this.y + "," + this.z) && this.y < -1
+          ) {
+            if (
+              !world.fullBlockMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              ) ||
+              !world.hasBlocksMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              )
+            ) {
+              //left
+              let v = 0;
+              v += addVert(this.x, this.y, this.z, 0, 0, 0);
+              v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
+              v += addVert(this.x, this.y, this.z, 0, 0, 0);                    setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
+              add4UVs("1", "all");
+              for (let h = 0; h < v; h++) {
+                newNorms.push(-1, 0, 0);
+              }
+            }
+            if (
+              !world.fullBlockMarks.has(
+                "" + this.x + "," + this.y + "," + (this.z - 1)
+              ) ||
+              !world.hasBlocksMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              )
+            ) {
+              //front
+              let v = 0;
+              v += addVert(this.x, this.y, this.z, 0, 0, 0);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
+              v += addVert(this.x, this.y, this.z, 0, 0, 0);
+              add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
+              for (let h = 0; h < v; h++) {
+                newNorms.push(0, 0, -1);
+              }
+            }
+            if (
+              !world.fullBlockMarks.has(
+                "" + (this.x + 1) + "," + this.y + "," + this.z
+              ) ||
+              !world.hasBlocksMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              )
+            ) {
+              //right
+              let v = 0;
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
+              v += addVert(
+                this.x,
+                this.y,
+                this.z,
+                chunkWidth,
+                chunkWidth,
+                chunkWidth
+              );
+              v += addVert(
+                this.x,
+                this.y,
+                this.z,
+                chunkWidth,
+                chunkWidth,
+                chunkWidth
+              );
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
+              add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
+              for (let h = 0; h < v; h++) {
+                newNorms.push(1, 0, 0);
+              }
+            }
+            if (
+              !world.fullBlockMarks.has(
+                "" + this.x + "," + this.y + "," + this.z + 1
+              ) ||
+              !world.hasBlocksMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              )
+            ) {
+              //back
+              let v = 0;
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
+              v += addVert(
+                this.x,
+                this.y,
+                this.z,
+                chunkWidth,
+                chunkWidth,
+                chunkWidth
+              );
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
+              add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
+              for (let h = 0; h < v; h++) {
+                newNorms.push(0, 0, 1);
+              }
+            }
+            if (
+              !world.fullBlockMarks.has(
+                "" + this.x + "," + (this.y - 1) + "," + this.z
+              ) ||
+              !world.hasBlocksMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              )
+            ) {
+              //bottom
+              let v = 0;
+              v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, 0, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, 0);
+              v += addVert(this.x, this.y, this.z, chunkWidth, 0, chunkWidth);
+              v += addVert(this.x, this.y, this.z, 0, 0, chunkWidth);
+              add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
+              for (let h = 0; h < v; h++) {
+                newNorms.push(0, -1, 0);
+              }
+            }
+            if (
+              !world.fullBlockMarks.has(
+                "" + this.x + "," + (this.y + 1) + "," + this.z
+              ) ||
+              !world.hasBlocksMarks.has(
+                "" + (this.x - 1) + "," + this.y + "," + this.z
+              )
+            ) {
+              //top
+              let v = 0;
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, chunkWidth);
+              v += addVert(
+                this.x,
+                this.y,
+                this.z,
+                chunkWidth,
+                chunkWidth,
+                chunkWidth
+              );
+              v += addVert(
+                this.x,
+                this.y,
+                this.z,
+                chunkWidth,
+                chunkWidth,
+                chunkWidth
+              );
+              v += addVert(this.x, this.y, this.z, chunkWidth, chunkWidth, 0);
+              v += addVert(this.x, this.y, this.z, 0, chunkWidth, 0);
+              add4UVs("1", "all");setLight(this.x*chunkWidth, this.y*chunkWidth, this.z*chunkWidth);
+              for (let h = 0; h < v; h++) {
+                newNorms.push(0, 1, 0);
+              }
+            }
+          } else 
+          {
+            for (let j = 0; j < chunkWidth; j++) {
+              for (let i = 0; i < chunkWidth; i++) {
+                for (let k = 0; k < chunkWidth; k++) {
                   if (
-                    !world.data.has(
+                    world.data.has(
                       "" +
                         (this.x * chunkWidth + i) +
                         "," +
                         (this.y * chunkWidth + j) +
                         "," +
-                        (this.z * chunkWidth + k - 1)
+                        (this.z * chunkWidth + k)
                     )
                   ) {
-                    let v = 0;
-                    v += addVert(i, j, k, i + 1, j, k);
-                    v += addVert(i, j, k, i, j, k);
-                    v += addVert(i, j, k, i, j + 1, k);
-                    v += addVert(i, j, k, i, j + 1, k);
-                    v += addVert(i, j, k, i + 1, j + 1, k);
-                    v += addVert(i, j, k, i + 1, j, k);
-                    add4UVs(ID, "sides");
-                    setLight(i, j, k);
-                    for (let h = 0; h < v; h++) {
-                      newNorms.push(0, 0, -1);
-                    }
-                  }
-                  if (
-                    !world.data.has(
+                    const ID = world.data.get(
                       "" +
-                        (this.x * chunkWidth + i + 1) +
+                        (this.x * chunkWidth + i) +
                         "," +
                         (this.y * chunkWidth + j) +
                         "," +
                         (this.z * chunkWidth + k)
-                    )
-                  ) {
-                    let v = 0;
-                    v += addVert(i, j, k, i + 1, j, k + 1);
-                    v += addVert(i, j, k, i + 1, j, k);
+                    );
+                    if (
+                      !world.data.has(
+                        "" +
+                          (this.x * chunkWidth + i - 1) +
+                          "," +
+                          (this.y * chunkWidth + j) +
+                          "," +
+                          (this.z * chunkWidth + k)
+                      )
+                    ) {
+                      if(ID !== "8")
+                      {let v = 0;
+                      v += addVert(i, j, k, i, j, k);
+                      v += addVert(i, j, k, i, j, k + 1);
+                      v += addVert(i, j, k, i, j + 1, k + 1);
+                      v += addVert(i, j, k, i, j + 1, k + 1);
+                      v += addVert(i, j, k, i, j + 1, k);
+                      v += addVert(i, j, k, i, j, k);
+                      add4UVs(ID, "sides");
+                      setLight(i, j, k);
+                      for (let h = 0; h < v; h++) {
+                        newNorms.push(-1, 0, 0);
+                      }}
+                    }
+                    if (
+                      !world.data.has(
+                        "" +
+                          (this.x * chunkWidth + i) +
+                          "," +
+                          (this.y * chunkWidth + j) +
+                          "," +
+                          (this.z * chunkWidth + k - 1)
+                      )
+                    ) {
+                      if(ID !== "8")
+                      {let v = 0;
+                      v += addVert(i, j, k, i + 1, j, k);
+                      v += addVert(i, j, k, i, j, k);
+                      v += addVert(i, j, k, i, j + 1, k);
+                      v += addVert(i, j, k, i, j + 1, k);
+                      v += addVert(i, j, k, i + 1, j + 1, k);
+                      v += addVert(i, j, k, i + 1, j, k);
+                      add4UVs(ID, "sides");
+                      setLight(i, j, k);
+                      for (let h = 0; h < v; h++) {
+                        newNorms.push(0, 0, -1);
+                      }}
+                    }
+                    if (
+                      !world.data.has(
+                        "" +
+                          (this.x * chunkWidth + i + 1) +
+                          "," +
+                          (this.y * chunkWidth + j) +
+                          "," +
+                          (this.z * chunkWidth + k)
+                      )
+                    ) {
+                      if(ID !== "8")
+                      {let v = 0;
+                      v += addVert(i, j, k, i + 1, j, k + 1);
+                      v += addVert(i, j, k, i + 1, j, k);
 
-                    v += addVert(i, j, k, i + 1, j + 1, k);
-                    v += addVert(i, j, k, i + 1, j + 1, k);
-                    v += addVert(i, j, k, i + 1, j + 1, k + 1);
-                    v += addVert(i, j, k, i + 1, j, k + 1);
-                    add4UVs(ID, "sides");
-                    setLight(i, j, k);
-                    for (let h = 0; h < v; h++) {
-                      newNorms.push(1, 0, 0);
+                      v += addVert(i, j, k, i + 1, j + 1, k);
+                      v += addVert(i, j, k, i + 1, j + 1, k);
+                      v += addVert(i, j, k, i + 1, j + 1, k + 1);
+                      v += addVert(i, j, k, i + 1, j, k + 1);
+                      add4UVs(ID, "sides");
+                      setLight(i, j, k);
+                      for (let h = 0; h < v; h++) {
+                        newNorms.push(1, 0, 0);
+                      }}
                     }
-                  }
-                  if (
-                    !world.data.has(
-                      "" +
-                        (this.x * chunkWidth + i) +
-                        "," +
-                        (this.y * chunkWidth + j) +
-                        "," +
-                        (this.z * chunkWidth + k + 1)
-                    )
-                  ) {
-                    let v = 0;
-                    v += addVert(i, j, k, i, j, k + 1);
-                    v += addVert(i, j, k, i + 1, j, k + 1);
-                    v += addVert(i, j, k, i + 1, j + 1, k + 1);
-                    v += addVert(i, j, k, i + 1, j + 1, k + 1);
-                    v += addVert(i, j, k, i, j + 1, k + 1);
-                    v += addVert(i, j, k, i, j, k + 1);
-                    add4UVs(ID, "sides");
-                    setLight(i, j, k);
-                    for (let h = 0; h < v; h++) {
-                      newNorms.push(0, 0, 1);
+                    if (
+                      !world.data.has(
+                        "" +
+                          (this.x * chunkWidth + i) +
+                          "," +
+                          (this.y * chunkWidth + j) +
+                          "," +
+                          (this.z * chunkWidth + k + 1)
+                      )
+                    ) {
+                      if(ID !== "8")
+                      {let v = 0;
+                      v += addVert(i, j, k, i, j, k + 1);
+                      v += addVert(i, j, k, i + 1, j, k + 1);
+                      v += addVert(i, j, k, i + 1, j + 1, k + 1);
+                      v += addVert(i, j, k, i + 1, j + 1, k + 1);
+                      v += addVert(i, j, k, i, j + 1, k + 1);
+                      v += addVert(i, j, k, i, j, k + 1);
+                      add4UVs(ID, "sides");
+                      setLight(i, j, k);
+                      for (let h = 0; h < v; h++) {
+                        newNorms.push(0, 0, 1);
+                      }}
                     }
-                  }
-                  if (
-                    !world.data.has(
-                      "" +
-                        (this.x * chunkWidth + i) +
-                        "," +
-                        (this.y * chunkWidth + j - 1) +
-                        "," +
-                        (this.z * chunkWidth + k)
-                    )
-                  ) {
-                    let v = 0;
-                    v += addVert(i, j, k, i, j, k);
-                    v += addVert(i, j, k, i + 1, j, k);
-                    v += addVert(i, j, k, i + 1, j, k + 1);
-                    v += addVert(i, j, k, i + 1, j, k + 1);
-                    v += addVert(i, j, k, i, j, k + 1);
-                    v += addVert(i, j, k, i, j, k);
-                    add4UVs(ID, "bottom");
-                    setLight(i, j, k);
-                    for (let h = 0; h < v; h++) {
-                      newNorms.push(0, -1, 0);
+                    if (
+                      !world.data.has(
+                        "" +
+                          (this.x * chunkWidth + i) +
+                          "," +
+                          (this.y * chunkWidth + j - 1) +
+                          "," +
+                          (this.z * chunkWidth + k)
+                      )
+                    ) {
+                      if(ID !== "8")
+                      {let v = 0;
+                      v += addVert(i, j, k, i, j, k);
+                      v += addVert(i, j, k, i + 1, j, k);
+                      v += addVert(i, j, k, i + 1, j, k + 1);
+                      v += addVert(i, j, k, i + 1, j, k + 1);
+                      v += addVert(i, j, k, i, j, k + 1);
+                      v += addVert(i, j, k, i, j, k);
+                      add4UVs(ID, "bottom");
+                      setLight(i, j, k);
+                      for (let h = 0; h < v; h++) {
+                        newNorms.push(0, -1, 0);
+                      }}
                     }
-                  }
-                  if (
-                    !world.data.has(
-                      "" +
-                        (this.x * chunkWidth + i) +
-                        "," +
-                        (this.y * chunkWidth + j + 1) +
-                        "," +
-                        (this.z * chunkWidth + k)
-                    )
-                  ) {
-                    let v = 0;
-                    v += addVert(i, j, k, i, j + 1, k);
-                    v += addVert(i, j, k, i, j + 1, k + 1);
-                    v += addVert(i, j, k, i + 1, j + 1, k + 1);
-                    v += addVert(i, j, k, i + 1, j + 1, k + 1);
-                    v += addVert(i, j, k, i + 1, j + 1, k);
-                    v += addVert(i, j, k, i, j + 1, k);
-                    add4UVs(ID, "top");
-                    setLight(i, j, k);
-                    for (let h = 0; h < v; h++) {
-                      newNorms.push(0, 1, 0);
+                    if (
+                      !world.data.has(
+                        "" +
+                          (this.x * chunkWidth + i) +
+                          "," +
+                          (this.y * chunkWidth + j + 1) +
+                          "," +
+                          (this.z * chunkWidth + k)
+                      )
+                    ) {
+                      if(ID !== "8")
+                      {let v = 0;
+                      v += addVert(i, j, k, i, j + 1, k);
+                      v += addVert(i, j, k, i, j + 1, k + 1);
+                      v += addVert(i, j, k, i + 1, j + 1, k + 1);
+                      v += addVert(i, j, k, i + 1, j + 1, k + 1);
+                      v += addVert(i, j, k, i + 1, j + 1, k);
+                      v += addVert(i, j, k, i, j + 1, k);
+                      add4UVs(ID, "top");
+                      setLight(i, j, k);
+                      for (let h = 0; h < v; h++) {
+                        newNorms.push(0, 1, 0);
+                      }}
                     }
                   }
                 }
@@ -1946,50 +2054,92 @@ export default class Game extends Component {
         this.mesh.geometry = this.meshGeometry;
       }
     }
-    for (let i = 0; i < 12; i++) {
-      for (let k = 0; k < 12; k++) {
-        for (let a = 0; a < 12; a++) {
-          let testChunk = new Chunk();
+    for (let i = 0; i < 10; i++) {
+      for (let k = 0; k < 10; k++) {
+        for (let a = 0; a < 10; a++) {
+          let testChunk = new Chunk(false);
           testChunk.mesh.frustumCulled = false;
           this.chunkpool.push(testChunk);
           this.scene.add(testChunk.mesh);
         }
       }
     }
+    for (let i = 0; i < 8; i++) {
+      for (let k = 0; k < 8; k++) {
+        for (let a = 0; a < 8; a++) {
+          let waterChunk = new Chunk(true);
+          waterChunk.mesh.frustumCulled = false;
+          waterChunk.isWater = true;
+          this.waterchunkpool.push(waterChunk);
+          this.scene.add(waterChunk.mesh);
+        }
+      }
+    }
   }
+  
+  
 
   rebuildQueuedMeshes() {
     if (
-      this.chunkQueueTimer > this.chunkQueueInterval &&
-      this.neededChunks.size !== 0
+      this.chunkQueueTimer > this.chunkQueueInterval
     ) {
       this.chunkQueueTimer = 0;
-      const needed = Array.from(this.neededChunks.values());
-
-      // needed.sort(
-      //   (a,b)=>
-      //   {
-      //     if(this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z)) < 50 &&
-      //     this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z)) < 50)
-      //     {
-      //       return 0;
-      //     }
-      //     return (this.camera.position.distanceTo(new THREE.Vector3(a.x, a.y, a.z))
-      //     <
-      //     this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
-      //     ) ? -1 : 1;
-
-      //   }
-      // );
-
-      /*needed.sort(
-        (a,b) => {
-          return (this.isCameraFacingThis(this.getCameraDirection(), a.x, a.y, a.z)) ? -1: 1;
+      if(this.neededWaterChunks.size !== 0)
+      {
+        const neededWater = Array.from(this.neededWaterChunks.values()); //do it pussy 
+        const neededSpot = neededWater[0];
+        if (
+          !this.mappedWaterChunks.has(
+            `${neededSpot.x},${neededSpot.y},${neededSpot.z}`
+          )
+        ) {
+          let cp = this.waterchunkpool.filter((c) => {
+            return Date.now() - c.timeLastMeshed > 12000;
+          });
+          cp.sort((a, b) => {
+            return this.camera.position.distanceTo(
+              new THREE.Vector3(a.x, a.y, a.z)
+            ) < this.camera.position.distanceTo(new THREE.Vector3(b.x, b.y, b.z))
+              ? -1
+              : 1;
+          });
+          let grabbedMesh = cp.pop();
+          if (grabbedMesh !== null && grabbedMesh !== undefined) {
+            if (
+              this.mappedWaterChunks.has(
+                "" + grabbedMesh.x + "," + grabbedMesh.y + "," + grabbedMesh.z
+              )
+            ) {
+              this.mappedWaterChunks.delete(
+                "" + grabbedMesh.x + "," + grabbedMesh.y + "," + grabbedMesh.z
+              );
+            }
+            grabbedMesh.buildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
+            this.mappedWaterChunks.set(
+              "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
+              grabbedMesh
+            );
+            this.lightedChunks.set(
+              "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z,
+              "i"
+            );
+            this.neededWaterChunks.delete(
+              "" + neededSpot.x + "," + neededSpot.y + "," + neededSpot.z
+            );
+          }
+        } else {
+            this.mappedWaterChunks
+              .get(`${neededSpot.x},${neededSpot.y},${neededSpot.z}`)
+              .buildMeshInPlace();
+            this.neededWaterChunks.delete(
+              `${neededSpot.x},${neededSpot.y},${neededSpot.z}`
+            );
+          }
         }
-      );*/
 
+      if(this.neededChunks.size !== 0) {
+      const needed = Array.from(this.neededChunks.values());
       const neededSpot = needed[0];
-
       if (
         !this.mappedChunks.has(
           `${neededSpot.x},${neededSpot.y},${neededSpot.z}`
@@ -2042,14 +2192,17 @@ export default class Game extends Component {
           `${neededSpot.x},${neededSpot.y},${neededSpot.z}`
         );
       }
+    }
+
     } else {
       this.chunkQueueTimer++;
     }
   }
 
   surveyNeededChunks() {
+
     if (this.camera !== null && this.camera !== undefined) {
-      let y = -this.chunkWidth * 4;
+      let y = -this.chunkWidth * 1;
       for (
         let i = -this.chunkWidth * 5;
         i < this.chunkWidth * 5;
@@ -2070,12 +2223,38 @@ export default class Game extends Component {
           let z = Math.round((k + THERIGHTZ) / this.chunkWidth);
           let yy = Math.round((y + THERIGHTY) / this.chunkWidth);
           let obj = { x: x, y: yy, z: z };
+
+          if(this.world.waterMarks.has("" + x + "," + yy + "," + z) &&
+            !this.mappedWaterChunks.has("" + x + "," + yy + "," + z))
+            {
+
+              if (!this.neededWaterChunks.has("" + x + "," + yy + "," + z)) {
+  
+                this.neededWaterChunks.set("" + x + "," + yy + "," + z, obj);
+                let h = 1;
+
+                while (
+                  this.world.waterMarks.has(
+                    "" + x + "," + (yy + h) + "," + z
+                  )
+                  
+                ) {
+                  this.neededWaterChunks.set("" + x + "," + (yy + h) + "," + z, {
+                    x,
+                    y: yy + h,
+                    z,
+                  });
+                  h += 1;
+                }
+              }
+            }
           if (this.world.ishandledmarks.has("" + x + "," + yy + "," + z)) {
+            
             if (
               this.world.hasBlocksMarks.has("" + x + "," + yy + "," + z) &&
               !this.mappedChunks.has("" + x + "," + yy + "," + z)
             ) {
-              
+
 
               if (!this.neededChunks.has("" + x + "," + yy + "," + z)) {
                 // if it needs to tell neededchunks it needs this
@@ -2230,7 +2409,7 @@ export default class Game extends Component {
       }
       //console.log(this.mappedChunks.size );
 
-        if (this.mappedChunks.size < 150) {
+        if (this.mappedChunks.size < 125) {
         } else {
           this.isReady = true;
         }
