@@ -309,8 +309,8 @@ export default class Game extends Component {
     this.clock = new THREE.Clock();
     this.delt = 0;
     this.isReady = false;
-    this.currentTouchX = {};
-    this.currentTouchY = {};
+    this.tpCache = {};
+    this.tpInfo = {}
     this.touchIndex = 0;
     this.state = {
       chat: "",
@@ -686,85 +686,106 @@ export default class Game extends Component {
   };
 
   onTouchStart = (event) => {
-    this.touchIndex = 0;
-    for (let i = 0; i < Array.from(event.touches).length; i++) {
-      this.currentTouchX[i] = event.touches[i].clientX;
-      this.currentTouchY[i] = event.touches[i].clientY;
-      if (this.state.mobileMode) {
-        const element = document.getElementById("uad");
-        const element2 = document.getElementById("ma");
-        const clientRect = element.getBoundingClientRect();
-        const clientRectMove = element2.getBoundingClientRect();
-        const mobileJumperX = clientRect.left;
-        const mobileJumperY = clientRect.top;
-        const mobileVerticalOrientatorWidth = clientRect.width;
-        const mobileVerticalOrientatorHeight = clientRect.height;
 
-        const mobileMoverX = clientRectMove.left;
-        const mobileMoverY = clientRectMove.top;
-        const mobileMoverWidth = clientRectMove.width;
-        const mobileMoverHeight = clientRectMove.height;
+    for (const i of event.targetTouches) {
+        if((this.tpCache[i.identifier] || null) !== null) {
+
+        } else {
+          this.tpCache[i.identifier] = i;
+          this.tpInfo[i.identifier] = {};
+        }
+        this.tpInfo[i.identifier] = {};
+        this.tpInfo[i.identifier].initX = i.clientX;
+        this.tpInfo[i.identifier].initY = i.clientY;
+
+        const jumperEl = document.getElementById("uad");
+        const moverEl = document.getElementById("ma");
+
+        const jumperRect = jumperEl.getBoundingClientRect();
+        const moverRect = moverEl.getBoundingClientRect();
+
+        const mobileJumperX = jumperRect.left;
+        const mobileJumperY = jumperRect.top;
+        const mobileJumperWidth = jumperRect.width;
+        const mobileJumperHeight = jumperRect.height;
+
+        const mobileMoverX = moverRect.left;
+        const mobileMoverY = moverRect.top;
+        const mobileMoverWidth = moverRect.width;
+        const mobileMoverHeight = moverRect.height;
         if (
-          this.currentTouchX[i] >= mobileJumperX &&
-          this.currentTouchX[i] <=
-            mobileJumperX + mobileVerticalOrientatorWidth &&
-          this.currentTouchY[i] >= mobileJumperY &&
-          this.currentTouchY[i] <=
-            mobileJumperY + mobileVerticalOrientatorHeight
+          i.clientX >= mobileJumperX &&
+          i.clientX <=
+            mobileJumperX + mobileJumperWidth &&
+            i.clientY >= mobileJumperY &&
+            i.clientY <=
+            mobileJumperY + mobileJumperHeight
         ) {
           this.mobileJumperDown = true;
           this.input.ActiveState.jump = true;
           this.input.ActiveState.isGrounded = false;
+          this.tpInfo[i.identifier].isMobileJumper = true;
         }
         if (
-          this.currentTouchX[i] >= mobileMoverX &&
-          this.currentTouchX[i] <=
+          i.clientX >= mobileMoverX &&
+          i.clientX <=
             mobileMoverX + mobileMoverWidth &&
-          this.currentTouchY[i] >= mobileMoverY &&
-          this.currentTouchY[i] <=
+            i.clientY >= mobileMoverY &&
+            i.clientY <=
             mobileMoverY + mobileMoverHeight
         ) {
-          this.touchIndex += 1;
           this.mobileMoverDown = true;
+          this.tpInfo[i.identifier].isMobileMover = true;
         }
-      }
+
     }
   };
 
   onTouchMove = (event) => {
 
-    if (this.mobileMoverDown) {
-      event.preventDefault();
-      
+    for(const i of event.targetTouches)
+    {
+      if((this.tpCache[i.identifier] || null) !== null) {
+        if((this.tpInfo[i.identifier].isMobileMover || null) === true) //Mobile Mover
+        {
+          let differenceX = i.clientX - this.tpInfo[i.identifier].initX;
+          let differenceY = i.clientY - this.tpInfo[i.identifier].initY;
+          if (differenceX > 0) {
+            this.input.ActiveState.right = true;
+          }
+          if (differenceX < 0) {
+            this.input.ActiveState.left = true;
+          }
+          if (differenceY > 0) {
+            this.input.ActiveState.forward = true;
+          }
+          if (differenceY < 0) {
+            this.input.ActiveState.back = true;
+          }
+        }
+      }
     }
   };
 
   onTouchEnd = (event) => {
-    this.controls.mobileMoverDown = false;
-    this.input.ActiveState.right = false;
-
-    this.input.ActiveState.left = false;
-
-    this.input.ActiveState.forward = false;
-
-    this.input.ActiveState.back = false;
-    const element = document.getElementById("uad");
-    const element2 = document.getElementById("ma");
-    if (element !== null && element2 !== null) {
-      const jumperRect = element.getBoundingClientRect();
-      const clientMoverRect = element2.getBoundingClientRect();
-      const mobileVerticalOrientatorX = jumperRect.left;
-      const mobileVerticalOrientatorY = jumperRect.top;
-      const mobileVerticalOrientatorWidth = jumperRect.width;
-      const mobileVerticalOrientatorHeight = jumperRect.height;
-
-      const mobileMoverX = clientMoverRect.left;
-      const mobileMoverY = clientMoverRect.top;
-      const mobileMoverWidth = clientMoverRect.width;
-      const mobileMoverHeight = clientMoverRect.height;
-
-      
-
+    for(const i of event.targetTouches)
+    {
+      if((this.tpCache[i.identifier] || null) !== null) {
+        if((this.tpInfo[i.identifier].isMobileMover || null) === true) //Mobile Mover
+        {
+          this.input.ActiveState.right = false;
+          this.input.ActiveState.left = false; 
+          this.input.ActiveState.forward = false;
+          this.input.ActiveState.back = false;
+          this.mobileMoverDown = false;
+        }
+        if((this.tpInfo[i.identifier].isMobileJumper || null) === true) //Mobile Jumper
+        {
+          this.input.ActiveState.jump = false;
+          this.mobileJumperDown = false;
+        }
+        delete this.tpCache[i.identifier];
+      }
     }
   };
   changeBrightness = (newMinBrightness) => {
