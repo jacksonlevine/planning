@@ -187,7 +187,7 @@ class App extends Component {
 
         break;
       case "game":
-
+        document.body.style.backgroundImage = 'url("/textures/backgroundgame.png")'
         mainElement = (
           <React.Fragment>
             <Game

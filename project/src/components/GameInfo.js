@@ -27,11 +27,11 @@ export default function GameInfo(props) {
             position:"absolute",
             top:"25%"
         
-        }}><span className="blue">M</span>
+        }}><span className="red">M</span>
         <span className="red">i</span>
-        <span className="green">m</span>
-        <span className="blue">o</span>
-        <span className="purple">s</span>Dono</h1>
+        <span className="red">m</span>
+        <span className="red">o</span>
+        <span className="red">s</span>Dono</h1>
         </div>
         break;
     }

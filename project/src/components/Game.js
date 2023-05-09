@@ -1033,13 +1033,13 @@ export default class Game extends Component {
               let realWorldY = o2;
 
               let n =
-                this.getNoise(realWorldX, realWorldZ);
+                this.getNoise3D(realWorldX, realWorldY, realWorldZ);
 
               if (!this.ishandledmarks.has("" + A + "," + B + "," + C)) {
                 this.ishandledmarks.set("" + A + "," + B + "," + C, "1");
               }
 
-              if (realWorldY < n) {
+              if (n > 5) {
                 //this.getNoise3D(realWorldX, realWorldY, realWorldZ) < 5
                 if(true){blockCount++;
                 let idToSet =
@@ -1946,9 +1946,9 @@ export default class Game extends Component {
         this.mesh.geometry = this.meshGeometry;
       }
     }
-    for (let i = 0; i < 10; i++) {
-      for (let k = 0; k < 10; k++) {
-        for (let a = 0; a < 10; a++) {
+    for (let i = 0; i < 12; i++) {
+      for (let k = 0; k < 12; k++) {
+        for (let a = 0; a < 12; a++) {
           let testChunk = new Chunk();
           testChunk.mesh.frustumCulled = false;
           this.chunkpool.push(testChunk);
@@ -2049,7 +2049,7 @@ export default class Game extends Component {
 
   surveyNeededChunks() {
     if (this.camera !== null && this.camera !== undefined) {
-      let y = -this.chunkWidth * 2;
+      let y = -this.chunkWidth * 4;
       for (
         let i = -this.chunkWidth * 5;
         i < this.chunkWidth * 5;
@@ -2230,7 +2230,7 @@ export default class Game extends Component {
       }
       //console.log(this.mappedChunks.size );
 
-        if (this.mappedChunks.size < 125) {
+        if (this.mappedChunks.size < 150) {
         } else {
           this.isReady = true;
         }
