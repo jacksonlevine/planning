@@ -108,7 +108,7 @@ body{
     transform: scale(0.4);
     position: absolute;
     top: 21%;
-    left: 14%;
+    left: 12%;
     opacity: 0;
     animation: fadein 1s;
     animation-delay: 2.2s;
