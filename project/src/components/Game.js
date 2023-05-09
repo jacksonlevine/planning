@@ -368,9 +368,6 @@ export default class Game extends Component {
               />
               <UpAndDownArrow isHidden={!this.state.mobileMode} />
               <MoveArrow isHidden={!this.state.mobileMode} />
-              <p>
-                <strong>WARNING:</strong> This is a development server, the game world will likely be reset.
-              </p>
               <canvas
                 ref={this.canvasRef}
                 style={{
