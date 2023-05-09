@@ -321,7 +321,7 @@ export default class Game extends Component {
     };
     this.chatBoxRef = React.createRef();
     this.canvasRef = React.createRef();
-    this.mobileVerticalOrientatorDown = false;
+    this.mobileJumperDown = false;
     this.mobileMoverDown = false;
     this.blockChangeRequested = false;
   }
@@ -695,34 +695,34 @@ export default class Game extends Component {
         const element2 = document.getElementById("ma");
         const clientRect = element.getBoundingClientRect();
         const clientRectMove = element2.getBoundingClientRect();
-        const mobileVerticalOrientatorX = clientRect.left;
-        const mobileVerticalOrientatorY = clientRect.top;
+        const mobileJumperX = clientRect.left;
+        const mobileJumperY = clientRect.top;
         const mobileVerticalOrientatorWidth = clientRect.width;
         const mobileVerticalOrientatorHeight = clientRect.height;
 
-        const mobileVerticalOrientatorX2 = clientRectMove.left;
-        const mobileVerticalOrientatorY2 = clientRectMove.top;
-        const mobileVerticalOrientatorWidth2 = clientRectMove.width;
-        const mobileVerticalOrientatorHeight2 = clientRectMove.height;
+        const mobileMoverX = clientRectMove.left;
+        const mobileMoverY = clientRectMove.top;
+        const mobileMoverWidth = clientRectMove.width;
+        const mobileMoverHeight = clientRectMove.height;
         if (
-          this.currentTouchX[i] >= mobileVerticalOrientatorX &&
+          this.currentTouchX[i] >= mobileJumperX &&
           this.currentTouchX[i] <=
-            mobileVerticalOrientatorX + mobileVerticalOrientatorWidth &&
-          this.currentTouchY[i] >= mobileVerticalOrientatorY &&
+            mobileJumperX + mobileVerticalOrientatorWidth &&
+          this.currentTouchY[i] >= mobileJumperY &&
           this.currentTouchY[i] <=
-            mobileVerticalOrientatorY + mobileVerticalOrientatorHeight
+            mobileJumperY + mobileVerticalOrientatorHeight
         ) {
-          this.mobileVerticalOrientatorDown = true;
+          this.mobileJumperDown = true;
           this.input.ActiveState.jump = true;
           this.input.ActiveState.isGrounded = false;
         }
         if (
-          this.currentTouchX[i] >= mobileVerticalOrientatorX2 &&
+          this.currentTouchX[i] >= mobileMoverX &&
           this.currentTouchX[i] <=
-            mobileVerticalOrientatorX2 + mobileVerticalOrientatorWidth2 &&
-          this.currentTouchY[i] >= mobileVerticalOrientatorY2 &&
+            mobileMoverX + mobileMoverWidth &&
+          this.currentTouchY[i] >= mobileMoverY &&
           this.currentTouchY[i] <=
-            mobileVerticalOrientatorY2 + mobileVerticalOrientatorHeight2
+            mobileMoverY + mobileMoverHeight
         ) {
           this.touchIndex += 1;
           this.mobileMoverDown = true;
@@ -732,40 +732,10 @@ export default class Game extends Component {
   };
 
   onTouchMove = (event) => {
-    //event.preventDefault();
-
-    // if(event.touches[0].clientX !== this.currentTouchX)
-    // {
-    //   let differenceX = (event.touches[0].clientX - this.currentTouchX);
-    //   //this.neck.rotation.y -= differenceX/20;
-
-    //   this.currentTouchX = event.touches[0].clientX;
-    // }
 
     if (this.mobileMoverDown) {
       event.preventDefault();
-      this.controls.mobileMoverDown = true;
-      this.input.jump = true;
-      this.input.isGrounded = false;
-      if (
-        event.touches[0].clientY !== this.currentTouchY[0] ||
-        event.touches[0].clientX !== this.currentTouchX[0]
-      ) {
-        let differenceX = event.touches[0].clientX - this.currentTouchX[0];
-        let differenceY = -(event.touches[0].clientY - this.currentTouchY[0]);
-        if (differenceX > 0) {
-          this.input.ActiveState.right = true;
-        }
-        if (differenceX < 0) {
-          this.input.ActiveState.left = true;
-        }
-        if (differenceY > 0) {
-          this.input.ActiveState.forward = true;
-        }
-        if (differenceY < 0) {
-          this.input.ActiveState.back = true;
-        }
-      }
+      
     }
   };
 
@@ -793,20 +763,7 @@ export default class Game extends Component {
       const mobileMoverWidth = clientMoverRect.width;
       const mobileMoverHeight = clientMoverRect.height;
 
-      delete this.currentTouchX[this.touchIndex];
-      delete this.currentTouchY[this.touchIndex];
-      if (
-        this.currentTouchX[this.touchIndex] >= mobileVerticalOrientatorX &&
-        this.currentTouchX[this.touchIndex] <=
-          mobileVerticalOrientatorX + mobileVerticalOrientatorWidth &&
-        this.currentTouchY[this.touchIndex] >= mobileVerticalOrientatorY &&
-        this.currentTouchY[this.touchIndex] <=
-          mobileVerticalOrientatorY + mobileVerticalOrientatorHeight
-      ) {
-        this.mobileVerticalOrientatorDown = false;
-      }
-
-        this.mobileMoverDown = false;
+      
 
     }
   };
