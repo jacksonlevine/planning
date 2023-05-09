@@ -21,3 +21,7 @@
 /project/npm-debug.log*
 /project/yarn-debug.log*
 /project/yarn-error.log*
+cert config.txt
+project/ca_bundle.crt
+project/certificate.crt
+project/private.key
