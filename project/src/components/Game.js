@@ -2162,7 +2162,7 @@ export default class Game extends Component {
       currentX += dx;
       currentY += dy;
       currentZ += dz;
-      distanceTraveled += 0.05;
+      distanceTraveled += 0.1;
 
       const key = `${Math.floor(currentX)},${Math.floor(currentY)},${Math.floor(
         currentZ
@@ -2210,7 +2210,7 @@ export default class Game extends Component {
       z: 0,
       zrotation: 0,
     };
-    const collisionDistance = 0.05;
+    const collisionDistance = 0.1;
     const animate = () => {
       this.input.ActiveState.isGrounded =
         !this.isReady ||
@@ -2223,13 +2223,10 @@ export default class Game extends Component {
           0,
           collisionDistance
         ) !== null;
-      if (!this.input.ActiveState.isGrounded && this.input.ActiveState.jump) {
+      if (!this.input.ActiveState.isGrounded) {
         this.input.ActiveState.jumpTimer += this.delt * 12;
         this.camera.position.y +=
-          (6-this.input.ActiveState.jumpTimer*2) * this.delt;
-      }else if (!this.input.ActiveState.isGrounded)
-      {
-
+          (6 - this.input.ActiveState.jumpTimer) * this.delt;
       }
       //console.log(this.mappedChunks.size );
 
@@ -2389,7 +2386,7 @@ export default class Game extends Component {
             this.input.ActiveState.jumpTimer < 0.1
           ) {
             this.camera.position.y +=
-              (10 - this.input.ActiveState.jumpTimer) * this.delt;
+              (6 - this.input.ActiveState.jumpTimer) * this.delt;
           } else {
             this.input.ActiveState.jumpTimer = 0;
             this.input.ActiveState.jump = false;
