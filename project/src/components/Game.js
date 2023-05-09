@@ -721,6 +721,7 @@ export default class Game extends Component {
             i.clientY <=
             mobileJumperY + mobileJumperHeight
         ) {
+
           this.mobileJumperDown = true;
           this.input.ActiveState.jump = true;
           this.input.ActiveState.isGrounded = false;
@@ -734,6 +735,7 @@ export default class Game extends Component {
             i.clientY <=
             mobileMoverY + mobileMoverHeight
         ) {
+          event.preventDefault();
           this.mobileMoverDown = true;
           this.tpInfo[i.identifier].isMobileMover = true;
         }
@@ -748,6 +750,7 @@ export default class Game extends Component {
       if((this.tpCache[i.identifier] || null) !== null) {
         if((this.tpInfo[i.identifier].isMobileMover || null) === true) //Mobile Mover
         {
+          event.preventDefault();
           let differenceX = i.clientX - this.tpInfo[i.identifier].initX;
           let differenceY = i.clientY - this.tpInfo[i.identifier].initY;
           if (differenceX > 0) {
