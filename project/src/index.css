@@ -4,7 +4,7 @@ body{
     font-family: "mimosFont";
     background-image: url("./images/background.png");
     background-color: black;
-    background-size:100% 100%;
+    background-size:150% auto;
 }
 
 .red {
