@@ -2054,9 +2054,9 @@ export default class Game extends Component {
         this.mesh.geometry = this.meshGeometry;
       }
     }
-    for (let i = 0; i < 10; i++) {
-      for (let k = 0; k < 10; k++) {
-        for (let a = 0; a < 10; a++) {
+    for (let i = 0; i < 13; i++) {
+      for (let k = 0; k < 13; k++) {
+        for (let a = 0; a < 13; a++) {
           let testChunk = new Chunk(false);
           testChunk.mesh.frustumCulled = false;
           this.chunkpool.push(testChunk);
