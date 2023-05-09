@@ -736,7 +736,7 @@ export default class Game extends Component {
             mobileMoverY + mobileMoverHeight
         ) {
           event.preventDefault();
-          this.mobileMoverDown = true;
+          this.controls.mobileMoverDown = true;
           this.tpInfo[i.identifier].isMobileMover = true;
         }
 
@@ -753,7 +753,7 @@ export default class Game extends Component {
           event.preventDefault();
           let differenceX = i.clientX - this.tpInfo[i.identifier].initX;
           let differenceY = i.clientY - this.tpInfo[i.identifier].initY;
-          this.props.socket.emit("debug", { data: `${differenceX},${differenceY}` });
+          //this.props.socket.emit("debug", { data: `${differenceX},${differenceY}` });
           if (differenceX > 0) {
             this.input.ActiveState.right = true;
           }
@@ -781,7 +781,7 @@ export default class Game extends Component {
           this.input.ActiveState.left = false; 
           this.input.ActiveState.forward = false;
           this.input.ActiveState.back = false;
-          this.mobileMoverDown = false;
+          this.controls.mobileMoverDown = false;
         }
         if((this.tpInfo[i.identifier].isMobileJumper || undefined) === true) //Mobile Jumper
         {
