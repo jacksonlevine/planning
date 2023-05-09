@@ -9,8 +9,8 @@ export default function MoveArrow(props)
     <img id="ma" style={
       {
         position:"absolute",
-        top: "70%",
-        left: "60%",
+        top: "76%",
+        left: "62%",
         pointerEvents: "none"
       }
     } src="/textures/move.png" alt=""/>

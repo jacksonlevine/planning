@@ -781,17 +781,17 @@ export default class Game extends Component {
     const element = document.getElementById("uad");
     const element2 = document.getElementById("ma");
     if (element !== null && element2 !== null) {
-      const clientRect = element.getBoundingClientRect();
-      const clientRectMove = element2.getBoundingClientRect();
-      const mobileVerticalOrientatorX = clientRect.left;
-      const mobileVerticalOrientatorY = clientRect.top;
-      const mobileVerticalOrientatorWidth = clientRect.width;
-      const mobileVerticalOrientatorHeight = clientRect.height;
+      const jumperRect = element.getBoundingClientRect();
+      const clientMoverRect = element2.getBoundingClientRect();
+      const mobileVerticalOrientatorX = jumperRect.left;
+      const mobileVerticalOrientatorY = jumperRect.top;
+      const mobileVerticalOrientatorWidth = jumperRect.width;
+      const mobileVerticalOrientatorHeight = jumperRect.height;
 
-      const mobileVerticalOrientatorX2 = clientRectMove.left;
-      const mobileVerticalOrientatorY2 = clientRectMove.top;
-      const mobileVerticalOrientatorWidth2 = clientRectMove.width;
-      const mobileVerticalOrientatorHeight2 = clientRectMove.height;
+      const mobileMoverX = clientMoverRect.left;
+      const mobileMoverY = clientMoverRect.top;
+      const mobileMoverWidth = clientMoverRect.width;
+      const mobileMoverHeight = clientMoverRect.height;
 
       delete this.currentTouchX[this.touchIndex];
       delete this.currentTouchY[this.touchIndex];
@@ -2214,15 +2214,15 @@ export default class Game extends Component {
     let xSkew = (dir.x || 0.5)*2*6;
     if (this.camera !== null && this.camera !== undefined) {
       let y = -this.chunkWidth * 1;
-      let dirxn = xSkew > 0 ? 0 : Math.round(Math.abs(xSkew));
-      let dirxp = xSkew < 0 ? 0 : Math.round(xSkew);
+      let dirxn = xSkew > 0 ? 1 : Math.round(Math.abs(xSkew));
+      let dirxp = xSkew < 0 ? 1 : Math.round(xSkew);
       for (
         let i = -this.chunkWidth * dirxn;
         i < this.chunkWidth * dirxp;
         i += this.chunkWidth
       ) {
-        let dirzn = zSkew > 0 ? 0 : Math.round(Math.abs(zSkew));
-        let dirzp = zSkew < 0 ? 0 : Math.round(zSkew);
+        let dirzn = zSkew > 0 ? 1 : Math.round(Math.abs(zSkew));
+        let dirzp = zSkew < 0 ? 1 : Math.round(zSkew);
         for (
           let k = -this.chunkWidth * dirzn;
           k < this.chunkWidth * dirzp;
