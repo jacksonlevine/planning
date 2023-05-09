@@ -57,16 +57,16 @@ class PointerLockControls2 extends EventDispatcher {
         break;
     }
 
-    if (!touch || this.mobileMoverDown === true) return;
+    if (!touch) return;
 
     //console.log(touch.target);
 
     const movementX = this.previousTouch
       ? touch.pageX - this.previousTouch.pageX
       : 0;
-    const movementY = this.previousTouch
+    let movementY = this.mobileMoverDown ? 0 : (this.previousTouch
       ? touch.pageY - this.previousTouch.pageY
-      : 0;
+      : 0);
 
     this.updatePosition(movementX, movementY, 0.004);
 

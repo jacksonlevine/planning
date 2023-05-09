@@ -324,6 +324,10 @@ export default class Game extends Component {
     this.mobileJumperDown = false;
     this.mobileMoverDown = false;
     this.blockChangeRequested = false;
+    this.previousX = 0;
+    this.previousY = 0;
+    this.previousZ = 0;
+    this.touchSpotFuzziness = 200;
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -662,6 +666,7 @@ export default class Game extends Component {
     window.addEventListener("touchstart", this.onTouchStart, false);
     window.addEventListener("touchmove", this.onTouchMove, false);
     window.addEventListener("touchend", this.onTouchEnd, false);
+    window.addEventListener("touchcancel", this.onTouchCancel, false);
   };
   onWindowResize = () => {
     this.camera.aspect = this.props.width / this.props.height;
@@ -688,15 +693,25 @@ export default class Game extends Component {
   onTouchStart = (event) => {
 
     for (const i of event.targetTouches) {
-        if((this.tpCache[i.identifier] || null) !== null) {
-
+      let thisId;
+      let similarTouches = Object.entries(this.tpCache)
+      .filter(t =>  {
+        return( Math.abs(t[1].clientX - i.clientX) < this.touchSpotFuzziness && Math.abs(t[1].clientY - i.clientY) < this.touchSpotFuzziness);
+      });
+        if(
+        similarTouches.length === 0)
+        {
+          thisId = generateUUID();
+          this.tpCache[thisId] = i;
+          this.tpInfo[thisId] = {};
+          this.tpInfo[thisId].initX = i.clientX;
+          this.tpInfo[thisId].initY = i.clientY;
         } else {
-          this.tpCache[i.identifier] = i;
-          this.tpInfo[i.identifier] = {};
+          thisId = similarTouches[0][0]
         }
-        this.tpInfo[i.identifier] = {};
-        this.tpInfo[i.identifier].initX = i.clientX;
-        this.tpInfo[i.identifier].initY = i.clientY;
+
+
+
 
         const jumperEl = document.getElementById("uad");
         const moverEl = document.getElementById("ma");
@@ -725,9 +740,9 @@ export default class Game extends Component {
           this.mobileJumperDown = true;
           this.input.ActiveState.jump = true;
           this.input.ActiveState.isGrounded = false;
-          this.tpInfo[i.identifier].isMobileJumper = true;
+          this.tpInfo[thisId].isMobileJumper = true;
         }
-        if (
+        if ( 
           i.clientX >= mobileMoverX &&
           i.clientX <=
             mobileMoverX + mobileMoverWidth &&
@@ -735,9 +750,9 @@ export default class Game extends Component {
             i.clientY <=
             mobileMoverY + mobileMoverHeight
         ) {
-          event.preventDefault();
+
           this.controls.mobileMoverDown = true;
-          this.tpInfo[i.identifier].isMobileMover = true;
+          this.tpInfo[thisId].isMobileMover = true;
         }
 
     }
@@ -747,49 +762,105 @@ export default class Game extends Component {
 
     for(const i of event.targetTouches)
     {
-      if((this.tpCache[i.identifier] || undefined) !== undefined) {
-        if((this.tpInfo[i.identifier].isMobileMover || undefined) === true) //Mobile Mover
+      let thisId;
+      let similarTouches = Object.entries(this.tpCache)
+      .filter(t =>  {
+        return( Math.abs(t[1].clientX - i.clientX) < this.touchSpotFuzziness && Math.abs(t[1].clientY - i.clientY) < this.touchSpotFuzziness);
+      });
+        if(
+        similarTouches.length === 0)
         {
-          event.preventDefault();
-          let differenceX = i.clientX - this.tpInfo[i.identifier].initX;
-          let differenceY = i.clientY - this.tpInfo[i.identifier].initY;
-          //this.props.socket.emit("debug", { data: `${differenceX},${differenceY}` });
-          if (differenceX > 0) {
-            this.input.ActiveState.right = true;
-          }
-          if (differenceX < 0) {
-            this.input.ActiveState.left = true;
-          }
-          if (differenceY > 0) {
-            this.input.ActiveState.forward = true;
-          }
-          if (differenceY < 0) {
-            this.input.ActiveState.back = true;
+          //this.props.socket.emit("chat", { id: "yo", message: "no similar touches"});
+        } else {
+          thisId = similarTouches[0][0]
+          if((this.tpInfo[thisId].isMobileMover || undefined) === true) //Mobile Mover
+          {
+            event.preventDefault();
+            let differenceX = i.clientX - this.tpInfo[thisId].initX;
+            let differenceY = -(i.clientY - this.tpInfo[thisId].initY);
+            //this.props.socket.emit("debug", { data: `${differenceX},${differenceY}` });
+            if (differenceX > 0) {
+              this.input.ActiveState.right = true;
+              this.input.ActiveState.left = false;
+              this.input.ActiveState.forward = false;
+              this.input.ActiveState.back = false;
+            }
+            if (differenceX < 0) {
+              this.input.ActiveState.left = true;
+              this.input.ActiveState.right = false;
+              this.input.ActiveState.forward = false;
+              this.input.ActiveState.back = false;
+            }
+            if (differenceY > 0) {
+              this.input.ActiveState.forward = true;
+              this.input.ActiveState.left = false;
+              this.input.ActiveState.right = false;
+              this.input.ActiveState.back = false;
+            }
+            if (differenceY < 0) {
+              this.input.ActiveState.back = true;
+              this.input.ActiveState.left = false;
+              this.input.ActiveState.forward = false;
+              this.input.ActiveState.right = false;
+            }
           }
         }
-      }
+
+  
+
     }
   };
 
-  onTouchEnd = (event) => {
-    for(const i of event.targetTouches)
+  onTouchCancel = (event)  => {
+    for(const i of event.changedTouches)
     {
-      if((this.tpCache[i.identifier] || undefined) !== undefined) {
-        if((this.tpInfo[i.identifier].isMobileMover || undefined) === true) //Mobile Mover
+      if(this.tpInfo[i.identifier].isMobileMover === true) //Mobile Mover
         {
           this.input.ActiveState.right = false;
           this.input.ActiveState.left = false; 
           this.input.ActiveState.forward = false;
           this.input.ActiveState.back = false;
           this.controls.mobileMoverDown = false;
+          
         }
-        if((this.tpInfo[i.identifier].isMobileJumper || undefined) === true) //Mobile Jumper
+        delete this.tpCache[i.identifier]; 
+        delete this.tpInfo[i.identifier];
+    }
+  }
+
+  onTouchEnd = (event) => {
+    for(const i of event.changedTouches)
+    {
+      let thisId;
+      let similarTouches = Object.entries(this.tpCache)
+      .filter(t =>  {
+        return( Math.abs(t[1].clientX - i.clientX) < this.touchSpotFuzziness && Math.abs(t[1].clientY - i.clientY) < this.touchSpotFuzziness);
+      });
+        if(
+        similarTouches.length === 0)
         {
-          this.input.ActiveState.jump = false;
-          this.mobileJumperDown = false;
+          //this.props.socket.emit("chat", { id: "yo", message: "no similar touches end"});
+        } else {
+          thisId = similarTouches[0][0]
+          if((this.tpInfo[thisId].isMobileMover || undefined) === true) //Mobile Mover
+          {
+            this.input.ActiveState.right = false;
+            this.input.ActiveState.left = false; 
+            this.input.ActiveState.forward = false;
+            this.input.ActiveState.back = false;
+            this.controls.mobileMoverDown = false;
+          }
+          if((this.tpInfo[thisId].isMobileJumper || undefined) === true) //Mobile Jumper
+          {
+            this.input.ActiveState.jump = false;
+            this.mobileJumperDown = false;
+          }
+          delete this.tpCache[thisId];
+          delete this.tpInfo[thisId];
         }
-        delete this.tpCache[i.identifier];
-      }
+
+
+
     }
   };
   changeBrightness = (newMinBrightness) => {
@@ -2388,6 +2459,11 @@ export default class Game extends Component {
     };
     const collisionDistance = 0.1;
     const animate = () => {
+      
+      if(this.world.data.has(`${Math.round(this.camera.position.x)},${Math.round(this.camera.position.y-2)},${Math.round(this.camera.position.z)}`))
+      {
+        this.camera.position.y += .2;
+      }
       this.input.ActiveState.isGrounded =
         !this.isReady ||
         this.castRayBlocking(
@@ -2403,6 +2479,11 @@ export default class Game extends Component {
         this.input.ActiveState.jumpTimer += this.delt * 12;
         this.camera.position.y +=
           (6 - this.input.ActiveState.jumpTimer) * this.delt;
+      } else {
+        if(this.mobileJumperDown)
+        {
+          this.input.ActiveState.jump = true;
+        }
       }
       //console.log(this.mappedChunks.size );
 
@@ -2434,7 +2515,7 @@ export default class Game extends Component {
           };
         }
       } else {
-        this.delt = this.clock.getDelta();
+
         this.updatePlayersTimer += this.delt;
         for (const [key, value] of this.allPlayerModels.entries()) {
           if (this.playerOldAndNewPositions.has(key)) {
@@ -2448,8 +2529,6 @@ export default class Game extends Component {
           }
         }
       }
-    } else {
-      this.delt = this.clock.getDelta();
     }
       if (this.isReady) {
         if (input.ActiveState.forward) {
@@ -2578,9 +2657,21 @@ export default class Game extends Component {
       if (this.isOpen) {
         window.requestAnimationFrame(animate);
       }
+      this.delt = this.clock.getDelta();
+      if(this.delt > 0.5 )
+      {
+        this.camera.position.x = this.previousX;
+        this.camera.position.y = this.previousY;
+        this.camera.position.z = this.previousZ;
+      } else {
+         this.previousX = this.camera.position.x;
+         this.previousY = this.camera.position.y;
+         this.previousZ = this.camera.position.z;
+      }
     };
     if (this.isOpen) {
       animate();
     }
+    
   }
 }
