@@ -37,7 +37,7 @@ class InputState {
   }
 }
 
-const b = [1, .8, .6, .4, .2] //torch brightnesses
+const b = [.6, .5, .4, .2, .1] //torch brightnesses
 
 class InputHandler {
   constructor() {
