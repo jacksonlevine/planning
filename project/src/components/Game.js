@@ -863,7 +863,7 @@ export default class Game extends Component {
           }
           if((this.tpInfo[thisId].isMobileJumper || undefined) === true) //Mobile Jumper
           {
-            this.input.ActiveState.jump = false;
+            //this.input.ActiveState.jump = false;
             this.mobileJumperDown = false;
           }
           delete this.tpCache[thisId];
@@ -2468,9 +2468,9 @@ export default class Game extends Component {
     const collisionDistance = 0.1;
     const animate = () => {
       
-      if(this.world.data.has(`${Math.round(this.camera.position.x)},${Math.round(this.camera.position.y-2)},${Math.round(this.camera.position.z)}`))
+      if(this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor(this.camera.position.y-1.7)},${Math.floor(this.camera.position.z)}`))
       {
-        this.camera.position.y += .2;
+        this.camera.position.y += .1;
       }
       this.input.ActiveState.isGrounded =
         !this.isReady ||
@@ -2484,14 +2484,33 @@ export default class Game extends Component {
           collisionDistance
         ) !== null;
       if (!this.input.ActiveState.isGrounded) {
+        let proposedChanges = 0.0;
         this.input.ActiveState.jumpTimer += this.delt * 12;
-        this.camera.position.y +=
-          (6 - this.input.ActiveState.jumpTimer) * this.delt;
+        if(this.input.ActiveState.jump === true)
+        {
+          proposedChanges = (6.0 - (this.input.ActiveState.jumpTimer)) * this.delt;
+
+
+
+
+
+        } else {
+          proposedChanges = 
+          ( -1.0*(this.input.ActiveState.jumpTimer**2.0)) * this.delt;
+        }
+        if(!this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor((this.camera.position.y-1.7)+proposedChanges)},${Math.floor(this.camera.position.z)}`))
+        {
+          this.camera.position.y += proposedChanges;
+        }
+
       } else {
         if(this.mobileJumperDown)
         {
           this.input.ActiveState.jump = true;
+        } else {
+          this.input.ActiveState.jump = false;
         }
+        this.input.ActiveState.jumpTimer = 0;
       }
       //console.log(this.mappedChunks.size );
 
