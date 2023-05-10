@@ -2,7 +2,7 @@ export default function Inventory(props)
 {
   const styles = {
     position: "absolute",
-    top: "85%",
+    top: "78%",
     left: "85%",
     zIndex: "10"
   }

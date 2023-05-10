@@ -17,7 +17,7 @@ import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
-let minBrightness = 0.05;
+let minBrightness = 0.5;
 const maxBrightness = 1;
 
 let backFogColor = new THREE.Color((134.0/255.0)*minBrightness, (196.0/255.0)*minBrightness, (194.0/255.0)*minBrightness);
@@ -2132,9 +2132,9 @@ export default class Game extends Component {
         }
       }
     }
-    for (let i = 0; i < 8; i++) {
-      for (let k = 0; k < 8; k++) {
-        for (let a = 0; a < 8; a++) {
+    for (let i = 0; i < 10; i++) {
+      for (let k = 0; k < 10; k++) {
+        for (let a = 0; a < 10; a++) {
           let waterChunk = new Chunk(true);
           waterChunk.mesh.frustumCulled = false;
           waterChunk.isWater = true;
@@ -2341,13 +2341,28 @@ export default class Game extends Component {
                   this.world.hasBlocksMarks.has(
                     "" + x + "," + (yy + h) + "," + z
                   )
+                  ||
+                  this.world.waterMarks.has("" + x + "," + (yy + h) + "," + z)
                   
                 ) {
-                  this.neededChunks.set("" + x + "," + (yy + h) + "," + z, {
-                    x,
-                    y: yy + h,
-                    z,
-                  });
+                  if(this.world.hasBlocksMarks.has(
+                    "" + x + "," + (yy + h) + "," + z
+                  )) {
+                    this.neededChunks.set("" + x + "," + (yy + h) + "," + z, {
+                      x,
+                      y: yy + h,
+                      z,
+                    });
+                  }
+                  if( this.world.waterMarks.has("" + x + "," + (yy + h) + "," + z))
+                  {
+                    this.neededWaterChunks.set("" + x + "," + (yy + h) + "," + z, {
+                      x,
+                      y: yy + h,
+                      z,
+                    });
+                  }
+                  
                   h += 1;
                 }
               }
@@ -2483,7 +2498,7 @@ export default class Game extends Component {
           0,
           collisionDistance
         ) !== null;
-      if (!this.input.ActiveState.isGrounded) {
+      if (!this.input.ActiveState.isGrounded) { //not grounded
         let proposedChanges = 0.0;
         this.input.ActiveState.jumpTimer += this.delt * 12;
         if(this.input.ActiveState.jump === true)
@@ -2507,7 +2522,7 @@ export default class Game extends Component {
         if(this.mobileJumperDown)
         {
           this.input.ActiveState.jump = true;
-        } else {
+        } else if(this.input.ActiveState.jumpTimer > 0.5){
           this.input.ActiveState.jump = false;
         }
         this.input.ActiveState.jumpTimer = 0;
