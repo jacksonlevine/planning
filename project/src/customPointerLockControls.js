@@ -44,7 +44,8 @@ class PointerLockControls2 extends EventDispatcher {
     this.connect();
   }
 
-  onTouchMove(e) {
+  onTouchMove(e, override) {
+    if(override === true) return;
     let touch;
 
     switch (e.touches.length) {
@@ -57,6 +58,22 @@ class PointerLockControls2 extends EventDispatcher {
         break;
     }
 
+    if (!touch) return;
+
+    //console.log(touch.target);
+
+    const movementX = this.previousTouch
+      ? touch.pageX - this.previousTouch.pageX
+      : 0;
+    let movementY = this.mobileMoverDown ? 0 : (this.previousTouch
+      ? touch.pageY - this.previousTouch.pageY
+      : 0);
+
+    this.updatePosition(movementX, movementY, 0.004);
+
+    this.previousTouch = touch;
+  }
+  onTouchMoveSingle(touch) {
     if (!touch) return;
 
     //console.log(touch.target);
@@ -121,12 +138,11 @@ class PointerLockControls2 extends EventDispatcher {
   }
 
   onPointerlockError() {
-    console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
   }
 
   connect() {
-    this.domElement.addEventListener('touchmove', this.onTouchMoveBind, false);
-    this.domElement.addEventListener('touchend', this.onTouchEndBind, false);
+    // this.domElement.addEventListener('touchmove', this.onTouchMoveBind, false);
+     this.domElement.addEventListener('touchend', this.onTouchEndBind, false);
     this.domElement.ownerDocument.addEventListener(
       'mousemove',
       this.onMouseMoveBind
@@ -135,10 +151,7 @@ class PointerLockControls2 extends EventDispatcher {
       'pointerlockchange',
       this.onPointerlockChangeBind
     );
-    this.domElement.ownerDocument.addEventListener(
-      'pointerlockerror',
-      this.onPointerlockErrorBind
-    );
+
   }
 
   disconnect() {

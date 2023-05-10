@@ -759,9 +759,10 @@ export default class Game extends Component {
   };
 
   onTouchMove = (event) => {
-
+    let overridePLC = false;
     for(const i of event.targetTouches)
     {
+      
       let thisId;
       let similarTouches = Object.entries(this.tpCache)
       .filter(t =>  {
@@ -773,6 +774,7 @@ export default class Game extends Component {
           //this.props.socket.emit("chat", { id: "yo", message: "no similar touches"});
         } else {
           thisId = similarTouches[0][0]
+          let firedOnMover = false;
           if((this.tpInfo[thisId].isMobileMover || undefined) === true) //Mobile Mover
           {
             event.preventDefault();
@@ -803,12 +805,22 @@ export default class Game extends Component {
               this.input.ActiveState.forward = false;
               this.input.ActiveState.right = false;
             }
+            this.controls.onTouchMoveSingle(i);
+            firedOnMover = true;
+          }
+          if((this.tpInfo[thisId].isMobileJumper || undefined) === true) //Mobile Jumper
+          {
+            overridePLC = true;
+          } else if(!firedOnMover) {
+            this.controls.onTouchMoveSingle(i);
           }
         }
+
 
   
 
     }
+    //this.controls.onTouchMove(event, overridePLC);
   };
 
   onTouchCancel = (event)  => {
@@ -858,9 +870,6 @@ export default class Game extends Component {
           delete this.tpCache[thisId];
           delete this.tpInfo[thisId];
         }
-
-
-
     }
   };
   changeBrightness = (newMinBrightness) => {
