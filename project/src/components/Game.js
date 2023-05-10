@@ -17,7 +17,7 @@ import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
-let minBrightness = 0.5;
+let minBrightness = 0.007;
 const maxBrightness = 1;
 
 let backFogColor = new THREE.Color((134.0/255.0)*minBrightness, (196.0/255.0)*minBrightness, (194.0/255.0)*minBrightness);
