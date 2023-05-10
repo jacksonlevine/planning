@@ -921,10 +921,8 @@ export default class Game extends Component {
         this.chatBoxRef.current.focus();
         break;
       case "Space":
-        
-      this.input.ActiveState.isGrounded = false;
         this.input.ActiveState.jump = true;
-        console.log("test")
+        this.input.ActiveState.isGrounded = false;
         break;
       case "ShiftLeft":
         this.input.ActiveState.crouch = true;
@@ -2343,32 +2341,13 @@ export default class Game extends Component {
                   this.world.hasBlocksMarks.has(
                     "" + x + "," + (yy + h) + "," + z
                   )
-                  ||
-                  this.world.waterMarks.has(
-                    "" + x + "," + (yy + h) + "," + z
-                  )
                   
                 ) {
-                  if(this.world.hasBlocksMarks.has(
-                    "" + x + "," + (yy + h) + "," + z
-                  )) {
                   this.neededChunks.set("" + x + "," + (yy + h) + "," + z, {
                     x,
                     y: yy + h,
                     z,
                   });
-                }
-                if(this.world.waterMarks.has(
-                  "" + x + "," + (yy + h) + "," + z
-                ))
-                {
-                  this.neededWaterChunks.set("" + x + "," + (yy + h) + "," + z, {
-                    x,
-                    y: yy + h,
-                    z,
-                  });
-                }
-
                   h += 1;
                 }
               }
@@ -2493,7 +2472,17 @@ export default class Game extends Component {
       {
         this.camera.position.y += .1;
       }
-
+      this.input.ActiveState.isGrounded =
+        !this.isReady ||
+        this.castRayBlocking(
+          this.camera.position.x,
+          this.camera.position.y - 1,
+          this.camera.position.z,
+          0,
+          -1,
+          0,
+          collisionDistance
+        ) !== null;
       if (!this.input.ActiveState.isGrounded) {
         let proposedChanges = 0.0;
         this.input.ActiveState.jumpTimer += this.delt * 12;
@@ -2509,44 +2498,20 @@ export default class Game extends Component {
           proposedChanges = 
           ( -1.0*(this.input.ActiveState.jumpTimer**2.0)) * this.delt;
         }
-        if(proposedChanges > 0)
-        {
-          if(this.castRayBlocking(this.camera.position.x,
-            this.camera.position.y,
-            this.camera.position.z,
-            0, 1, 0,
-            collisionDistance) 
-            === null) 
-            {
-              this.camera.position.y += proposedChanges;
-            }
-        }
-        if(!this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor((this.camera.position.y-1)+proposedChanges)},${Math.floor(this.camera.position.z)}`) || this.input.ActiveState.jumpTimer < 0.1)
+        if(!this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor((this.camera.position.y-1.7)+proposedChanges)},${Math.floor(this.camera.position.z)}`))
         {
           this.camera.position.y += proposedChanges;
         }
 
       } else {
-        this.input.ActiveState.jump = false;
         if(this.mobileJumperDown)
         {
           this.input.ActiveState.jump = true;
         } else {
-          //this.input.ActiveState.jump = false;
+          this.input.ActiveState.jump = false;
         }
         this.input.ActiveState.jumpTimer = 0;
       }
-      this.input.ActiveState.isGrounded =
-      !this.isReady ||
-      this.castRayBlocking(
-        this.camera.position.x,
-        this.camera.position.y - 1,
-        this.camera.position.z,
-        0,
-        -1,
-        0,
-        collisionDistance
-      ) !== null;
       //console.log(this.mappedChunks.size );
 
         if (this.mappedChunks.size < 125) {
@@ -2604,7 +2569,7 @@ export default class Game extends Component {
               dir.x,
               dir.y,
               dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null &&
             this.castRayBlocking(
               this.camera.position.x,
@@ -2613,7 +2578,7 @@ export default class Game extends Component {
               dir.x,
               dir.y,
               dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null
           ) {
             this.controls.moveForward(this.delt * 4);
@@ -2630,7 +2595,7 @@ export default class Game extends Component {
               -dir.x,
               -dir.y,
               -dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null &&
             this.castRayBlocking(
               this.camera.position.x,
@@ -2639,7 +2604,7 @@ export default class Game extends Component {
               -dir.x,
               -dir.y,
               -dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null
           ) {
             this.controls.moveForward(-this.delt * 4);
@@ -2656,7 +2621,7 @@ export default class Game extends Component {
               dir.x,
               dir.y,
               dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null &&
             this.castRayBlocking(
               this.camera.position.x,
@@ -2665,7 +2630,7 @@ export default class Game extends Component {
               dir.x,
               dir.y,
               dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null
           ) {
             this.controls.moveRight(this.delt * 4);
@@ -2682,7 +2647,7 @@ export default class Game extends Component {
               -dir.x,
               -dir.y,
               -dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null &&
             this.castRayBlocking(
               this.camera.position.x,
@@ -2691,13 +2656,24 @@ export default class Game extends Component {
               -dir.x,
               -dir.y,
               -dir.z,
-              this.delt * 4
+              collisionDistance
             ) === null
           ) {
             this.controls.moveRight(-this.delt * 4);
           }
         }
-
+        if (input.ActiveState.jump) {
+          if (
+            !this.input.ActiveState.isGrounded ||
+            this.input.ActiveState.jumpTimer < 0.1
+          ) {
+            this.camera.position.y +=
+              (6 - this.input.ActiveState.jumpTimer) * this.delt;
+          } else {
+            this.input.ActiveState.jumpTimer = 0;
+            this.input.ActiveState.jump = false;
+          }
+        }
         if (input.ActiveState.down) {
           this.camera.position.y -= this.delt * 8;
         }
