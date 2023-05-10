@@ -375,8 +375,7 @@ export default class Game extends Component {
               <canvas
                 ref={this.canvasRef}
                 style={{
-                  zIndex: "-1",
-                  borderRadius: "25px"
+                  zIndex: "-1"
                 }}
                 id="canvas"
               ></canvas>

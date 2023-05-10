@@ -9,9 +9,13 @@ export default function UpAndDownArrow(props)
     <img id="uad" style={
       {
         position:"absolute",
-        top: "85%",
-        left: "0%",
-        pointerEvents: "none"
+        top: "78%",
+        left: "-90px",
+        pointerEvents: "none",
+        padding: "20px",
+        paddingTop: "40px",
+        paddingLeft: "100px",
+        paddingRight: "50%"
       }
     } src="/textures/upanddown.png" alt=""/>
   }
