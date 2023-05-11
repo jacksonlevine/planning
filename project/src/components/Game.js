@@ -1034,12 +1034,12 @@ export default class Game extends Component {
               this.breakBlock({ x: addedAct.x, y: addedAct.y, z: addedAct.z });
               break;
             case "place":
-                if(!this.world.data.has(`${addedAct.x},${addedAct.y},${addedAct.z}`)) {
+
                 this.placeBlock(
                   { x: addedAct.x, y: addedAct.y, z: addedAct.z },
                   addedAct.type || "1"
                 );
-                }
+
 
               break;
             default:
@@ -1186,10 +1186,14 @@ export default class Game extends Component {
                     ? "3"
                     : "4"
                   : "1";
-              this.data.set(
-                "" + realWorldX + "," + realWorldY + "," + realWorldZ,
-                idToSet
-              );}
+                  if(!this.data.has("" + realWorldX + "," + realWorldY + "," + realWorldZ))
+                  {
+                    this.data.set(
+                      "" + realWorldX + "," + realWorldY + "," + realWorldZ,
+                      idToSet
+                    );
+                  }
+              }
                 if (!this.hasBlocksMarks.has("" + A + "," + B + "," + C)) {
                   this.hasBlocksMarks.set("" + A + "," + B + "," + C, "1"); //Chunk level (zoomed out)
                 }
