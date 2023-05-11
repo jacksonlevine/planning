@@ -328,6 +328,7 @@ export default class Game extends Component {
     this.previousY = 0;
     this.previousZ = 0;
     this.touchSpotFuzziness = 200;
+    this.stars = null;
   }
 
   isCameraFacingThis = (direction, x, y, z) => {
@@ -1052,7 +1053,47 @@ export default class Game extends Component {
             this.allPlayerModels.delete(id);
           }
         });
+
+
+
       }
+
+              // Particles
+              const particlesGeometry = new THREE.BufferGeometry(); // Geometry for stars
+              const particlesCount = 700; // particles to be created. Is equiv to 5000 * 3 (x,y,z vertices)
+              const vertices = new Float32Array(particlesCount); // float of 32 bits (from buffer geo - vertices arr[x, y, z])
+      
+              // loop through all arr[x,y,z] w for loop (rand position)
+              for (let i = 0; i < particlesCount; i++) {
+                let r = Math.floor(Math.random() * 100) + 100; // 100 to 200
+                let theta = Math.random() * Math.PI * 2;
+                let phi = Math.random() * Math.PI * 2;
+                let x = r * Math.sin(theta) * Math.cos(phi);
+                let y = r * Math.sin(theta) * Math.sin(phi);
+                let z = r * Math.cos(theta);
+                vertices[i * 3] = x; 
+                vertices[i * 3 + 1] = y;
+                vertices[i * 3 + 2] = z;
+              }
+              particlesGeometry.setAttribute(
+                "position", 
+                new THREE.BufferAttribute(vertices, 3) // stores data ie. vertices position, custom attributes// 3 vals [xyz] per docs
+              )
+      
+              // Texture (loader fxn)
+              const textureLoader = new THREE.TextureLoader();
+              const particleTexture = textureLoader.load("/textures/particles/star.png"); // TODO // Adds particle textures
+                console.log(particleTexture);
+              // Material
+              const particlesMaterial = new THREE.PointsMaterial({
+                map: particleTexture, // Texture
+                size: 0.5, // size of particles
+                sizeAttenuation: true,
+                fog: false
+              });
+      
+              this.stars = new THREE.Points(particlesGeometry, particlesMaterial);
+              this.scene.add(this.stars);
     });
 
     this.mountListeners();
@@ -2482,7 +2523,10 @@ export default class Game extends Component {
     };
     const collisionDistance = 0.1;
     const animate = () => {
-      
+      if(this.stars !== null)
+      {
+        this.stars.position.copy(this.camera.position);
+      }
       if(this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor(this.camera.position.y-1.7)},${Math.floor(this.camera.position.z)}`))
       {
         this.camera.position.y += .1;
