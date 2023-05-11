@@ -17,7 +17,7 @@ import { PointerLockControls2 } from "../customPointerLockControls.js";
 
 let saturn;
 
-let minBrightness = 0.007;
+let minBrightness = 0.5;//0.007;
 const maxBrightness = 1;
 
 let backFogColor = new THREE.Color((134.0/255.0)*minBrightness, (196.0/255.0)*minBrightness, (194.0/255.0)*minBrightness);
@@ -63,7 +63,7 @@ const waterMaterial = new THREE.MeshPhysicalMaterial({
   transmission: 1
 });
 
-waterMaterial.opacity = 0.5;
+waterMaterial.opacity = 0.3;
 waterMaterial.map = texture;
 waterMaterial.emissiveIntensity = 20;
 
@@ -1799,6 +1799,22 @@ export default class Game extends Component {
                   for (let h = 0; h < v; h++) {
                     newNorms.push(0, 1, 0);
                   }
+
+                  v = 0;
+                  v += addVert(i, j, k, i + 1, j + 0.7, k + 1);
+                  v += addVert(i, j, k, i, j + 0.7, k + 1);
+                  v += addVert(i, j, k, i, j + 0.7, k);
+                  v += addVert(i, j, k, i, j + 0.7, k);
+                  v += addVert(i, j, k, i+1, j + 0.7, k);
+                  v += addVert(i, j, k, i+1, j + 0.7, k+1);
+    
+  
+                  
+                  add4UVs("8", "top");
+                  setLight(i, j, k);
+                  for (let h = 0; h < v; h++) {
+                    newNorms.push(0, 1, 0);
+                  }
                 }
               }
             }
@@ -2535,6 +2551,25 @@ export default class Game extends Component {
       {
         this.camera.position.y += .1;
       }
+      let feetInWater = false;
+      let headInWater = false;
+      if(this.world.waterdata.has(`${Math.floor(this.camera.position.x)},${Math.floor(this.camera.position.y+0.3)},${Math.floor(this.camera.position.z)}`))
+      {
+        headInWater = true;
+        this.scene.fog.color = new THREE.Color(0.05,0.05,0.4);
+        this.scene.fog.near = 2;
+        this.scene.fog.far = 10;
+        this.camera.setFocalLength(5);
+      } else {
+        this.scene.fog.color = backFogColor;
+        this.scene.fog.near = 20;
+        this.scene.fog.far = 250;
+        this.camera.setFocalLength(10);
+      }
+      if(this.world.waterdata.has(`${Math.floor(this.camera.position.x)},${Math.floor(this.camera.position.y-1.7)},${Math.floor(this.camera.position.z)}`))
+      {
+        feetInWater = true;
+      }
       this.input.ActiveState.isGrounded =
         !this.isReady ||
         this.castRayBlocking(
@@ -2551,15 +2586,27 @@ export default class Game extends Component {
         this.input.ActiveState.jumpTimer += this.delt * 12;
         if(this.input.ActiveState.jump === true)
         {
+          if(feetInWater || headInWater){
+            
+          proposedChanges = (6.0 ) * this.delt;
+          }else {
+            
           proposedChanges = (6.0 - (this.input.ActiveState.jumpTimer)) * this.delt;
+          }
 
 
 
 
 
         } else {
-          proposedChanges = 
-          ( -1.0*(this.input.ActiveState.jumpTimer**2.0)) * this.delt;
+          if(feetInWater || headInWater){
+            proposedChanges = 
+            ( -1.0) * this.delt;
+          } else {
+            proposedChanges = 
+            ( -1.0*(this.input.ActiveState.jumpTimer**2.0)) * this.delt;
+          }
+ 
         }
         if(!this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor((this.camera.position.y-1.7)+proposedChanges)},${Math.floor(this.camera.position.z)}`))
         {
