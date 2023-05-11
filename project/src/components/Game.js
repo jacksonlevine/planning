@@ -324,9 +324,7 @@ export default class Game extends Component {
     this.mobileJumperDown = false;
     this.mobileMoverDown = false;
     this.blockChangeRequested = false;
-    this.previousX = 0;
-    this.previousY = 0;
-    this.previousZ = 0;
+    this.previous = new THREE.Vector3(0.0,0.0,0.0);
     this.touchSpotFuzziness = 200;
     this.stars = null;
   }
@@ -2581,23 +2579,22 @@ export default class Game extends Component {
           0,
           collisionDistance
         ) !== null;
+      let proposedChanges = 0.0;
+      if(feetInWater || headInWater){
+        proposedChanges = (1.0) * this.delt;
+      }
       if (!this.input.ActiveState.isGrounded) { //not grounded
-        let proposedChanges = 0.0;
+        if(!feetInWater && !headInWater){
         this.input.ActiveState.jumpTimer += this.delt * 12;
+        }
         if(this.input.ActiveState.jump === true)
         {
           if(feetInWater || headInWater){
-            
-          proposedChanges = (6.0 ) * this.delt;
-          }else {
-            
-          proposedChanges = (6.0 - (this.input.ActiveState.jumpTimer)) * this.delt;
+            proposedChanges = 
+            ( 1.0) * this.delt;
+          } else {
+            proposedChanges = (6.0 - (this.input.ActiveState.jumpTimer)) * this.delt;
           }
-
-
-
-
-
         } else {
           if(feetInWater || headInWater){
             proposedChanges = 
@@ -2608,10 +2605,7 @@ export default class Game extends Component {
           }
  
         }
-        if(!this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor((this.camera.position.y-1.7)+proposedChanges)},${Math.floor(this.camera.position.z)}`))
-        {
-          this.camera.position.y += proposedChanges;
-        }
+        
 
       } else {
         if(this.mobileJumperDown)
@@ -2622,6 +2616,10 @@ export default class Game extends Component {
         }
         this.input.ActiveState.jumpTimer = 0;
       }
+      if(!this.world.data.has(`${Math.floor(this.camera.position.x)},${Math.floor((this.camera.position.y-1.7)+proposedChanges)},${Math.floor(this.camera.position.z)}`))
+        {
+          this.camera.position.y += proposedChanges;
+        }
       //console.log(this.mappedChunks.size );
 
         if (this.mappedChunks.size < 125) {
@@ -2795,15 +2793,11 @@ export default class Game extends Component {
         window.requestAnimationFrame(animate);
       }
       this.delt = this.clock.getDelta();
-      if(this.delt > 0.5 )
+      if(this.delt > 0.5 || this.previous.distanceTo(this.camera.position) > 5)
       {
-        this.camera.position.x = this.previousX;
-        this.camera.position.y = this.previousY;
-        this.camera.position.z = this.previousZ;
+        this.camera.position.copy(this.previous);
       } else {
-         this.previousX = this.camera.position.x;
-         this.previousY = this.camera.position.y;
-         this.previousZ = this.camera.position.z;
+         this.previous.copy(this.camera.position);
       }
     };
     if (this.isOpen) {
