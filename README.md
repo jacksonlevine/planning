@@ -63,6 +63,15 @@
 to confirm if Google is the issue
 * 2:00 - 2:30 Researching PayPal SDK
 
+#### Saturday & Sunday, 05/13 and 05/14/2023 - Beginning to learn OpenGL and how it is similar in some ways to Three.js.
+
+#### Monday, 05/15/2023 - Planning a downloadable client, using OpenGL (so using C++).
+
+##### Note: I know this isn't the most efficient way to get this done, given that I can just package my JavaScript code into a standalone executable with pkg, but I want to conquer OpenGL more head-on to challenge myself. Here goes: 
+
+* 10:00 - 12:30 Researching lambdas/closures in C++ to be able to have some similarly to JavaScript arrow functions when using GL.
+
+
 ## License:
 
 Copyright Jackson Levine 2023
