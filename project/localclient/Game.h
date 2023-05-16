@@ -16,9 +16,11 @@ public:
 
 class World {
 public:
-    folly::F14FastMap<std::tuple<int>, uint8_t> data;
+    folly::F14FastMap<std::tuple<int, int, int>, uint8_t> data;
+    Game* gref;
     void generate();
-    void generateOneChunk();
+    void generateOneChunk(std::tuple<int, int, int> pos);
+    World(Game* g);
 };
 
 class Game {
