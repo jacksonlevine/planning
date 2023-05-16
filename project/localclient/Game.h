@@ -3,9 +3,21 @@
 #include <folly/container/F14Map.h>
 #include "GLSetup.h"
 
+struct intTup {
+public:
+    int x;
+    int y;
+    int z;
+    intTup(int x, int y, int z);
+    bool operator==(const intTup& other) const;
+};
+
 class Game;
 class Chunk {
 public:
+    int x;
+    int y;
+    int z;
     Chunk(Game* gref);
     Game* gref;
     std::vector<GLfloat> vertices;
@@ -16,10 +28,10 @@ public:
 
 class World {
 public:
-    folly::F14FastMap<std::tuple<int, int, int>, uint8_t> data;
+    folly::F14NodeMap<intTup, uint8_t> data;
     Game* gref;
     void generate();
-    void generateOneChunk(std::tuple<int, int, int> pos);
+    void generateOneChunk(intTup pos);
     World(Game* g);
 };
 
@@ -29,7 +41,7 @@ public:
     World world;
     const uint8_t chunkWidth;
     std::vector<Chunk> chunkPool;
-    folly::F14FastMap<std::tuple<int>, Chunk*> activeChunks;
+    folly::F14NodeMap<intTup, Chunk*> activeChunks;
     Game(GLWrapper* wrapref);
 };
 

@@ -131,11 +131,13 @@
     <ClCompile Include="ConsoleApplication1.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GLSetup.cpp" />
+    <ClCompile Include="Perlin.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
     <ClInclude Include="GLSetup.h" />
+    <ClInclude Include="Perlin.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

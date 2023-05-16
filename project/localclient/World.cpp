@@ -8,15 +8,25 @@ World::World(Game* g) : gref(g) {
 }
 
 void World::generate() {
-
+	for (int x = -5; x < 5; x++)
+	{
+		for (int z = -5; z < 5; z++)
+		{
+			for (int y = -5; y < 5; y++)
+			{
+				intTup tup(x,y,z);
+				this->generateOneChunk(tup);
+			}
+		}
+	}
 }
 
-void World::generateOneChunk(std::tuple<int, int, int> coord) {
+void World::generateOneChunk(intTup coord) {
 
 
-	int realX = std::get<0>(coord) * this->gref->chunkWidth;
-	int realY = std::get<1>(coord) * this->gref->chunkWidth;
-	int realZ = std::get<2>(coord) * this->gref->chunkWidth;
+	int realX = coord.x * this->gref->chunkWidth;
+	int realY = coord.y * this->gref->chunkWidth;
+	int realZ = coord.z * this->gref->chunkWidth;
 
 	for (int y = 0; y < this->gref->chunkWidth; y++)
 	{
@@ -28,8 +38,8 @@ void World::generateOneChunk(std::tuple<int, int, int> coord) {
 				int localY = realY + y;
 				int localZ = realZ + z;
 
-				std::tuple<int, int, int> tup = std::make_tuple(localX, localY, localZ);
-				double noise = p.noise((double)localX / (double)25.25, (double)30.253, (double)localZ / (double)25.25)*15;
+				intTup tup(localX, localY, localZ);
+				double noise = p.noise((double)localX / 25.25, 30.253, (double)localZ / 25.25)*15;
 				if (localY < noise)
 				{
 					this->data.insert_or_assign(tup, 1);
