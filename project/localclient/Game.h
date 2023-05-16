@@ -38,9 +38,10 @@ public:
 struct IntervalTask {
     float timer;
     float interval;
+    uint8_t id;
     std::function<void()> lambda;
 
-    IntervalTask(float interval, std::function<void()> lambda);
+    IntervalTask(float interval, std::function<void()> lambda, uint8_t id);
 };
 
 class Game {
@@ -53,7 +54,7 @@ public:
     folly::F14NodeMap<intTup, Chunk*> activeChunks;
     Game(World w);
     void updateTasks(float delt);
-    void addTask(std::function<void()> func, float interval);
+    void addTask(std::function<void()> func, float interval, uint8_t id);
 };
 
 
