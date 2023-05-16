@@ -9,8 +9,26 @@
 
 class GLWrapper {
 public:
+	glm::vec3 cameraPos;
+	glm::vec3 cameraTarget;
+	glm::vec3 cameraDirection;
+	glm::vec3 up;
+	glm::vec3 cameraRight;
+	glm::vec3 cameraFront;
+	glm::vec3 cameraUp;
+	float cameraSpeed;
+	float cameraYaw;
+	float cameraPitch;
+	float lastX, lastY;
+	bool firstMouse;
+	glm::mat4 view;
+	glm::mat4 model;
+	glm::mat4 projection;
+	glm::mat4 mvp;
+	glm::vec3 direction;
 	GLuint shaderProgram;
 	GLFWwindow* window;
+	GLWrapper();
 	int initializeGL();
 	void runGLLoop();
 	void bindGeometry(const GLfloat* vertices, const GLfloat* colors, int vsize, int csize);

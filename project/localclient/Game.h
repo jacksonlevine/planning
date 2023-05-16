@@ -1,6 +1,7 @@
 #pragma once
 #include <folly/Optional.h>
 #include <folly/container/F14Map.h>
+#include <folly/container/F14Set.h>
 #include "GLSetup.h"
 
 #define CHUNK_WIDTH 16
@@ -52,12 +53,14 @@ public:
     std::vector<Chunk> chunkPool;
     std::vector<IntervalTask> tasks;
     folly::F14NodeMap<intTup, Chunk*> activeChunks;
+    folly::F14NodeSet<intTup> neededChunks;
     Game(GLWrapper* wr);
     void updateTasks(float delt);
     void addTask(std::function<void()> func, float interval, uint8_t id);
     void removeTask(uint8_t id);
 
-    void surveyNeededChunks()
+    void surveyNeededChunks();
+    void rebuildNextChunk();
 };
 
 

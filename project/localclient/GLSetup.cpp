@@ -1,23 +1,26 @@
 #include "GLSetup.h";
 
 
-// Camera position and rotation
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-float cameraSpeed = 0.1f;
-float cameraYaw = -90.0f;
-float cameraPitch = 0.0f;
-float lastX = 400, lastY = 300;
-bool firstMouse = true;
-glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-glm::mat4 model;
-glm::mat4 projection;
-glm::mat4 mvp;
+
+
+GLWrapper::GLWrapper()
+{
+    // Camera position and rotation
+    this->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    this->cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    this->cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+    this->cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    this->cameraUp = glm::cross(cameraDirection, cameraRight);
+    this->cameraSpeed = 0.1f;
+    this->cameraYaw = -90.0f;
+    this->cameraPitch = 0.0f;
+    this->lastX = 400;
+    this->lastY = 300;
+    this->firstMouse = true;
+    this->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+}
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -236,7 +239,7 @@ void GLWrapper::bindGeometry(const GLfloat* vertices, const GLfloat* colors, int
 void GLWrapper::orientCamera() {
 
     // Calculate the new direction vector based on the yaw and pitch angles
-    glm::vec3 direction;
+
     direction.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
     direction.y = sin(glm::radians(cameraPitch));
     direction.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
