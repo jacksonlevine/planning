@@ -43,7 +43,7 @@ void Game::removeTask(uint8_t id)
 		}), this->tasks.end());
 }
 
-Game::Game(World w) : world(w), chunkWidth(16) {
+Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 	for (int i = 0; i < 50; i++)
 	{
 		Chunk c(this);

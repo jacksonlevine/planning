@@ -3,10 +3,6 @@
 
 perlin p;
 
-World::World(Game* g) : gref(g) {
-
-}
-
 void World::generate() {
 	for (int x = -5; x < 5; x++)
 	{
@@ -24,15 +20,15 @@ void World::generate() {
 void World::generateOneChunk(intTup coord) {
 
 
-	int realX = coord.x * this->gref->chunkWidth;
-	int realY = coord.y * this->gref->chunkWidth;
-	int realZ = coord.z * this->gref->chunkWidth;
+	int realX = coord.x * CHUNK_WIDTH;
+	int realY = coord.y * CHUNK_WIDTH;
+	int realZ = coord.z * CHUNK_WIDTH;
 
-	for (int y = 0; y < this->gref->chunkWidth; y++)
+	for (int y = 0; y < CHUNK_WIDTH; y++)
 	{
-		for (int x = 0; x < this->gref->chunkWidth; x++)
+		for (int x = 0; x < CHUNK_WIDTH; x++)
 		{
-			for (int z = 0; z < this->gref->chunkWidth; z++)
+			for (int z = 0; z < CHUNK_WIDTH; z++)
 			{
 				int localX = realX + x;
 				int localY = realY + y;
