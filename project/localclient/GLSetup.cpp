@@ -204,6 +204,40 @@ int GLWrapper::initializeGL() {
 
 }
 
+void GLWrapper::setupVAO() {
+    // Generate a vertex array object (VAO)
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao); //AND PUSH IT TO GlWrapper.vaos
+
+
+}
+
+void GLWrapper::bindGeometry(const GLfloat* vertices, const GLfloat* colors, int vsize, int csize) {
+
+    // Generate a vertex buffer object (VBO) for the position data
+    GLuint vbo_vertices;
+    glGenBuffers(1, &vbo_vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+    glBufferData(GL_ARRAY_BUFFER, vsize, vertices, GL_STATIC_DRAW);
+
+    // Set up the vertex attribute pointers for the position buffer object
+    GLint pos_attrib = glGetAttribLocation(this->shaderProgram, "position");
+    glEnableVertexAttribArray(pos_attrib);
+    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    // Generate a vertex buffer object (VBO) for the color data
+    GLuint vbo_colors;
+    glGenBuffers(1, &vbo_colors);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
+    glBufferData(GL_ARRAY_BUFFER, csize, colors, GL_STATIC_DRAW);
+
+    // Set up the vertex attribute pointers for the color buffer object
+    GLint col_attrib = glGetAttribLocation(this->shaderProgram, "color");
+    glEnableVertexAttribArray(col_attrib);
+    glVertexAttribPointer(col_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+}
+
 void GLWrapper::runGLLoop() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -217,16 +251,14 @@ void GLWrapper::runGLLoop() {
     // Normalize the direction vector
     direction = glm::normalize(direction);
 
-    // Set up the view matrix
+    // Set up the view matrix 
     view = glm::lookAt(cameraPos, cameraPos + direction, cameraUp);
-    //const float radius = 10.0f;
-    //float camX = sin(glfwGetTime()) * radius;
-    //float camZ = cos(glfwGetTime()) * radius;
-    //glm::mat4 view;
-    //view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+
     mvp = projection * view * model;
+
     glUseProgram(shaderProgram);
-    // Set the view matrix uniform in the shadergvf
+
+    // Set the mvp matrix uniform in the shader
     GLuint mvpLoc = glGetUniformLocation(shaderProgram, "mvp");
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
