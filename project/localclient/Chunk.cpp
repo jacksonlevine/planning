@@ -1,7 +1,7 @@
 #include "Game.h"
 
-Chunk::Chunk() {
-	
+Chunk::Chunk(Game* gref) {
+	this->gref = gref;
 }
 
 void Chunk::rebuildMesh() {

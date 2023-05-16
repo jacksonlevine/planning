@@ -30,8 +30,8 @@ int main()
         0.0f, 1.0f, 0.0f, 
         0.0f, 0.0f, 1.0f  
     };
-
-    Chunk c;
+    Game g(&wrap);
+    Chunk c(&g);
     c.vertices.insert(c.vertices.begin(), std::begin(vertices), std::end(vertices));
 
     c.colors.insert(c.colors.begin(), std::begin(colors), std::end(colors));

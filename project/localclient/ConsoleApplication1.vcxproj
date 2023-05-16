@@ -127,7 +127,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="GLSetup.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
