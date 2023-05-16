@@ -4,6 +4,7 @@
 #include "GLSetup.h"
 class Chunk {
 public:
+    Chunk(uint8_t width);
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
     void rebuildMesh();
@@ -12,8 +13,10 @@ public:
 
 class Game {
     GLWrapper wrap;
+    const uint8_t chunkWidth;
     std::vector<Chunk> chunkPool;
     folly::F14FastMap<std::tuple<int>, Chunk*> activeChunks;
+    Game();
 };
 
 class World {
