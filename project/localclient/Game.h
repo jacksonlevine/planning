@@ -15,6 +15,10 @@ public:
     bool operator==(const intTup& other) const;
 };
 
+struct intTupHash {
+    std::size_t operator()(const intTup& tup) const;
+};
+
 class Game;
 class Chunk {
 public:
@@ -31,7 +35,7 @@ public:
 
 class World {
 public:
-    folly::F14NodeMap<intTup, uint8_t> data;
+    std::unordered_map<intTup, uint8_t, intTupHash> data;
     void generate();
     void generateOneChunk(intTup pos);
 };
@@ -52,8 +56,8 @@ public:
     const uint8_t chunkWidth;
     std::vector<Chunk> chunkPool;
     std::vector<IntervalTask> tasks;
-    folly::F14NodeMap<intTup, Chunk> activeChunks;
-    folly::F14NodeSet<intTup> neededChunks;
+    std::unordered_map<intTup, Chunk, intTupHash> activeChunks;
+    std::unordered_set<intTup, intTupHash> neededChunks;
     Game(GLWrapper* wr);
     void updateTasks(float delt);
     void addTask(std::function<void()> func, float interval, uint8_t id);

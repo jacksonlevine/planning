@@ -1,7 +1,7 @@
 #include "GLSetup.h";
 
 
-
+GLWrapper* GLWrapper::instance = nullptr;
 
 GLWrapper::GLWrapper()
 {
@@ -20,55 +20,61 @@ GLWrapper::GLWrapper()
     this->lastY = 300;
     this->firstMouse = true;
     this->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    instance = this;
 }
 
-GLFWcursorposfun GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    if (firstMouse)
+    if(instance)
     {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
+        if (instance->firstMouse)
+        {
+            instance->lastX = xpos;
+            instance->lastY = ypos;
+            instance->firstMouse = false;
+        }
+
+        float xoffset = xpos - instance->lastX;
+        float yoffset = instance->lastY - ypos;
+        instance->lastX = xpos;
+        instance->lastY = ypos;
+
+        float sensitivity = 0.1f;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+
+        instance->cameraYaw += xoffset;
+        instance->cameraPitch += yoffset;
+
+        if (instance->cameraPitch > 89.0f)
+            instance->cameraPitch = 89.0f;
+        if (instance->cameraPitch < -89.0f)
+            instance->cameraPitch = -89.0f;
+
+
+        glm::vec3 front;
+        front.x = cos(glm::radians(instance->cameraYaw)) * cos(glm::radians(instance->cameraPitch));
+        front.y = sin(glm::radians(instance->cameraPitch));
+        front.z = sin(glm::radians(instance->cameraYaw)) * cos(glm::radians(instance->cameraPitch));
+        instance->cameraFront = glm::normalize(front);
     }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    cameraYaw += xoffset;
-    cameraPitch += yoffset;
-
-    if (cameraPitch > 89.0f)
-        cameraPitch = 89.0f;
-    if (cameraPitch < -89.0f)
-        cameraPitch = -89.0f;
-
-
-    glm::vec3 front;
-    front.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-    front.y = sin(glm::radians(cameraPitch));
-    front.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-    cameraFront = glm::normalize(front);
 
 }
 
-GLFWmousebuttonfun GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    if(instance)
     {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        firstMouse = true;
-    }
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        firstMouse = true;
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            instance->firstMouse = true;
+        }
+        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            instance->firstMouse = true;
+        }
     }
 }
 
@@ -119,8 +125,8 @@ int GLWrapper::initializeGL() {
     // Enable pointer-locking first-person controls
     glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // Set up event callbacks
-    glfwSetCursorPosCallback(this->window, mouse_callback);
-    glfwSetMouseButtonCallback(this->window, mouse_button_callback);
+    glfwSetCursorPosCallback(this->window, GLWrapper::mouse_callback);
+    glfwSetMouseButtonCallback(this->window, GLWrapper::mouse_button_callback);
 
     // Create vertex shader object
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);

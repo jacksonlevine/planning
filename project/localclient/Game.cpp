@@ -15,6 +15,14 @@ IntervalTask::IntervalTask(float interval, std::function<void()> lambda, uint8_t
 
 }
 
+std::size_t intTupHash::operator()(const intTup& tup) const {
+	std::size_t hash = 0;
+	hash ^= std::hash<int>{}(tup.x) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+	hash ^= std::hash<int>{}(tup.y) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+	hash ^= std::hash<int>{}(tup.z) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+	return hash;
+}
+
 void Game::updateTasks(float delt)
 {
 	for (IntervalTask task : this->tasks) {

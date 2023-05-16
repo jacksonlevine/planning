@@ -34,8 +34,9 @@ public:
 	void bindGeometry(const GLfloat* vertices, const GLfloat* colors, int vsize, int csize);
 	void setupVAO();
 	void orientCamera();
-	void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+	static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+	static GLWrapper* instance;
 };
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
