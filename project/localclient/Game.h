@@ -6,7 +6,8 @@ class Chunk {
 public:
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
-
+    void rebuildMesh();
+    void moveAndRebuildMesh();
  };
 
 class Game {
