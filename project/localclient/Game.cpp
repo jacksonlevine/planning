@@ -44,7 +44,7 @@ void Game::removeTask(uint8_t id)
 }
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 200; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
@@ -84,5 +84,19 @@ void Game::surveyNeededChunks()
 
 void Game::rebuildNextChunk()
 {
-
+	if (this->neededChunks.size() > 5)
+	{
+		intTup neededSpot = *(this->neededChunks.begin());
+		this->neededChunks.erase(this->neededChunks.begin());
+		if (activeChunks.find(neededSpot) == activeChunks.end())
+		{
+			if (chunkPool.size() > 1)
+			{
+				Chunk grabbedChunk = *(this->chunkPool.begin());
+				this->chunkPool.erase(this->chunkPool.begin());
+				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
+				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
+			}
+		}
+	}
 }

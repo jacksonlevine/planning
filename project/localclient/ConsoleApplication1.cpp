@@ -18,23 +18,11 @@ int main()
     wrap.setupVAO();
 
 
-    GLfloat vertices[] = {
-        -0.5f, -0.5f, 0.0f, 
-         0.5f, -0.5f, 0.0f, 
-         0.0f,  0.5f, 0.0f 
-    };
 
-
-    GLfloat colors[] = {
-        1.0f, 0.0f, 0.0f, 
-        0.0f, 1.0f, 0.0f, 
-        0.0f, 0.0f, 1.0f  
-    };
     Game game(&wrap);
+    game.world.generate();
     Chunk c(&game);
-    c.vertices.insert(c.vertices.begin(), std::begin(vertices), std::end(vertices));
-
-    c.colors.insert(c.colors.begin(), std::begin(colors), std::end(colors));
+    c.rebuildMesh();
 
     wrap.bindGeometry(
         &(c.vertices[0]), 

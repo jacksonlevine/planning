@@ -52,7 +52,7 @@ public:
     const uint8_t chunkWidth;
     std::vector<Chunk> chunkPool;
     std::vector<IntervalTask> tasks;
-    folly::F14NodeMap<intTup, Chunk*> activeChunks;
+    folly::F14NodeMap<intTup, Chunk> activeChunks;
     folly::F14NodeSet<intTup> neededChunks;
     Game(GLWrapper* wr);
     void updateTasks(float delt);

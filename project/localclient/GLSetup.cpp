@@ -22,7 +22,7 @@ GLWrapper::GLWrapper()
     this->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+GLFWcursorposfun GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
     {
@@ -57,7 +57,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 }
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+GLFWmousebuttonfun GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
