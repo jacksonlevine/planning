@@ -211,6 +211,8 @@ void GLWrapper::setupVAO() {
     glBindVertexArray(vao); //AND PUSH IT TO GlWrapper.vaos
 
 
+    glUseProgram(this->shaderProgram);
+
 }
 
 void GLWrapper::bindGeometry(const GLfloat* vertices, const GLfloat* colors, int vsize, int csize) {
@@ -220,7 +222,6 @@ void GLWrapper::bindGeometry(const GLfloat* vertices, const GLfloat* colors, int
     glGenBuffers(1, &vbo_vertices);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
     glBufferData(GL_ARRAY_BUFFER, vsize, vertices, GL_STATIC_DRAW);
-
     // Set up the vertex attribute pointers for the position buffer object
     GLint pos_attrib = glGetAttribLocation(this->shaderProgram, "position");
     glEnableVertexAttribArray(pos_attrib);
@@ -238,9 +239,7 @@ void GLWrapper::bindGeometry(const GLfloat* vertices, const GLfloat* colors, int
 
 }
 
-void GLWrapper::runGLLoop() {
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void GLWrapper::orientCamera() {
 
     // Calculate the new direction vector based on the yaw and pitch angles
     glm::vec3 direction;
@@ -256,12 +255,17 @@ void GLWrapper::runGLLoop() {
 
     mvp = projection * view * model;
 
-    glUseProgram(shaderProgram);
 
     // Set the mvp matrix uniform in the shader
     GLuint mvpLoc = glGetUniformLocation(shaderProgram, "mvp");
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+}
 
+void GLWrapper::runGLLoop() {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    this->orientCamera();
 
     // Draw the triangle
     glDrawArrays(GL_TRIANGLES, 0, 3);
