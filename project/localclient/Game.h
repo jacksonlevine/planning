@@ -35,14 +35,25 @@ public:
     World(Game* g);
 };
 
+struct IntervalTask {
+    float timer;
+    float interval;
+    std::function<void()> lambda;
+
+    IntervalTask(float interval, std::function<void()> lambda);
+};
+
 class Game {
 public:
     //GLWrapper* wrap;
     World world;
     const uint8_t chunkWidth;
     std::vector<Chunk> chunkPool;
+    std::vector<IntervalTask> tasks;
     folly::F14NodeMap<intTup, Chunk*> activeChunks;
     Game(World w);
+    void updateTasks(float delt);
+    void addTask(std::function<void()> func, float interval);
 };
 
 
