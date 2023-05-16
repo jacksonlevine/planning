@@ -20,7 +20,7 @@ void Chunk::rebuildMesh() {
 				intTup tup(this->x*this->gref->chunkWidth + x, this->y * this->gref->chunkWidth + y, this->z * this->gref->chunkWidth + z);
 				if (this->gref->world.data.find(tup) != this->gref->world.data.end())
 				{
-					if (this->gref->world.data.find(intTup(tup.x -1 , tup.y, tup.z)) == this->gref->world.data.end())
+					if (this->gref->world.data.find(intTup(tup.x - 1, tup.y, tup.z)) == this->gref->world.data.end())
 					{
 						this->vertices.insert(this->vertices.end(),
 							{(GLfloat)tup.x, 
@@ -58,7 +58,7 @@ void Chunk::rebuildMesh() {
 
 						}
 					}
-					if (this->gref->world.data.find(intTup(tup.x, tup.y, tup.z-1)) == this->gref->world.data.end())
+					if (this->gref->world.data.find(intTup(tup.x, tup.y, tup.z - 1)) == this->gref->world.data.end())
 					{
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x),
@@ -260,6 +260,9 @@ void Chunk::rebuildMesh() {
 	}
 }
 
-void Chunk::moveAndRebuildMesh() {
-
+void Chunk::moveAndRebuildMesh(int newX, int newY, int newZ) {
+	this->x = newX;
+	this->y = newY;
+	this->z = newZ;
+	this->rebuildMesh();
 }

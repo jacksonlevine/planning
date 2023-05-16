@@ -23,7 +23,7 @@ public:
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
     void rebuildMesh();
-    void moveAndRebuildMesh();
+    void moveAndRebuildMesh(int newX, int newY, int newZ);
  };
 
 class World {
@@ -37,12 +37,12 @@ public:
 
 class Game {
 public:
-    GLWrapper* wrap;
+    //GLWrapper* wrap;
     World world;
     const uint8_t chunkWidth;
     std::vector<Chunk> chunkPool;
     folly::F14NodeMap<intTup, Chunk*> activeChunks;
-    Game(GLWrapper* wrapref);
+    Game(World w);
 };
 
 
