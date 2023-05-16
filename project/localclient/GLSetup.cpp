@@ -3,13 +3,10 @@
 
 // Camera position and rotation
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-
 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 float cameraSpeed = 0.1f;
@@ -19,11 +16,9 @@ float lastX = 400, lastY = 300;
 bool firstMouse = true;
 glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 glm::mat4 model;
-
-
 glm::mat4 projection;
 glm::mat4 mvp;
-// Mouse movement callback function
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
@@ -59,7 +54,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 }
 
-// Mouse click callback function
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 
@@ -208,9 +202,9 @@ void GLWrapper::setupVAO() {
     // Generate a vertex array object (VAO)
     GLuint vao;
     glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao); //AND PUSH IT TO GlWrapper.vaos
+    glBindVertexArray(vao);
 
-
+    // Use our shader program
     glUseProgram(this->shaderProgram);
 
 }

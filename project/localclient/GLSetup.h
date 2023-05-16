@@ -6,8 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <folly/Optional.h>
-#include <folly/container/F14Map.h>
+
 class GLWrapper {
 public:
 	std::vector<GLuint> vaos;
