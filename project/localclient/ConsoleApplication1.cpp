@@ -32,9 +32,15 @@ int main()
     };
 
     Chunk c;
-    
+    c.vertices.insert(c.vertices.begin(), std::begin(vertices), std::end(vertices));
 
-    wrap.bindGeometry(&vertices[0], &colors[0], sizeof(vertices), sizeof(colors));
+    c.colors.insert(c.colors.begin(), std::begin(colors), std::end(colors));
+
+    wrap.bindGeometry(
+        &(c.vertices[0]), 
+        &(c.colors[0]), 
+        sizeof(GLfloat) * c.vertices.capacity(), 
+        sizeof(GLfloat) * c.colors.capacity());
 
     float deltaTime = 0;
     float lastFrame = 0;

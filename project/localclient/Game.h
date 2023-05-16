@@ -3,6 +3,7 @@
 #include <folly/container/F14Map.h>
 #include "GLSetup.h"
 class Chunk {
+public:
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
 

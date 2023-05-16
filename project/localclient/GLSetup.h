@@ -9,8 +9,6 @@
 
 class GLWrapper {
 public:
-	std::vector<GLuint> vaos;
-	int vaoIndex;
 	GLuint shaderProgram;
 	GLFWwindow* window;
 	int initializeGL();
