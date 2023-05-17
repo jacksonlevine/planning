@@ -72,7 +72,7 @@ void Game::surveyNeededChunks()
 	int chunkY = std::floor(y / CHUNK_WIDTH);
 	int chunkZ = std::floor(z / CHUNK_WIDTH);
 
-	for(int j = -chunkY - 2; j < chunkY + 1; j++)
+	for(int j = chunkY - 2; j < chunkY + 1; j++)
 	{
 		for (int i = chunkX - 5; i < chunkX + 5; i++)
 		{

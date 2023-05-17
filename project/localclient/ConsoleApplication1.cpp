@@ -39,7 +39,7 @@ int main()
     game.surveyNeededChunks();
     
 
-    const float friction = 0.85;
+    const float friction = 0.75;
     // Main loop
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -79,7 +79,7 @@ int main()
 
         if (wrap.activeState.forward)
         {
-            wrap.activeState.forwardVelocity += deltaTime * 12;
+            wrap.activeState.forwardVelocity += deltaTime * 6;
         }
         if (wrap.activeState.forwardVelocity > 0)
         {
