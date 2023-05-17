@@ -53,7 +53,7 @@ int Game::compareChunks(const void* a, const void* b)
 			chunkB->x * CHUNK_WIDTH, 
 			chunkB->y * CHUNK_WIDTH, 
 			chunkB->z * CHUNK_WIDTH) , instance->wrap->cameraPos);
-		if (distanceA > 100 || distanceB > 100) {
+		if (distanceA > 150 || distanceB > 150) {
 
 			if (distanceA < distanceB)
 				return 1;
