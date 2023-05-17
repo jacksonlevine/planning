@@ -5,7 +5,18 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp> 
+
+struct InputState {
+	bool forward;
+	bool left;
+	bool right;
+	bool back;
+	bool jump;
+	float forwardVelocity;
+	float upVelocity;
+	float rightVelocity;
+};
 
 class GLWrapper {
 public:
@@ -28,6 +39,8 @@ public:
 	glm::vec3 direction;
 	GLuint shaderProgram;
 	GLFWwindow* window;
+	float deltaTime;
+	InputState activeState;
 	GLWrapper();
 	int initializeGL();
 	void runGLLoop();

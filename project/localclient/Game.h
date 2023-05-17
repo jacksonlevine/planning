@@ -39,6 +39,7 @@ class World {
 public:
     std::unordered_map<intTup, uint8_t, intTupHash> data;
     std::unordered_map<intTup, uint8_t, intTupHash> hasBlockMarks;
+    std::unordered_map<intTup, uint8_t, intTupHash> fullBlockMarks;
     void generate();
     void generateOneChunk(intTup pos);
 };

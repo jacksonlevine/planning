@@ -24,12 +24,14 @@ void World::generateOneChunk(intTup coord) {
 	int realY = coord.y * CHUNK_WIDTH;
 	int realZ = coord.z * CHUNK_WIDTH;
 
+	int blockCount = 0;
 	for (int y = 0; y < CHUNK_WIDTH; y++)
 	{
 		for (int x = 0; x < CHUNK_WIDTH; x++)
 		{
 			for (int z = 0; z < CHUNK_WIDTH; z++)
 			{
+				
 				int localX = realX + x;
 				int localY = realY + y;
 				int localZ = realZ + z;
@@ -39,6 +41,11 @@ void World::generateOneChunk(intTup coord) {
 				if (localY < noise)
 				{
 					this->data.insert_or_assign(tup, 1);
+					blockCount++;
+					if (blockCount == std::pow(CHUNK_WIDTH, 3))
+					{
+						this->fullBlockMarks.insert_or_assign(coord, 1);
+					}
 					if (this->hasBlockMarks.find(coord) == this->hasBlockMarks.end())
 					{
 						this->hasBlockMarks.insert_or_assign(coord, 1);

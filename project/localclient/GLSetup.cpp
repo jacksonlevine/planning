@@ -19,6 +19,7 @@ GLWrapper::GLWrapper()
     this->lastX = 400;
     this->lastY = 300;
     this->firstMouse = true;
+    this->deltaTime = 0;
     this->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     instance = this;
 }
@@ -84,8 +85,8 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
     {
         if (key == GLFW_KEY_W)
         {
-            instance->cameraPos += instance->cameraDirection;
-            instance->cameraTarget += instance->cameraDirection;
+            if (action == GLFW_PRESS) instance->activeState.forward = true;
+            if (action == GLFW_RELEASE) instance->activeState.forward = false;
         }
     }
 }

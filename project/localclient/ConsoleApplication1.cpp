@@ -37,6 +37,9 @@ int main()
     float deltaTime = 0;
     float lastFrame = 0;
     game.surveyNeededChunks();
+    
+
+    const float friction = 0.85;
     // Main loop
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -45,7 +48,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         wrap.orientCamera();
-
 
         for (const auto& pair : game.activeChunks) {
             const Chunk& c = pair.second;
@@ -63,6 +65,7 @@ int main()
         
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
+        wrap.deltaTime = deltaTime;
         lastFrame = currentFrame;
         game.updateTasks(deltaTime*10);
         game.rebuildNextChunk();
@@ -73,6 +76,17 @@ int main()
 
         glfwSwapBuffers(wrap.window);
 
+
+        if (wrap.activeState.forward)
+        {
+            wrap.activeState.forwardVelocity += deltaTime * 12;
+        }
+        if (wrap.activeState.forwardVelocity > 0)
+        {
+
+            wrap.cameraPos += wrap.cameraDirection * wrap.activeState.forwardVelocity;
+            wrap.activeState.forwardVelocity *= friction;
+        }
         glfwPollEvents();
     }
 
