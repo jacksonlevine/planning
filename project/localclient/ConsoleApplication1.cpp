@@ -66,7 +66,7 @@ int main()
 
         for (const auto& pair : game.activeChunks) {
             const Chunk& c = pair.second;
-            if (c.vertices.size() && c.colors.size()) {
+            if (c.vertices.size() && c.colors.size() && c.uv.size()) {
                 wrap.bindGeometry(
                     c.vbov,
                     c.vboc,

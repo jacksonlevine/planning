@@ -150,7 +150,7 @@ int GLWrapper::initializeGL() {
         "#version 330 core\n"
         "layout (location = 0) in vec3 position;\n"
         "layout (location = 1) in vec3 color;\n"
-        "layout (location = 2) in vec3 uv;\n"
+        "layout (location = 2) in vec2 uv;\n"
         "out vec3 vertexColor;\n"
         "out vec2 TexCoord;\n"
         "uniform mat4 mvp;\n"
