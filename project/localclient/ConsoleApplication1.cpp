@@ -23,7 +23,7 @@ int main()
     game.world.generate();
     std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
-    game.addTask(surveyTask, 3.0f, 1);
+    game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
     //Chunk c(&game);
     //c.rebuildMesh();
@@ -68,7 +68,7 @@ int main()
         wrap.deltaTime = deltaTime;
         lastFrame = currentFrame;
         game.updateTasks(deltaTime*10);
-        game.rebuildNextChunk();
+        //game.rebuildNextChunk();
         //std::cout << deltaTime;
 
 
@@ -79,12 +79,12 @@ int main()
 
         if (wrap.activeState.forward)
         {
-            wrap.activeState.forwardVelocity += deltaTime * 6;
+            wrap.activeState.forwardVelocity += deltaTime * 3;
         }
         if (wrap.activeState.forwardVelocity > 0)
         {
 
-            wrap.cameraPos += wrap.cameraDirection * wrap.activeState.forwardVelocity;
+            wrap.cameraPos += (wrap.cameraDirection * wrap.activeState.forwardVelocity) * 0.75f;
             wrap.activeState.forwardVelocity *= friction;
         }
         glfwPollEvents();

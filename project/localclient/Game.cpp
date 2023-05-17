@@ -11,7 +11,7 @@ intTup::intTup(int x, int y, int z)
 	this->z = z;
 }
 
-IntervalTask::IntervalTask(float interval, std::function<void(Game* g)> lambda, uint8_t id) : interval(interval), lambda(lambda), id(id) {
+IntervalTask::IntervalTask(float interval, std::function<void(Game* g)> lambda, uint8_t id) : interval(interval), lambda(lambda), id(id), timer(0.0f) {
 
 }
 
@@ -61,7 +61,13 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 
 void Game::surveyNeededChunks()
 {
-	std::cout << "surveying";
+	glm::vec3 dir = this->wrap->cameraDirection;
+	dir.y = 0;
+
+	int zSkew = (dir.z == 0 ? 0.5 : dir.z) * 2 * 4;
+	int xSkew = (dir.x == 0 ? 0.5 : dir.x) * 2 * 4;
+	int ySkew = (dir.y == 0 ? 0.5 : dir.y) * 4;
+	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
 	int y = this->wrap->cameraPos.y;
@@ -71,20 +77,31 @@ void Game::surveyNeededChunks()
 	int chunkX = std::floor(x / CHUNK_WIDTH);
 	int chunkY = std::floor(y / CHUNK_WIDTH);
 	int chunkZ = std::floor(z / CHUNK_WIDTH);
-
-	for(int j = chunkY - 2; j < chunkY + 1; j++)
+	int diryn = ySkew > 1 ? 1 : std::round(std::abs(ySkew));
+	int diryp = ySkew < 1 ? 1 : std::round(ySkew);
+	for(int j = chunkY - diryn ; j < chunkY + diryp; j++)
 	{
-		for (int i = chunkX - 5; i < chunkX + 5; i++)
+
+		int dirxn = xSkew > 0 ? 1 : std::round(std::abs(xSkew));
+		int dirxp = xSkew < 0 ? 1 : std::round(xSkew);
+		for (int i = chunkX - dirxn; i < chunkX + dirxp; i++)
 		{
-			for (int k = chunkZ - 5; k < chunkZ + 5; k++)
+			int dirzn = zSkew > 0 ? 1 : std::round(std::abs(zSkew));
+			int dirzp = zSkew < 0 ? 1 : std::round(zSkew);
+			for (int k = chunkZ - dirzn; k < chunkZ + dirzp; k++)
 			{
 				intTup tup(i, j, k);
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
 				{
+					if (this->world.isHandledMarks.find(tup) == this->world.isHandledMarks.end())
+					{
+						this->world.generateOneChunk(tup);
+					}
 					if (this->neededChunks.find(tup) == this->neededChunks.end() && this->world.hasBlockMarks.find(tup) != this->world.hasBlockMarks.end())
 					{
 						this->neededChunks.insert(tup);
 					}
+					
 				}
 			}
 		}
@@ -99,12 +116,13 @@ void Game::rebuildNextChunk()
 		this->neededChunks.erase(this->neededChunks.begin());
 		if (activeChunks.find(neededSpot) == activeChunks.end())
 		{
-			if (chunkPool.size() > 1)
+			if (chunkPool.size() > 0)
 			{
 				Chunk grabbedChunk = *(this->chunkPool.begin());
 				this->chunkPool.erase(this->chunkPool.begin());
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
 				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
+				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
 				
 			}
 		}
