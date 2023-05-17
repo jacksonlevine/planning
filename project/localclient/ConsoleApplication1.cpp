@@ -17,30 +17,19 @@ int main()
     wrap.initializeGL();
     wrap.setupVAO();
 
-
-
     Game game(&wrap);
     game.world.generate();
     std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
-    //Chunk c(&game);
-    //c.rebuildMesh();
-
-    //wrap.bindGeometry(
-    //    &(c.vertices[0]), 
-    //   &(c.colors[0]), 
-    //    sizeof(GLfloat) * c.vertices.capacity(), 
-    //    sizeof(GLfloat) * c.colors.capacity());
 
     float deltaTime = 0;
     float lastFrame = 0;
     game.surveyNeededChunks();
     
-
     const float friction = 0.75;
-    // Main loop
+
     while (!glfwWindowShouldClose(wrap.window))
     {
 
@@ -68,11 +57,6 @@ int main()
         wrap.deltaTime = deltaTime;
         lastFrame = currentFrame;
         game.updateTasks(deltaTime*10);
-        //game.rebuildNextChunk();
-        //std::cout << deltaTime;
-
-
-
 
         glfwSwapBuffers(wrap.window);
 
