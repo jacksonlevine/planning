@@ -6,8 +6,8 @@ GLWrapper* GLWrapper::instance = nullptr;
 GLWrapper::GLWrapper()
 {
     // Camera position and rotation
-    this->cameraPos = glm::vec3(0.0f, 20.0f, 0.0f);
-    this->cameraTarget = glm::vec3(0.0f, 20.0f, -3.0f);
+    this->cameraPos = glm::vec3(0.0f, 7.0f, 0.0f);
+    this->cameraTarget = glm::vec3(0.0f, 7.0f, -3.0f);
     this->cameraDirection = glm::normalize(cameraPos - cameraTarget);
     this->up = glm::vec3(0.0f, 1.0f, 0.0f);
     this->cameraRight = glm::normalize(glm::cross(up, cameraDirection));

@@ -1,5 +1,7 @@
 #include "Game.h"
 
+Game* Game::instance = nullptr;
+
 bool intTup::operator==(const intTup& other) const {
 	return (x == other.x) && (y == other.y) && (z == other.z);
 }
@@ -36,6 +38,39 @@ void Game::updateTasks(float delt)
 		}
 	}
 }
+int Game::compareChunks(const void* a, const void* b)
+{
+	if (instance) {
+
+		const Chunk* chunkA = static_cast<const Chunk*>(a);
+		const Chunk* chunkB = static_cast<const Chunk*>(b);
+
+		float distanceA = glm::distance(glm::vec3(
+			chunkA->x*CHUNK_WIDTH, 
+			chunkA->y * CHUNK_WIDTH, 
+			chunkA->z * CHUNK_WIDTH) , instance->wrap->cameraPos);
+		float distanceB = glm::distance(glm::vec3(
+			chunkB->x * CHUNK_WIDTH, 
+			chunkB->y * CHUNK_WIDTH, 
+			chunkB->z * CHUNK_WIDTH) , instance->wrap->cameraPos);
+		if (distanceA > 100 || distanceB > 100) {
+
+			if (distanceA < distanceB)
+				return 1;
+			else if (distanceA > distanceB)
+				return -1;
+			else
+				return 0;
+		}
+		return 0;
+	}
+	return 0;
+}
+void Game::sortChunkPool() {
+	if (this->chunkPool.size() > 0) {
+		std::qsort(&(this->chunkPool[0]), this->chunkPool.size(), sizeof(Chunk), this->compareChunks);
+	}
+}
 
 void Game::addTask(std::function<void(Game* g)> func, float interval, uint8_t id)
 {
@@ -51,12 +86,14 @@ void Game::removeTask(uint8_t id)
 		}), this->tasks.end());
 }
 
+
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 250; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
 	}
+	instance = this;
 }
 
 void Game::surveyNeededChunks()

@@ -19,8 +19,11 @@ int main()
     game.world.generate();
     std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
+    std::function<void(Game* g)> sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
+    game.addTask(sortChunkPoolTask, 7.0f, 3);
+
 
     float deltaTime = 0;
     float lastFrame = 0;
