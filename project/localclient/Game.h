@@ -29,8 +29,10 @@ public:
     Game* gref;
     GLuint vbov;
     GLuint vboc;
+    GLuint vbouv;
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
+    std::vector<GLfloat> uv;
     void rebuildMesh();
     void moveAndRebuildMesh(int newX, int newY, int newZ);
  };
