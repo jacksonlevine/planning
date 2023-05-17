@@ -56,6 +56,12 @@ int main()
     
     const float friction = 0.75;
 
+    GLuint vboc = (GLuint)0;
+    GLuint vbov = (GLuint)0;
+    GLuint vbouv = (GLuint)0;
+    glGenBuffers(1, &(vbov));
+    glGenBuffers(1, &(vboc));
+    glGenBuffers(1, &(vbouv));
     while (!glfwWindowShouldClose(wrap.window))
     {
 
@@ -64,22 +70,34 @@ int main()
 
         wrap.orientCamera();
 
+        std::vector<GLfloat> verts;
+
+        std::vector<GLfloat> cols;
+
+        std::vector<GLfloat> uvs;
+
         for (const auto& pair : game.activeChunks) {
             const Chunk& c = pair.second;
             if (c.vertices.size() && c.colors.size() && c.uv.size()) {
-                wrap.bindGeometry(
-                    c.vbov,
-                    c.vboc,
-                    c.vbouv,
-                    &(c.vertices[0]),
-                    &(c.colors[0]),
-                    &(c.uv[0]),
-                    sizeof(GLfloat) * c.vertices.size(),
-                    sizeof(GLfloat) * c.colors.size(),
-                    sizeof(GLfloat) * c.uv.size());
-                glDrawArrays(GL_TRIANGLES, 0, c.vertices.size());
+                verts.insert(verts.end(), c.vertices.begin(), c.vertices.end());
+
+                cols.insert(cols.end(), c.colors.begin(), c.colors.end());
+
+                uvs.insert(uvs.end(), c.uv.begin(), c.uv.end());
             }
         }
+
+        wrap.bindGeometry(
+            vbov,
+            vboc,
+            vbouv,
+            &(verts[0]),
+            &(cols[0]),
+            &(uvs[0]),
+            sizeof(GLfloat) * verts.size(),
+            sizeof(GLfloat) * cols.size(),
+            sizeof(GLfloat) * uvs.size());
+        glDrawArrays(GL_TRIANGLES, 0, verts.size());
         
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;

@@ -2,15 +2,9 @@
 
 Chunk::Chunk(Game* gref) {
 	this->gref = gref;
-	this->x = 0;
-	this->y = 0;
+	this->x = 50000;
+	this->y = 50000;
 	this->z = 0;
-	this->vboc = (GLuint)0;
-	this->vbov = (GLuint)0;
-	this->vbouv = (GLuint)0;
-	glGenBuffers(1,&(this->vbov));
-	glGenBuffers(1,&(this->vboc));
-	glGenBuffers(1, &(this->vbouv));
 }
 
 void Chunk::rebuildMesh() {
@@ -43,6 +37,36 @@ void Chunk::rebuildMesh() {
 			(GLfloat)(tup1.x),
 			(GLfloat)(tup1.y),
 			(GLfloat)(tup1.z) });
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		for (int i = 0; i < 6; i++)
 		{
 			this->colors.insert(this->colors.end(),
@@ -72,6 +96,36 @@ void Chunk::rebuildMesh() {
 			(GLfloat)(tup1.x),
 			(GLfloat)(tup1.y),
 			(GLfloat)(tup1.z) });
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		for (int i = 0; i < 6; i++)
 		{
 			this->colors.insert(this->colors.end(),
@@ -101,7 +155,36 @@ void Chunk::rebuildMesh() {
 			(GLfloat)(tup1.x +CHUNK_WIDTH),
 			(GLfloat)(tup1.y),
 			(GLfloat)(tup1.z) });
-
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		for (int i = 0; i < 6; i++)
 		{
 			this->colors.insert(this->colors.end(),
@@ -132,7 +215,36 @@ void Chunk::rebuildMesh() {
 			(GLfloat)(tup1.y),
 			(GLfloat)(tup1.z +CHUNK_WIDTH) });
 
-
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		for (int i = 0; i < 6; i++)
 		{
 			this->colors.insert(this->colors.end(),
@@ -163,7 +275,36 @@ void Chunk::rebuildMesh() {
 			(GLfloat)(tup1.x),
 			(GLfloat)(tup1.y +CHUNK_WIDTH),
 			(GLfloat)(tup1.z) });
-
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		for (int i = 0; i < 6; i++)
 		{
 			this->colors.insert(this->colors.end(),
@@ -195,7 +336,36 @@ void Chunk::rebuildMesh() {
 			(GLfloat)(tup1.y),
 			(GLfloat)(tup1.z) });
 
-
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		for (int i = 0; i < 6; i++)
 		{
 			this->colors.insert(this->colors.end(),

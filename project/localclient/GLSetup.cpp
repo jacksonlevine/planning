@@ -129,6 +129,7 @@ int GLWrapper::initializeGL() {
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
 
+
     // Set up GLM for 3D math
     model = glm::mat4(1.0f);
 
@@ -297,7 +298,7 @@ void GLWrapper::runGLLoop() {
     this->orientCamera();
 
     // Draw the triangle
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 
     glfwSwapBuffers(this->window);
 
