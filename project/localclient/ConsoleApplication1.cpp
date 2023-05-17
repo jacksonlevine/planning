@@ -21,14 +21,19 @@ int main()
 
     Game game(&wrap);
     game.world.generate();
-    Chunk c(&game);
-    c.rebuildMesh();
+    std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
+    std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
+    game.addTask(surveyTask, 3.0f, 1);
+    game.addTask(chunkQueueTask, 0.1, 2);
+    std::cout << (game.tasks.size());
+    //Chunk c(&game);
+    //c.rebuildMesh();
 
-    wrap.bindGeometry(
-        &(c.vertices[0]), 
-        &(c.colors[0]), 
-        sizeof(GLfloat) * c.vertices.capacity(), 
-        sizeof(GLfloat) * c.colors.capacity());
+    //wrap.bindGeometry(
+    //    &(c.vertices[0]), 
+    //   &(c.colors[0]), 
+    //    sizeof(GLfloat) * c.vertices.capacity(), 
+    //    sizeof(GLfloat) * c.colors.capacity());
 
     float deltaTime = 0;
     float lastFrame = 0;
@@ -37,11 +42,34 @@ int main()
     while (!glfwWindowShouldClose(wrap.window))
     {
 
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        wrap.orientCamera();
+
+
+        for (const auto& pair : game.activeChunks) {
+            const Chunk& c = pair.second;
+            wrap.bindGeometry(
+                &(c.vertices[0]),
+                &(c.colors[0]),
+                sizeof(GLfloat) * c.vertices.capacity(),
+                sizeof(GLfloat) * c.colors.capacity());
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
+        
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        wrap.runGLLoop();
-   
+        game.updateTasks(deltaTime*10);
+        //std::cout << deltaTime;
+
+
+
+
+        glfwSwapBuffers(wrap.window);
+
+        glfwPollEvents();
     }
 
     glfwTerminate();

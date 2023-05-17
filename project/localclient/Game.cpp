@@ -11,7 +11,7 @@ intTup::intTup(int x, int y, int z)
 	this->z = z;
 }
 
-IntervalTask::IntervalTask(float interval, std::function<void()> lambda, uint8_t id) : interval(interval), lambda(lambda), id(id) {
+IntervalTask::IntervalTask(float interval, std::function<void(Game* g)> lambda, uint8_t id) : interval(interval), lambda(lambda), id(id) {
 
 }
 
@@ -25,19 +25,19 @@ std::size_t intTupHash::operator()(const intTup& tup) const {
 
 void Game::updateTasks(float delt)
 {
-	for (IntervalTask task : this->tasks) {
+	for (IntervalTask& task : this->tasks) {
 		if (task.timer < task.interval)
 		{
 			task.timer += delt;
 		}
 		else {
-			task.lambda();
+			task.lambda(this);
 			task.timer = 0;
 		}
 	}
 }
 
-void Game::addTask(std::function<void()> func, float interval, uint8_t id)
+void Game::addTask(std::function<void(Game* g)> func, float interval, uint8_t id)
 {
 	IntervalTask it(interval, func, id);
 	this->tasks.push_back(it);
@@ -61,6 +61,7 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 
 void Game::surveyNeededChunks()
 {
+	std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
 	int y = this->wrap->cameraPos.y;
@@ -104,7 +105,9 @@ void Game::rebuildNextChunk()
 				this->chunkPool.erase(this->chunkPool.begin());
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
 				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
+				
 			}
 		}
 	}
+	std::cout << activeChunks.size();
 }

@@ -44,9 +44,9 @@ struct IntervalTask {
     float timer;
     float interval;
     uint8_t id;
-    std::function<void()> lambda;
+    std::function<void(Game* g)> lambda;
 
-    IntervalTask(float interval, std::function<void()> lambda, uint8_t id);
+    IntervalTask(float interval, std::function<void(Game* g)> lambda, uint8_t id);
 };
 
 class Game {
@@ -60,9 +60,9 @@ public:
     std::unordered_set<intTup, intTupHash> neededChunks;
     Game(GLWrapper* wr);
     void updateTasks(float delt);
-    void addTask(std::function<void()> func, float interval, uint8_t id);
+    void addTask(std::function<void(Game* g)> func, float interval, uint8_t id);
     void removeTask(uint8_t id);
-
+public:
     void surveyNeededChunks();
     void rebuildNextChunk();
 };
