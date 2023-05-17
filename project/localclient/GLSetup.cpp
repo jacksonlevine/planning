@@ -237,7 +237,7 @@ void GLWrapper::setupVAO() {
 
 }
 
-void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, const GLfloat* vertices, const GLfloat* colors, int vsize, int csize) {
+void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, GLuint vbouv, const GLfloat* vertices, const GLfloat* colors, const GLfloat* uv, int vsize, int csize, int usize) {
 
     // Generate a vertex buffer object (VBO) for the position data
 
@@ -256,6 +256,15 @@ void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, const GLfloat* vertices, 
     GLint col_attrib = glGetAttribLocation(this->shaderProgram, "color");
     glEnableVertexAttribArray(col_attrib);
     glVertexAttribPointer(col_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Generate a vertex buffer object (VBO) for the uv data
+    glBindBuffer(GL_ARRAY_BUFFER, vbouv);
+    glBufferData(GL_ARRAY_BUFFER, usize, uv, GL_STATIC_DRAW);
+
+    // Set up the vertex attribute pointers for the uv buffer object
+    GLint uv_attrib = glGetAttribLocation(this->shaderProgram, "uv");
+    glEnableVertexAttribArray(uv_attrib);
+    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 }
 
