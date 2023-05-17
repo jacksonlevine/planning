@@ -26,6 +26,7 @@ void World::generateOneChunk(intTup coord) {
 
 	int blockCount = 0;
 
+
 	this->isHandledMarks.insert_or_assign(coord, 1);
 	for (int y = 0; y < CHUNK_WIDTH; y++)
 	{
