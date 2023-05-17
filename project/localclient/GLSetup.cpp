@@ -6,8 +6,8 @@ GLWrapper* GLWrapper::instance = nullptr;
 GLWrapper::GLWrapper()
 {
     // Camera position and rotation
-    this->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    this->cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    this->cameraPos = glm::vec3(0.0f, 20.0f, 0.0f);
+    this->cameraTarget = glm::vec3(0.0f, 20.0f, -3.0f);
     this->cameraDirection = glm::normalize(cameraPos - cameraTarget);
     this->up = glm::vec3(0.0f, 1.0f, 0.0f);
     this->cameraRight = glm::normalize(glm::cross(up, cameraDirection));
@@ -78,6 +78,18 @@ void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action
     }
 }
 
+void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (instance)
+    {
+        if (key == GLFW_KEY_W)
+        {
+            instance->cameraPos += instance->cameraDirection;
+            instance->cameraTarget += instance->cameraDirection;
+        }
+    }
+}
+
 int GLWrapper::initializeGL() {
     // Initialize GLFW
     if (!glfwInit())
@@ -128,6 +140,7 @@ int GLWrapper::initializeGL() {
     glfwSetCursorPosCallback(this->window, GLWrapper::mouse_callback);
     glfwSetMouseButtonCallback(this->window, GLWrapper::mouse_button_callback);
 
+    glfwSetKeyCallback(this->window, GLWrapper::keyCallback);
     // Create vertex shader object
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 

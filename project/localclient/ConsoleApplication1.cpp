@@ -25,7 +25,6 @@ int main()
     std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
     game.addTask(surveyTask, 3.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
-    std::cout << (game.tasks.size());
     //Chunk c(&game);
     //c.rebuildMesh();
 
@@ -37,7 +36,7 @@ int main()
 
     float deltaTime = 0;
     float lastFrame = 0;
-
+    game.surveyNeededChunks();
     // Main loop
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -50,18 +49,21 @@ int main()
 
         for (const auto& pair : game.activeChunks) {
             const Chunk& c = pair.second;
-            wrap.bindGeometry(
-                &(c.vertices[0]),
-                &(c.colors[0]),
-                sizeof(GLfloat) * c.vertices.capacity(),
-                sizeof(GLfloat) * c.colors.capacity());
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            if (c.vertices.size() && c.colors.size()) {
+                wrap.bindGeometry(
+                    &(c.vertices[0]),
+                    &(c.colors[0]),
+                    sizeof(GLfloat) * c.vertices.capacity(),
+                    sizeof(GLfloat) * c.colors.capacity());
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+            }
         }
         
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         game.updateTasks(deltaTime*10);
+        game.rebuildNextChunk();
         //std::cout << deltaTime;
 
 

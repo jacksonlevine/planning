@@ -26,7 +26,7 @@ std::size_t intTupHash::operator()(const intTup& tup) const {
 void Game::updateTasks(float delt)
 {
 	for (IntervalTask& task : this->tasks) {
-		if (task.timer < task.interval)
+		if (task.timer <= task.interval)
 		{
 			task.timer += delt;
 		}
@@ -109,5 +109,4 @@ void Game::rebuildNextChunk()
 			}
 		}
 	}
-	std::cout << activeChunks.size();
 }
