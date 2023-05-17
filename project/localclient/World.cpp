@@ -39,6 +39,10 @@ void World::generateOneChunk(intTup coord) {
 				if (localY < noise)
 				{
 					this->data.insert_or_assign(tup, 1);
+					if (this->hasBlockMarks.find(coord) == this->hasBlockMarks.end())
+					{
+						this->hasBlockMarks.insert_or_assign(coord, 1);
+					}
 				}
 			}
 		}

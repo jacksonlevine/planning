@@ -51,11 +51,13 @@ int main()
             const Chunk& c = pair.second;
             if (c.vertices.size() && c.colors.size()) {
                 wrap.bindGeometry(
+                    c.vbov,
+                    c.vboc,
                     &(c.vertices[0]),
                     &(c.colors[0]),
-                    sizeof(GLfloat) * c.vertices.capacity(),
-                    sizeof(GLfloat) * c.colors.capacity());
-                glDrawArrays(GL_TRIANGLES, 0, 3);
+                    sizeof(GLfloat) * c.vertices.size(),
+                    sizeof(GLfloat) * c.colors.size());
+                glDrawArrays(GL_TRIANGLES, 0, c.vertices.size());
             }
         }
         

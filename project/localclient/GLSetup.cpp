@@ -132,7 +132,7 @@ int GLWrapper::initializeGL() {
     model = glm::mat4(1.0f);
 
 
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(90.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
 
     // Enable pointer-locking first-person controls
     glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -231,21 +231,19 @@ void GLWrapper::setupVAO() {
 
 }
 
-void GLWrapper::bindGeometry(const GLfloat* vertices, const GLfloat* colors, int vsize, int csize) {
+void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, const GLfloat* vertices, const GLfloat* colors, int vsize, int csize) {
 
     // Generate a vertex buffer object (VBO) for the position data
-    GLuint vbo_vertices;
-    glGenBuffers(1, &vbo_vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbov);
     glBufferData(GL_ARRAY_BUFFER, vsize, vertices, GL_STATIC_DRAW);
     // Set up the vertex attribute pointers for the position buffer object
     GLint pos_attrib = glGetAttribLocation(this->shaderProgram, "position");
     glEnableVertexAttribArray(pos_attrib);
     glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
     // Generate a vertex buffer object (VBO) for the color data
-    GLuint vbo_colors;
-    glGenBuffers(1, &vbo_colors);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
+    glBindBuffer(GL_ARRAY_BUFFER, vboc);
     glBufferData(GL_ARRAY_BUFFER, csize, colors, GL_STATIC_DRAW);
 
     // Set up the vertex attribute pointers for the color buffer object
@@ -265,7 +263,7 @@ void GLWrapper::orientCamera() {
 
     // Normalize the direction vector
     direction = glm::normalize(direction);
-
+    this->cameraDirection = direction;
     // Set up the view matrix 
     view = glm::lookAt(cameraPos, cameraPos + direction, cameraUp);
 

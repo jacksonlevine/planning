@@ -52,7 +52,7 @@ void Game::removeTask(uint8_t id)
 }
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 200; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
@@ -81,7 +81,7 @@ void Game::surveyNeededChunks()
 				intTup tup(i, j, k);
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
 				{
-					if (this->neededChunks.find(tup) == this->neededChunks.end())
+					if (this->neededChunks.find(tup) == this->neededChunks.end() && this->world.hasBlockMarks.find(tup) != this->world.hasBlockMarks.end())
 					{
 						this->neededChunks.insert(tup);
 					}

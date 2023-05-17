@@ -27,6 +27,8 @@ public:
     int z;
     Chunk(Game* gref);
     Game* gref;
+    GLuint vbov;
+    GLuint vboc;
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
     void rebuildMesh();
@@ -36,6 +38,7 @@ public:
 class World {
 public:
     std::unordered_map<intTup, uint8_t, intTupHash> data;
+    std::unordered_map<intTup, uint8_t, intTupHash> hasBlockMarks;
     void generate();
     void generateOneChunk(intTup pos);
 };

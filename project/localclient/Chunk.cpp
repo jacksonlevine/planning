@@ -5,6 +5,10 @@ Chunk::Chunk(Game* gref) {
 	this->x = 0;
 	this->y = 0;
 	this->z = 0;
+	this->vboc = (GLuint)0;
+	this->vbov = (GLuint)0;
+	glGenBuffers(1,&(this->vbov));
+	glGenBuffers(1,&(this->vboc));
 }
 
 void Chunk::rebuildMesh() {
@@ -17,7 +21,7 @@ void Chunk::rebuildMesh() {
 		{
 			for (int x = 0; x < width; x++)
 			{
-				intTup tup(this->x*this->gref->chunkWidth + x, this->y * this->gref->chunkWidth + y, this->z * this->gref->chunkWidth + z);
+				intTup tup((this->x * this->gref->chunkWidth) + x, (this->y * this->gref->chunkWidth) + y, (this->z * this->gref->chunkWidth) + z);
 				if (this->gref->world.data.find(tup) != this->gref->world.data.end())
 				{
 					if (this->gref->world.data.find(intTup(tup.x - 1, tup.y, tup.z)) == this->gref->world.data.end())
@@ -28,8 +32,8 @@ void Chunk::rebuildMesh() {
 							(GLfloat)tup.z});
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x),
-							(GLfloat)(tup.y),
-							(GLfloat)(tup.z + 1) });
+							(GLfloat)(tup.y + 1),
+							(GLfloat)(tup.z) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x),
 							(GLfloat)(tup.y + 1),
@@ -41,8 +45,8 @@ void Chunk::rebuildMesh() {
 							(GLfloat)(tup.z + 1) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x),
-							(GLfloat)(tup.y + 1),
-							(GLfloat)(tup.z) });
+							(GLfloat)(tup.y),
+							(GLfloat)(tup.z + 1) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x),
 							(GLfloat)(tup.y),
@@ -51,7 +55,7 @@ void Chunk::rebuildMesh() {
 						{
 							this->colors.insert(this->colors.end(),
 								{
-									(GLfloat)1.0,
+									(GLfloat)0.7,
 									(GLfloat)0.0,
 									(GLfloat)0.0
 								});
@@ -89,7 +93,7 @@ void Chunk::rebuildMesh() {
 						{
 							this->colors.insert(this->colors.end(),
 								{
-									(GLfloat)1.0,
+									(GLfloat)0.6,
 									(GLfloat)0.0,
 									(GLfloat)0.0
 								});
@@ -104,8 +108,8 @@ void Chunk::rebuildMesh() {
 							(GLfloat)(tup.z) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x + 1),
-							(GLfloat)(tup.y + 1),
-							(GLfloat)(tup.z) });
+							(GLfloat)(tup.y),
+							(GLfloat)(tup.z + 1) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x + 1),
 							(GLfloat)(tup.y + 1),
@@ -117,8 +121,8 @@ void Chunk::rebuildMesh() {
 							(GLfloat)(tup.z + 1) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x + 1),
-							(GLfloat)(tup.y),
-							(GLfloat)(tup.z + 1) });
+							(GLfloat)(tup.y + 1),
+							(GLfloat)(tup.z) });
 						this->vertices.insert(this->vertices.end(),
 							{ (GLfloat)(tup.x + 1),
 							(GLfloat)(tup.y),
@@ -128,7 +132,7 @@ void Chunk::rebuildMesh() {
 						{
 							this->colors.insert(this->colors.end(),
 								{
-									(GLfloat)1.0,
+									(GLfloat)0.7,
 									(GLfloat)0.0,
 									(GLfloat)0.0
 								});
@@ -168,7 +172,7 @@ void Chunk::rebuildMesh() {
 						{
 							this->colors.insert(this->colors.end(),
 								{
-									(GLfloat)1.0,
+									(GLfloat)0.6,
 									(GLfloat)0.0,
 									(GLfloat)0.0
 								});

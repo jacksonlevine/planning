@@ -31,7 +31,7 @@ public:
 	GLWrapper();
 	int initializeGL();
 	void runGLLoop();
-	void bindGeometry(const GLfloat* vertices, const GLfloat* colors, int vsize, int csize);
+	void bindGeometry(GLuint vbov, GLuint vboc, const GLfloat* vertices, const GLfloat* colors, int vsize, int csize);
 	void setupVAO();
 	void orientCamera();
 	static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
