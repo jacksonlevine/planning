@@ -9,8 +9,6 @@
 #include "Game.h"
 #include <iterator>
 
-
-
 int main()
 {
     GLWrapper wrap;
