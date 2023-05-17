@@ -120,7 +120,21 @@ void Game::rebuildNextChunk()
 			{
 				Chunk grabbedChunk = *(this->chunkPool.begin());
 				this->chunkPool.erase(this->chunkPool.begin());
+				intTup grabbedSpot(grabbedChunk.x, grabbedChunk.y, grabbedChunk.z);
+				if (this->activeChunks.find(grabbedSpot) != this->activeChunks.end())
+				{
+					activeChunks.erase(grabbedSpot);
+				}
+
+				glDeleteBuffers(1, &grabbedChunk.vbov);
+				glDeleteBuffers(1, &grabbedChunk.vboc);
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
+				if (grabbedChunk.vertices.size() && grabbedChunk.colors.size())
+				{
+					glGenBuffers(1, &grabbedChunk.vbov);
+					glGenBuffers(1, &grabbedChunk.vboc);
+				}
+
 				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
 				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
 				

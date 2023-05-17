@@ -13,8 +13,10 @@ Chunk::Chunk(Game* gref) {
 
 void Chunk::rebuildMesh() {
 	const int width = this->gref->chunkWidth;
-	this->vertices.clear();
-	this->colors.clear();
+
+	std::vector<GLfloat>().swap(this->vertices);
+	std::vector<GLfloat>().swap(this->colors);
+
 	intTup tup2(this->x, this->y, this->z);
 	intTup tup1(this->x * CHUNK_WIDTH, this->y * CHUNK_WIDTH, this->z * CHUNK_WIDTH);
 	if(this->gref->world.fullBlockMarks.find(tup2) != this->gref->world.fullBlockMarks.end())
