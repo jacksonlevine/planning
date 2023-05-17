@@ -150,12 +150,15 @@ int GLWrapper::initializeGL() {
         "#version 330 core\n"
         "layout (location = 0) in vec3 position;\n"
         "layout (location = 1) in vec3 color;\n"
+        "layout (location = 2) in vec3 uv;\n"
         "out vec3 vertexColor;\n"
+        "out vec2 TexCoord;\n"
         "uniform mat4 mvp;\n"
         "void main()\n"
         "{\n"
         "    gl_Position = mvp * vec4(position, 1.0);\n"
         "    vertexColor = color;\n"
+        "    TexCoord = uv;\n"
         "}\n";
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 
@@ -179,10 +182,12 @@ int GLWrapper::initializeGL() {
     const GLchar* fragmentShaderSource =
         "#version 330 core\n"
         "in vec3 vertexColor;\n"
+        "in vec2 TexCoord;\n"
         "out vec4 FragColor;\n"
+        "uniform sampler2D ourTexture;\n"
         "void main()\n"
         "{\n"
-        "    FragColor = vec4(vertexColor, 1.0);\n"
+        "    FragColor = texture(ourTexture, TexCoord);\n"
         "}\n";
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 

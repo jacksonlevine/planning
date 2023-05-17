@@ -8,6 +8,7 @@
 #include "GLSetup.h"
 #include "Game.h"
 #include <iterator>
+#include "stb_image.h"
 
 int main()
 {
@@ -23,6 +24,12 @@ int main()
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
+
+    /*TEXTURE BIT*/
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+
+    /*END TEXTURE BIT*/
 
 
     float deltaTime = 0;
