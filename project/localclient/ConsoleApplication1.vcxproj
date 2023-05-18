@@ -137,6 +137,7 @@
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlockTypes.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GLSetup.h" />
     <ClInclude Include="Perlin.h" />

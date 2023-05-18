@@ -76,5 +76,3 @@ public:
     static int compareChunksInPool(const void* a, const void* b);
     static Game* instance;
 };
-
-

@@ -87,7 +87,7 @@ void Game::removeTask(uint8_t id)
 
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 250; i++)
+	for (int i = 0; i < 350; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
@@ -117,11 +117,11 @@ void Game::surveyNeededChunks()
 
 		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
 		int dirxp = std::floor(xSkew < 0 ? 1 : std::round(xSkew));
-		for (int i = chunkX - dirxn; i < chunkX + dirxp; i++)
+		for (int i = chunkX - dirxn - 1; i < chunkX + dirxp + 1; i++)
 		{
 			int dirzn = std::floor(zSkew > 0 ? 1 : std::round(std::abs(zSkew)));
 			int dirzp = std::floor(zSkew < 0 ? 1 : std::round(zSkew));
-			for (int k = chunkZ - dirzn; k < chunkZ + dirzp; k++)
+			for (int k = chunkZ - dirzn - 1; k < chunkZ + dirzp + 1; k++)
 			{
 				intTup tup(i, j, k);
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
