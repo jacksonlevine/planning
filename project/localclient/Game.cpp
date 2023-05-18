@@ -38,7 +38,7 @@ void Game::updateTasks(float delt)
 		}
 	}
 }
-int Game::compareChunks(const void* a, const void* b)
+int Game::compareChunksInPool(const void* a, const void* b)
 {
 	if (instance) {
 
@@ -53,7 +53,7 @@ int Game::compareChunks(const void* a, const void* b)
 			chunkB->x * CHUNK_WIDTH, 
 			chunkB->y * CHUNK_WIDTH, 
 			chunkB->z * CHUNK_WIDTH) , instance->wrap->cameraPos);
-		if (distanceA > 150 || distanceB > 150) {
+
 
 			if (distanceA < distanceB)
 				return 1;
@@ -61,14 +61,13 @@ int Game::compareChunks(const void* a, const void* b)
 				return -1;
 			else
 				return 0;
-		}
-		return 0;
+
 	}
 	return 0;
 }
 void Game::sortChunkPool() {
 	if (this->chunkPool.size() > 0) {
-		std::qsort(&(this->chunkPool[0]), this->chunkPool.size(), sizeof(Chunk), this->compareChunks);
+		std::qsort(&(this->chunkPool[0]), this->chunkPool.size(), sizeof(Chunk), this->compareChunksInPool);
 	}
 }
 
@@ -99,11 +98,10 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 void Game::surveyNeededChunks()
 {
 	glm::vec3 dir = this->wrap->cameraDirection;
-	//dir.y = 0;
+	dir.y = 0;
 
 	int zSkew = (dir.z == 0 ? 0.5 : dir.z) * 2 * 4;
 	int xSkew = (dir.x == 0 ? 0.5 : dir.x) * 2 * 4;
-	int ySkew = (dir.y == 0 ? 0.5 : dir.y) * 4;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
@@ -114,10 +112,8 @@ void Game::surveyNeededChunks()
 	int chunkX = std::floor(x / CHUNK_WIDTH);
 	int chunkY = std::floor(y / CHUNK_WIDTH);
 	int chunkZ = std::floor(z / CHUNK_WIDTH);
-	int diryn = ySkew > 1 ? 1 : std::round(std::abs(ySkew));
-	int diryp = ySkew < 1 ? 1 : std::round(ySkew);
-	for(int j = -diryn ; j < chunkY + diryp; j++)
-	{
+	int j = chunkY - 1;
+	
 
 		int dirxn = xSkew > 0 ? 1 : std::round(std::abs(xSkew));
 		int dirxp = xSkew < 0 ? 1 : std::round(xSkew);
@@ -130,19 +126,46 @@ void Game::surveyNeededChunks()
 				intTup tup(i, j, k);
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
 				{
+					
+					//Generate
 					if (this->world.isHandledMarks.find(tup) == this->world.isHandledMarks.end())
 					{
-						this->world.generateOneChunk(tup);
+						int head = -1;
+						int maxLoadUp = 8;
+						intTup test(tup.x, tup.y + head, tup.z);
+						bool lastOneHadBlocks = true;
+
+						while (this->world.isHandledMarks.find(test) == this->world.isHandledMarks.end() && head < maxLoadUp && lastOneHadBlocks)
+						{
+							if (this->world.generateOneChunk(test) == 0)
+							{
+								lastOneHadBlocks = false;
+							}
+							else 
+							{
+								head += 1;
+								test = intTup(tup.x, tup.y + head, tup.z);
+							}
+						}
 					}
+					
+					//Or mesh
 					if (this->neededChunks.find(tup) == this->neededChunks.end() && this->world.hasBlockMarks.find(tup) != this->world.hasBlockMarks.end())
 					{
-						this->neededChunks.insert(tup);
+						int head = -2;
+						int maxLoadUp = 8;
+						intTup test(tup.x, tup.y + head, tup.z);
+						while (this->neededChunks.find(test) == this->neededChunks.end() && this->world.hasBlockMarks.find(test) != this->world.hasBlockMarks.end() && head < maxLoadUp)
+						{
+							this->neededChunks.insert(test);
+							head += 1;
+							test = intTup(tup.x, tup.y + head, tup.z);
+						}
 					}
 					
 				}
 			}
 		}
-	}
 }
 
 void Game::rebuildNextChunk()
@@ -151,6 +174,7 @@ void Game::rebuildNextChunk()
 	{
 		intTup neededSpot = *(this->neededChunks.begin());
 		this->neededChunks.erase(this->neededChunks.begin());
+
 		if (activeChunks.find(neededSpot) == activeChunks.end())
 		{
 			if (chunkPool.size() > 0)
@@ -165,11 +189,13 @@ void Game::rebuildNextChunk()
 
 				glDeleteBuffers(1, &grabbedChunk.vbov);
 				glDeleteBuffers(1, &grabbedChunk.vboc);
+				glDeleteBuffers(1, &grabbedChunk.vbouv);
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
 				if (grabbedChunk.vertices.size() && grabbedChunk.colors.size())
 				{
 					glGenBuffers(1, &grabbedChunk.vbov);
 					glGenBuffers(1, &grabbedChunk.vboc);
+					glGenBuffers(1, &grabbedChunk.vbouv);
 				}
 
 				activeChunks.insert_or_assign(neededSpot, grabbedChunk);

@@ -44,7 +44,7 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> fullBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> isHandledMarks;
     void generate();
-    void generateOneChunk(intTup pos);
+    int generateOneChunk(intTup pos);
 };
 
 struct IntervalTask {
@@ -65,6 +65,7 @@ public:
     std::vector<IntervalTask> tasks;
     std::unordered_map<intTup, Chunk, intTupHash> activeChunks;
     std::unordered_set<intTup, intTupHash> neededChunks;
+    std::vector<intTup> sortedNeededChunks;
     Game(GLWrapper* wr);
     void updateTasks(float delt);
     void addTask(std::function<void(Game* g)> func, float interval, uint8_t id);
@@ -72,7 +73,7 @@ public:
     void surveyNeededChunks();
     void rebuildNextChunk();
     void sortChunkPool();
-    static int compareChunks(const void* a, const void* b);
+    static int compareChunksInPool(const void* a, const void* b);
     static Game* instance;
 };
 

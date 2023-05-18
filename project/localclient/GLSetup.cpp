@@ -100,8 +100,8 @@ int GLWrapper::initializeGL() {
     }
 
     // Set up GLFW window hints
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a GLFW window
@@ -147,7 +147,7 @@ int GLWrapper::initializeGL() {
 
     // Set vertex shader source code
     const GLchar* vertexShaderSource =
-        "#version 330 core\n"
+        "#version 450 core\n"
         "layout (location = 0) in vec3 position;\n"
         "layout (location = 1) in vec3 color;\n"
         "layout (location = 2) in vec2 uv;\n"
@@ -180,7 +180,7 @@ int GLWrapper::initializeGL() {
 
     // Set fragment shader source code
     const GLchar* fragmentShaderSource =
-        "#version 330 core\n"
+        "#version 450 core\n"
         "in vec3 vertexColor;\n"
         "in vec2 TexCoord;\n"
         "out vec4 FragColor;\n"

@@ -17,7 +17,7 @@ void World::generate() {
 	}
 }
 
-void World::generateOneChunk(intTup coord) {
+int World::generateOneChunk(intTup coord) {
 
 
 	int realX = coord.x * CHUNK_WIDTH;
@@ -56,4 +56,5 @@ void World::generateOneChunk(intTup coord) {
 			}
 		}
 	}
+	return blockCount;
 }

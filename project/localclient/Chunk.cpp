@@ -2,9 +2,9 @@
 
 Chunk::Chunk(Game* gref) {
 	this->gref = gref;
-	this->x = 0;
-	this->y = 0;
-	this->z = 0;
+	this->x = 20000;
+	this->y = 20000;
+	this->z = 20000;
 	this->vboc = (GLuint)0;
 	this->vbov = (GLuint)0;
 	this->vbouv = (GLuint)0;
