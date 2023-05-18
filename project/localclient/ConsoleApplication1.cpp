@@ -55,7 +55,9 @@ int main()
     game.surveyNeededChunks();
     
     const float friction = 0.75;
-
+    glPatchParameteri(GL_PATCH_VERTICES, 0);
+    glPatchParameteri(GL_PATCH_DEFAULT_OUTER_LEVEL, 1);
+    glPatchParameteri(GL_PATCH_DEFAULT_INNER_LEVEL, 1);
     while (!glfwWindowShouldClose(wrap.window))
     {
 
