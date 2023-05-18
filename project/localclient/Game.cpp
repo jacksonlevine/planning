@@ -88,7 +88,7 @@ void Game::removeTask(uint8_t id)
 
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 250; i++)
+	for (int i = 0; i < 400; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
@@ -99,7 +99,7 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 void Game::surveyNeededChunks()
 {
 	glm::vec3 dir = this->wrap->cameraDirection;
-	dir.y = 0;
+	//dir.y = 0;
 
 	int zSkew = (dir.z == 0 ? 0.5 : dir.z) * 2 * 4;
 	int xSkew = (dir.x == 0 ? 0.5 : dir.x) * 2 * 4;
@@ -116,7 +116,7 @@ void Game::surveyNeededChunks()
 	int chunkZ = std::floor(z / CHUNK_WIDTH);
 	int diryn = ySkew > 1 ? 1 : std::round(std::abs(ySkew));
 	int diryp = ySkew < 1 ? 1 : std::round(ySkew);
-	for(int j = chunkY - diryn ; j < chunkY + diryp; j++)
+	for(int j = -diryn ; j < chunkY + diryp; j++)
 	{
 
 		int dirxn = xSkew > 0 ? 1 : std::round(std::abs(xSkew));

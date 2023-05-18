@@ -187,7 +187,7 @@ int GLWrapper::initializeGL() {
         "uniform sampler2D ourTexture;\n"
         "void main()\n"
         "{\n"
-        "    FragColor = texture(ourTexture, TexCoord);\n"
+        "    FragColor = vec4(vertexColor, 0) * texture(ourTexture, TexCoord);\n"
         "}\n";
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
