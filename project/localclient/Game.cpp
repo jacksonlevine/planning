@@ -87,7 +87,7 @@ void Game::removeTask(uint8_t id)
 
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 400; i++)
+	for (int i = 0; i < 250; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
@@ -100,8 +100,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z == 0 ? 0.5 : dir.z) * 2 * 4;
-	int xSkew = (dir.x == 0 ? 0.5 : dir.x) * 2 * 4;
+	int zSkew = (dir.z) * 2 * 4;
+	int xSkew = (dir.x) * 2 * 4;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
@@ -109,18 +109,18 @@ void Game::surveyNeededChunks()
 
 	int z = this->wrap->cameraPos.z;
 
-	int chunkX = std::floor(x / CHUNK_WIDTH);
-	int chunkY = std::floor(y / CHUNK_WIDTH);
-	int chunkZ = std::floor(z / CHUNK_WIDTH);
+	int chunkX = std::floor((x + (CHUNK_WIDTH - (x % CHUNK_WIDTH))) / CHUNK_WIDTH);
+	int chunkY = std::floor((y  - (y % CHUNK_WIDTH)) / CHUNK_WIDTH);
+	int chunkZ = std::floor((z + (CHUNK_WIDTH - (z % CHUNK_WIDTH))) / CHUNK_WIDTH);
 	int j = chunkY - 1;
 	
 
-		int dirxn = xSkew > 0 ? 1 : std::round(std::abs(xSkew));
-		int dirxp = xSkew < 0 ? 1 : std::round(xSkew);
+		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
+		int dirxp = std::floor(xSkew < 0 ? 1 : std::round(xSkew));
 		for (int i = chunkX - dirxn; i < chunkX + dirxp; i++)
 		{
-			int dirzn = zSkew > 0 ? 1 : std::round(std::abs(zSkew));
-			int dirzp = zSkew < 0 ? 1 : std::round(zSkew);
+			int dirzn = std::floor(zSkew > 0 ? 1 : std::round(std::abs(zSkew)));
+			int dirzp = std::floor(zSkew < 0 ? 1 : std::round(zSkew));
 			for (int k = chunkZ - dirzn; k < chunkZ + dirzp; k++)
 			{
 				intTup tup(i, j, k);
@@ -130,7 +130,7 @@ void Game::surveyNeededChunks()
 					//Generate
 					if (this->world.isHandledMarks.find(tup) == this->world.isHandledMarks.end())
 					{
-						int head = -1;
+						int head = 0;
 						int maxLoadUp = 8;
 						intTup test(tup.x, tup.y + head, tup.z);
 						bool lastOneHadBlocks = true;
@@ -152,8 +152,13 @@ void Game::surveyNeededChunks()
 					//Or mesh
 					if (this->neededChunks.find(tup) == this->neededChunks.end() && this->world.hasBlockMarks.find(tup) != this->world.hasBlockMarks.end())
 					{
-						int head = -2;
+						int head = 0;
 						int maxLoadUp = 8;
+						intTup test2(tup.x, tup.y - 1, tup.z);
+						if (this->neededChunks.find(test2) == this->neededChunks.end() && this->world.hasBlockMarks.find(test2) != this->world.hasBlockMarks.end())
+						{
+							this->neededChunks.insert(test2);
+						}
 						intTup test(tup.x, tup.y + head, tup.z);
 						while (this->neededChunks.find(test) == this->neededChunks.end() && this->world.hasBlockMarks.find(test) != this->world.hasBlockMarks.end() && head < maxLoadUp)
 						{

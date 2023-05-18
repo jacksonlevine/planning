@@ -28,12 +28,15 @@ void Chunk::rebuildMesh() {
 			{ (GLfloat)tup1.x,
 			(GLfloat)tup1.y,
 			(GLfloat)tup1.z,
+
 			(GLfloat)(tup1.x),
 			(GLfloat)(tup1.y +CHUNK_WIDTH),
 			(GLfloat)(tup1.z),
+
 			(GLfloat)(tup1.x),
 			(GLfloat)(tup1.y +CHUNK_WIDTH),
 			(GLfloat)(tup1.z +CHUNK_WIDTH),
+
 			(GLfloat)(tup1.x),
 			(GLfloat)(tup1.y +CHUNK_WIDTH),
 			(GLfloat)(tup1.z +CHUNK_WIDTH),
@@ -53,6 +56,36 @@ void Chunk::rebuildMesh() {
 				});
 
 		}
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		this->vertices.insert(this->vertices.end(),
 			{ (GLfloat)(tup1.x),
 			(GLfloat)(tup1.y),
@@ -82,6 +115,36 @@ void Chunk::rebuildMesh() {
 				});
 
 		}
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		this->vertices.insert(this->vertices.end(),
 			{ (GLfloat)(tup1.x +CHUNK_WIDTH),
 			(GLfloat)(tup1.y),
@@ -112,6 +175,36 @@ void Chunk::rebuildMesh() {
 				});
 
 		}
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		this->vertices.insert(this->vertices.end(),
 			{ (GLfloat)(tup1.x),
 			(GLfloat)(tup1.y),
@@ -143,7 +236,36 @@ void Chunk::rebuildMesh() {
 				});
 
 		}
-
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		this->vertices.insert(this->vertices.end(),
 			{ (GLfloat)(tup1.x),
 			(GLfloat)(tup1.y +CHUNK_WIDTH),
@@ -174,7 +296,36 @@ void Chunk::rebuildMesh() {
 				});
 
 		}
-
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 		this->vertices.insert(this->vertices.end(),
 			{ (GLfloat)(tup1.x),
 			(GLfloat)(tup1.y),
@@ -206,6 +357,36 @@ void Chunk::rebuildMesh() {
 				});
 
 		}
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)0.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)1.0,
+				(GLfloat)1.0,
+			});
+		this->uv.insert(this->uv.end(),
+			{
+				(GLfloat)0.0,
+				(GLfloat)1.0,
+			});
 	}
 	else
 	{
