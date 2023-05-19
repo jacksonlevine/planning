@@ -12,6 +12,8 @@ Chunk::Chunk(Game* gref) {
 	this->vboc = (GLuint)0;
 	this->vbov = (GLuint)0;
 	this->vbouv = (GLuint)0;
+	this->dirty = true;
+	this->bufferDeleted = true;
 	glGenBuffers(1,&(this->vbov));
 	glGenBuffers(1,&(this->vboc));
 	glGenBuffers(1, &(this->vbouv));
@@ -26,15 +28,15 @@ void Chunk::rebuildMesh() {
 
 	std::function<void(glm::vec3*, intTup, float)> addColor = [](glm::vec3* color, intTup tup, float vol) {
 
-		color->r += vol * p2.noise(tup.x / 6.3, tup.y / 6.3);
-		color->b += vol * p2.noise(tup.x / 12.3, tup.y / 12.3);
-		color->b += vol * p2.noise(tup.x / 8.3, tup.y / 8.3);
+		color->r += vol * p2.noise(tup.x / 12.3, tup.z / 12.3);
+		color->b += vol * p2.noise(tup.x / 24.3, tup.z / 24.3);
+		color->b += vol * p2.noise(tup.x / 16.3, tup.z / 16.3);
 	};
 
 	intTup tup2(this->x, this->y, this->z);
 	intTup tup1(this->x * CHUNK_WIDTH, this->y * CHUNK_WIDTH, this->z * CHUNK_WIDTH);
-	{
-		/*
+
+	/*
 		if(this->gref->world.fullBlockMarks.find(tup2) != this->gref->world.fullBlockMarks.end())
 	{
 		this->vertices.insert(this->vertices.end(),
@@ -402,8 +404,7 @@ void Chunk::rebuildMesh() {
 			});
 	}
 	else
-		*/
-	}//// cube optimization
+	*/
 	{
 		for (int y = 0; y < width; y++)
 		{
@@ -462,7 +463,7 @@ void Chunk::rebuildMesh() {
 								float volatility = blockTypes[blockID].colorVolatility;
 								addColor(&color, tup, volatility);
 							}
-
+							color = color * 0.7f;
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
@@ -519,7 +520,7 @@ void Chunk::rebuildMesh() {
 								float volatility = blockTypes[blockID].colorVolatility;
 								addColor(&color, tup, volatility);
 							}
-
+							color = color * 0.6f;
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
@@ -576,7 +577,7 @@ void Chunk::rebuildMesh() {
 								float volatility = blockTypes[blockID].colorVolatility;
 								addColor(&color, tup, volatility);
 							}
-
+							color = color * 0.7f;
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
@@ -634,7 +635,7 @@ void Chunk::rebuildMesh() {
 								float volatility = blockTypes[blockID].colorVolatility;
 								addColor(&color, tup, volatility);
 							}
-
+							color = color * 0.6f;
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
@@ -771,6 +772,7 @@ void Chunk::rebuildMesh() {
 			}
 		}
 	}
+	this->dirty = true;
 }
 
 void Chunk::moveAndRebuildMesh(int newX, int newY, int newZ) {

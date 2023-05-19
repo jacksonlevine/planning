@@ -87,7 +87,7 @@ void Game::removeTask(uint8_t id)
 
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 350; i++)
+	for (int i = 0; i < 250; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
@@ -100,8 +100,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z) * 2 * 4;
-	int xSkew = (dir.x) * 2 * 4;
+	int zSkew = (dir.z) * 4;
+	int xSkew = (dir.x) * 4;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
@@ -117,11 +117,11 @@ void Game::surveyNeededChunks()
 
 		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
 		int dirxp = std::floor(xSkew < 0 ? 1 : std::round(xSkew));
-		for (int i = chunkX - dirxn - 1; i < chunkX + dirxp + 1; i++)
+		for (int i = chunkX - dirxn - 2; i < chunkX + dirxp + 2; i++)
 		{
 			int dirzn = std::floor(zSkew > 0 ? 1 : std::round(std::abs(zSkew)));
 			int dirzp = std::floor(zSkew < 0 ? 1 : std::round(zSkew));
-			for (int k = chunkZ - dirzn - 1; k < chunkZ + dirzp + 1; k++)
+			for (int k = chunkZ - dirzn - 2; k < chunkZ + dirzp + 2; k++)
 			{
 				intTup tup(i, j, k);
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
@@ -192,17 +192,9 @@ void Game::rebuildNextChunk()
 					activeChunks.erase(grabbedSpot);
 				}
 
-				glDeleteBuffers(1, &grabbedChunk.vbov);
-				glDeleteBuffers(1, &grabbedChunk.vboc);
-				glDeleteBuffers(1, &grabbedChunk.vbouv);
+		
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
-				if (grabbedChunk.vertices.size() && grabbedChunk.colors.size())
-				{
-					glGenBuffers(1, &grabbedChunk.vbov);
-					glGenBuffers(1, &grabbedChunk.vboc);
-					glGenBuffers(1, &grabbedChunk.vbouv);
-				}
-
+				
 				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
 				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
 				

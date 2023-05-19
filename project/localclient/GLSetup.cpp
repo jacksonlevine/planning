@@ -268,6 +268,31 @@ void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, GLuint vbouv, const GLflo
 
 }
 
+void GLWrapper::bindGeometryNoUpload(GLuint vbov, GLuint vboc, GLuint vbouv) {
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbov);
+    // Set up the vertex attribute pointers for the position buffer object
+    GLint pos_attrib = glGetAttribLocation(this->shaderProgram, "position");
+    glEnableVertexAttribArray(pos_attrib);
+    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    // Generate a vertex buffer object (VBO) for the color data
+    glBindBuffer(GL_ARRAY_BUFFER, vboc);
+
+    // Set up the vertex attribute pointers for the color buffer object
+    GLint col_attrib = glGetAttribLocation(this->shaderProgram, "color");
+    glEnableVertexAttribArray(col_attrib);
+    glVertexAttribPointer(col_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Generate a vertex buffer object (VBO) for the uv data
+    glBindBuffer(GL_ARRAY_BUFFER, vbouv);
+
+    // Set up the vertex attribute pointers for the uv buffer object
+    GLint uv_attrib = glGetAttribLocation(this->shaderProgram, "uv");
+    glEnableVertexAttribArray(uv_attrib);
+    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+}
+
 void GLWrapper::orientCamera() {
 
     // Calculate the new direction vector based on the yaw and pitch angles

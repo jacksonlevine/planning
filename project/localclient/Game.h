@@ -4,7 +4,7 @@
 #include <folly/container/F14Set.h>
 #include "GLSetup.h"
 
-#define CHUNK_WIDTH 16
+#define CHUNK_WIDTH 20
 
 struct intTup {
 public:
@@ -25,6 +25,8 @@ public:
     int x;
     int y;
     int z;
+    bool dirty;
+    bool bufferDeleted;
     Chunk(Game* gref);
     Game* gref;
     GLuint vbov;

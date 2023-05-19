@@ -99,8 +99,8 @@ const BlockType blockTypes[] = {
 			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 0.0f) + textureWidth, 1.0f - onePixel)
 		),
 		true,
-		glm::vec3(0.5, 1.0, 0.5),
-		15.0f
+		glm::vec3(0.2, 0.7, 0.15),
+		0.35f
 	),
 	BlockType(
 		false,

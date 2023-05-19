@@ -66,19 +66,31 @@ int main()
 
         wrap.orientCamera();
 
-        for (const auto& pair : game.activeChunks) {
-            const Chunk& c = pair.second;
+        for (auto& pair : game.activeChunks) {
+            Chunk& c = pair.second;
             if (c.vertices.size() && c.colors.size() && c.uv.size()) {
-                wrap.bindGeometry(
-                    c.vbov,
-                    c.vboc,
-                    c.vbouv,
-                    &(c.vertices[0]),
-                    &(c.colors[0]),
-                    &(c.uv[0]),
-                    sizeof(GLfloat) * c.vertices.size(),
-                    sizeof(GLfloat) * c.colors.size(),
-                    sizeof(GLfloat) * c.uv.size());
+                if (c.dirty || c.bufferDeleted)
+                {
+                    wrap.bindGeometry(
+                        c.vbov,
+                        c.vboc,
+                        c.vbouv,
+                        &(c.vertices[0]),
+                        &(c.colors[0]),
+                        &(c.uv[0]),
+                        sizeof(GLfloat) * c.vertices.size(),
+                        sizeof(GLfloat) * c.colors.size(),
+                        sizeof(GLfloat) * c.uv.size());
+                    c.dirty = false;
+                    c.bufferDeleted = false;
+                }
+                else if(c.vbov != 0 && c.vboc != 0 && c.vbouv != 0) {
+                    wrap.bindGeometryNoUpload(
+                        c.vbov,
+                        c.vboc,
+                        c.vbouv);
+                }
+               
                 glDrawArrays(GL_TRIANGLES, 0, c.vertices.size());
             }
         }
