@@ -1,4 +1,8 @@
 #include "Game.h"
+#include "BlockTypes.h"
+#include "Perlin.h"
+
+perlin p2;
 
 Chunk::Chunk(Game* gref) {
 	this->gref = gref;
@@ -22,7 +26,9 @@ void Chunk::rebuildMesh() {
 
 	intTup tup2(this->x, this->y, this->z);
 	intTup tup1(this->x * CHUNK_WIDTH, this->y * CHUNK_WIDTH, this->z * CHUNK_WIDTH);
-	if(this->gref->world.fullBlockMarks.find(tup2) != this->gref->world.fullBlockMarks.end())
+	{
+		/*
+		if(this->gref->world.fullBlockMarks.find(tup2) != this->gref->world.fullBlockMarks.end())
 	{
 		this->vertices.insert(this->vertices.end(),
 			{ (GLfloat)tup1.x,
@@ -389,6 +395,8 @@ void Chunk::rebuildMesh() {
 			});
 	}
 	else
+		*/
+	}//// cube optimization
 	{
 		for (int y = 0; y < width; y++)
 		{
@@ -399,6 +407,7 @@ void Chunk::rebuildMesh() {
 					intTup tup((this->x * this->gref->chunkWidth) + x, (this->y * this->gref->chunkWidth) + y, (this->z * this->gref->chunkWidth) + z);
 					if (this->gref->world.data.find(tup) != this->gref->world.data.end())
 					{
+						uint8_t blockID = this->gref->world.data.at(tup);
 						if (this->gref->world.data.find(intTup(tup.x - 1, tup.y, tup.z)) == this->gref->world.data.end())
 						{
 							this->vertices.insert(this->vertices.end(),
@@ -426,43 +435,35 @@ void Chunk::rebuildMesh() {
 								{ (GLfloat)(tup.x),
 								(GLfloat)(tup.y),
 								(GLfloat)(tup.z) });
+
+							//NEW CODE
+							TextureFace face = blockTypes[blockID].allOneTexture ?
+								blockTypes[blockID].all : blockTypes[blockID].sides;
+
 							this->uv.insert(this->uv.end(),
 								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y,
+									(GLfloat)face.bl.x, (GLfloat)face.bl.y,
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+									(GLfloat)face.tr.x, (GLfloat)face.tr.y,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y
 								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)1.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
-								});
+							glm::vec3 color = blockTypes[blockID].baseColor;
+							if (blockTypes[blockID].colorizable) {
+								color.r += p2.noise(tup.x/6.3, tup.y/6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+							}
+
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
 									{
-										(GLfloat)0.7,
-										(GLfloat)0.0,
-										(GLfloat)0.0
+										(GLfloat)color.r,
+										(GLfloat)color.g,
+										(GLfloat)color.b
 									});
 
 							}
@@ -494,43 +495,33 @@ void Chunk::rebuildMesh() {
 								{ (GLfloat)(tup.x),
 								(GLfloat)(tup.y),
 								(GLfloat)(tup.z) });
+							//NEW CODE
+							TextureFace face = blockTypes[blockID].allOneTexture ?
+								blockTypes[blockID].all : blockTypes[blockID].sides;
 							this->uv.insert(this->uv.end(),
 								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y,
+									(GLfloat)face.bl.x, (GLfloat)face.bl.y,
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+									(GLfloat)face.tr.x, (GLfloat)face.tr.y,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y
 								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)1.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
-								});
+							glm::vec3 color = blockTypes[blockID].baseColor;
+							if (blockTypes[blockID].colorizable) {
+								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 12.3, tup.y / 12.3);
+								color.b += p2.noise(tup.x / 8.3, tup.y / 8.3);
+							}
+
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
 									{
-										(GLfloat)0.6,
-										(GLfloat)0.0,
-										(GLfloat)0.0
+										(GLfloat)color.r,
+										(GLfloat)color.g,
+										(GLfloat)color.b
 									});
 
 							}
@@ -562,43 +553,33 @@ void Chunk::rebuildMesh() {
 								{ (GLfloat)(tup.x + 1),
 								(GLfloat)(tup.y),
 								(GLfloat)(tup.z) });
+							//NEW CODE
+							TextureFace face = blockTypes[blockID].allOneTexture ?
+								blockTypes[blockID].all : blockTypes[blockID].sides;
 							this->uv.insert(this->uv.end(),
 								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y,
+									(GLfloat)face.bl.x, (GLfloat)face.bl.y,
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+									(GLfloat)face.tr.x, (GLfloat)face.tr.y,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y
 								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)1.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
-								});
+							glm::vec3 color = blockTypes[blockID].baseColor;
+							if (blockTypes[blockID].colorizable) {
+								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+							}
+
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
 									{
-										(GLfloat)0.7,
-										(GLfloat)0.0,
-										(GLfloat)0.0
+										(GLfloat)color.r,
+										(GLfloat)color.g,
+										(GLfloat)color.b
 									});
 
 							}
@@ -631,43 +612,33 @@ void Chunk::rebuildMesh() {
 								(GLfloat)(tup.y),
 								(GLfloat)(tup.z + 1) });
 
+							//NEW CODE
+							TextureFace face = blockTypes[blockID].allOneTexture ?
+								blockTypes[blockID].all : blockTypes[blockID].sides;
 							this->uv.insert(this->uv.end(),
 								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y,
+									(GLfloat)face.bl.x, (GLfloat)face.bl.y,
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+									(GLfloat)face.tr.x, (GLfloat)face.tr.y,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y
 								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)1.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
-								});
+							glm::vec3 color = blockTypes[blockID].baseColor;
+							if (blockTypes[blockID].colorizable) {
+								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+							}
+
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
 									{
-										(GLfloat)0.6,
-										(GLfloat)0.0,
-										(GLfloat)0.0
+										(GLfloat)color.r,
+										(GLfloat)color.g,
+										(GLfloat)color.b
 									});
 
 							}
@@ -699,43 +670,33 @@ void Chunk::rebuildMesh() {
 								{ (GLfloat)(tup.x),
 								(GLfloat)(tup.y + 1),
 								(GLfloat)(tup.z) });
+							//NEW CODE
+							TextureFace face = blockTypes[blockID].allOneTexture ?
+								blockTypes[blockID].all : blockTypes[blockID].top;
 							this->uv.insert(this->uv.end(),
 								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y,
+									(GLfloat)face.bl.x, (GLfloat)face.bl.y,
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+									(GLfloat)face.tr.x, (GLfloat)face.tr.y,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y
 								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)1.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
-								});
+							glm::vec3 color = blockTypes[blockID].baseColor;
+							if (blockTypes[blockID].colorizable) {
+								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+							}
+
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
 									{
-										(GLfloat)1.0,
-										(GLfloat)0.0,
-										(GLfloat)0.0
+										(GLfloat)color.r,
+										(GLfloat)color.g,
+										(GLfloat)color.b
 									});
 
 							}
@@ -771,45 +732,36 @@ void Chunk::rebuildMesh() {
 								{ (GLfloat)(tup.x),
 								(GLfloat)(tup.y),
 								(GLfloat)(tup.z) });
+							//NEW CODE
+							TextureFace face = blockTypes[blockID].allOneTexture ?
+								blockTypes[blockID].all : blockTypes[blockID].bottom;
 							this->uv.insert(this->uv.end(),
 								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y,
+									(GLfloat)face.bl.x, (GLfloat)face.bl.y,
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+
+									(GLfloat)face.br.x, (GLfloat)face.br.y,
+									(GLfloat)face.tr.x, (GLfloat)face.tr.y,
+									(GLfloat)face.tl.x, (GLfloat)face.tl.y
 								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)0.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)1.0,
-									(GLfloat)1.0,
-								});
-							this->uv.insert(this->uv.end(),
-								{
-									(GLfloat)0.0,
-									(GLfloat)1.0,
-								});
+
+							glm::vec3 color = blockTypes[blockID].baseColor;
+							if (blockTypes[blockID].colorizable) {
+								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+							}
 
 							for (int i = 0; i < 6; i++)
 							{
 								this->colors.insert(this->colors.end(),
 									{
-										(GLfloat)1.0,
-										(GLfloat)0.0,
-										(GLfloat)0.0
+										(GLfloat)color.r,
+										(GLfloat)color.g,
+										(GLfloat)color.b
 									});
+
 							}
 							
 						}

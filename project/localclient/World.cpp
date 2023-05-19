@@ -40,9 +40,11 @@ int World::generateOneChunk(intTup coord) {
 
 				intTup tup(localX, localY, localZ);
 				double noise = p.noise((double)localX / 25.25, 30.253, (double)localZ / 25.25)*15;
+
+				double noise2 = p.noise((double)localX / 6.25, (double)localY / 6.25, (double)localZ / 6.25) * 15;
 				if (localY < noise)
 				{
-					this->data.insert_or_assign(tup, 1);
+					this->data.insert_or_assign(tup, 0);
 					blockCount++;
 					if (blockCount == std::pow(CHUNK_WIDTH, 3))
 					{
