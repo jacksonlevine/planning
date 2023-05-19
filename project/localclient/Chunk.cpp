@@ -24,6 +24,13 @@ void Chunk::rebuildMesh() {
 	std::vector<GLfloat>().swap(this->colors);
 	std::vector<GLfloat>().swap(this->uv);
 
+	std::function<void(glm::vec3*, intTup, float)> addColor = [](glm::vec3* color, intTup tup, float vol) {
+
+		color->r += vol * p2.noise(tup.x / 6.3, tup.y / 6.3);
+		color->b += vol * p2.noise(tup.x / 12.3, tup.y / 12.3);
+		color->b += vol * p2.noise(tup.x / 8.3, tup.y / 8.3);
+	};
+
 	intTup tup2(this->x, this->y, this->z);
 	intTup tup1(this->x * CHUNK_WIDTH, this->y * CHUNK_WIDTH, this->z * CHUNK_WIDTH);
 	{
@@ -452,9 +459,8 @@ void Chunk::rebuildMesh() {
 								});
 							glm::vec3 color = blockTypes[blockID].baseColor;
 							if (blockTypes[blockID].colorizable) {
-								color.r += p2.noise(tup.x/6.3, tup.y/6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								float volatility = blockTypes[blockID].colorVolatility;
+								addColor(&color, tup, volatility);
 							}
 
 							for (int i = 0; i < 6; i++)
@@ -510,9 +516,8 @@ void Chunk::rebuildMesh() {
 								});
 							glm::vec3 color = blockTypes[blockID].baseColor;
 							if (blockTypes[blockID].colorizable) {
-								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 12.3, tup.y / 12.3);
-								color.b += p2.noise(tup.x / 8.3, tup.y / 8.3);
+								float volatility = blockTypes[blockID].colorVolatility;
+								addColor(&color, tup, volatility);
 							}
 
 							for (int i = 0; i < 6; i++)
@@ -568,9 +573,8 @@ void Chunk::rebuildMesh() {
 								});
 							glm::vec3 color = blockTypes[blockID].baseColor;
 							if (blockTypes[blockID].colorizable) {
-								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								float volatility = blockTypes[blockID].colorVolatility;
+								addColor(&color, tup, volatility);
 							}
 
 							for (int i = 0; i < 6; i++)
@@ -627,9 +631,8 @@ void Chunk::rebuildMesh() {
 								});
 							glm::vec3 color = blockTypes[blockID].baseColor;
 							if (blockTypes[blockID].colorizable) {
-								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								float volatility = blockTypes[blockID].colorVolatility;
+								addColor(&color, tup, volatility);
 							}
 
 							for (int i = 0; i < 6; i++)
@@ -685,9 +688,8 @@ void Chunk::rebuildMesh() {
 								});
 							glm::vec3 color = blockTypes[blockID].baseColor;
 							if (blockTypes[blockID].colorizable) {
-								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								float volatility = blockTypes[blockID].colorVolatility;
+								addColor(&color, tup, volatility);
 							}
 
 							for (int i = 0; i < 6; i++)
@@ -748,9 +750,8 @@ void Chunk::rebuildMesh() {
 
 							glm::vec3 color = blockTypes[blockID].baseColor;
 							if (blockTypes[blockID].colorizable) {
-								color.r += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
-								color.b += p2.noise(tup.x / 6.3, tup.y / 6.3);
+								float volatility = blockTypes[blockID].colorVolatility;
+								addColor(&color, tup, volatility);
 							}
 
 							for (int i = 0; i < 6; i++)
