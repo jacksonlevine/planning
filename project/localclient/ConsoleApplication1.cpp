@@ -58,10 +58,11 @@ int main()
     glPatchParameteri(GL_PATCH_VERTICES, 0);
     glPatchParameteri(GL_PATCH_DEFAULT_OUTER_LEVEL, 1);
     glPatchParameteri(GL_PATCH_DEFAULT_INNER_LEVEL, 1);
+
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     while (!glfwWindowShouldClose(wrap.window))
     {
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         wrap.orientCamera();
@@ -91,7 +92,7 @@ int main()
                         c.vbouv);
                 }
                
-                glDrawArrays(GL_TRIANGLES, 0, c.vertices.size());
+                glDrawArrays(GL_TRIANGLES, 0, c.colors.size());
             }
         }
         

@@ -192,9 +192,10 @@ void Game::rebuildNextChunk()
 					activeChunks.erase(grabbedSpot);
 				}
 
-		
+			
+				//grabbedChunk.bufferDeleted = true;
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
-				
+
 				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
 				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
 				
