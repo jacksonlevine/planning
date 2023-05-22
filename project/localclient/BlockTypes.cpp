@@ -1,4 +1,4 @@
-#include "BlockTypes.h"
+#include "BlockTypes.hpp"
 
 //Chunk THIS out!
 
@@ -99,7 +99,7 @@ const BlockType blockTypes[] = {
 			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 0.0f) + textureWidth, 1.0f - onePixel)
 		),
 		true,
-		glm::vec3(0.2, 0.7, 0.15),
+		glm::vec3(0.1, 0.6, 0.09),
 		0.35f
 	),
 	BlockType(

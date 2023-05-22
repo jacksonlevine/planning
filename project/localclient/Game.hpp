@@ -2,7 +2,7 @@
 #include <folly/Optional.h>
 #include <folly/container/F14Map.h>
 #include <folly/container/F14Set.h>
-#include "GLSetup.h"
+#include "GLSetup.hpp"
 
 #define CHUNK_WIDTH 20
 

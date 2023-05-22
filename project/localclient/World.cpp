@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "Game.hpp"
 #include "Perlin.h"
 
 perlin p;

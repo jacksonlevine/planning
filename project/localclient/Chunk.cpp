@@ -1,5 +1,5 @@
-#include "Game.h"
-#include "BlockTypes.h"
+#include "Game.hpp"
+#include "BlockTypes.hpp"
 #include "Perlin.h"
 
 perlin p2;
@@ -28,9 +28,9 @@ void Chunk::rebuildMesh() {
 
 	std::function<void(glm::vec3*, intTup, float)> addColor = [](glm::vec3* color, intTup tup, float vol) {
 
-		color->r += vol * p2.noise(tup.x / 12.3, tup.z / 12.3);
-		color->b += vol * p2.noise(tup.x / 24.3, tup.z / 24.3);
-		color->b += vol * p2.noise(tup.x / 16.3, tup.z / 16.3);
+		color->r += vol * p2.noise(tup.x / 24.3, tup.z / 24.3);
+		color->b += vol * p2.noise(tup.x / 48.3, tup.z / 48.3);
+		color->b += vol * p2.noise(tup.x / 32.3, tup.z / 32.3);
 	};
 
 	intTup tup2(this->x, this->y, this->z);

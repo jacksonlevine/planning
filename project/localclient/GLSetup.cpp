@@ -1,4 +1,4 @@
-#include "GLSetup.h";
+#include "GLSetup.hpp";
 
 
 GLWrapper* GLWrapper::instance = nullptr;

@@ -5,8 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "GLSetup.h"
-#include "Game.h"
+#include "GLSetup.hpp"
+#include "Game.hpp"
 #include <iterator>
 #include "stb_image.h"
 

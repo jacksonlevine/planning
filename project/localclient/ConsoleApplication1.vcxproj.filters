@@ -41,10 +41,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GLSetup.h">
+    <ClInclude Include="GLSetup.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Game.h">
+    <ClInclude Include="Game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Perlin.h">
@@ -53,7 +53,7 @@
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BlockTypes.h">
+    <ClInclude Include="BlockTypes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
