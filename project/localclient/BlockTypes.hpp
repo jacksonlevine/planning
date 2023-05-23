@@ -18,6 +18,10 @@ public:
 		glm::vec2 br,
 		glm::vec2 tr
 	);
+	TextureFace(
+		int x,
+		int y
+	);
 };
 
 struct BlockType {
@@ -61,3 +65,4 @@ public:
 extern const BlockType blockTypes[];
 extern const float onePixel;
 extern const float textureWidth;
+extern const float oneOver16;

@@ -9,6 +9,7 @@
 #include "Game.hpp"
 #include <iterator>
 #include "stb_image.h"
+#include "BlockTypes.hpp"
 
 int main()
 {
@@ -60,12 +61,207 @@ int main()
     glPatchParameteri(GL_PATCH_DEFAULT_INNER_LEVEL, 1);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+    TextureFace skyFace = TextureFace(0,0);
+    GLfloat skyVerts[108] = {
+        // Front face
+        -0.5f, -0.5f,  0.5f, // Bottom-left
+         0.5f, -0.5f,  0.5f, // Bottom-right
+         0.5f,  0.5f,  0.5f, // Top-right
+
+          0.5f,  0.5f,  0.5f, // Top-right
+        -0.5f,  0.5f,  0.5f, // Top-left
+        -0.5f, -0.5f,  0.5f, // Bottom-left
+
+        // Back face
+         0.5f, -0.5f, -0.5f, // Bottom-left
+        -0.5f, -0.5f, -0.5f, // Bottom-right
+        -0.5f,  0.5f, -0.5f, // Top-right
+
+        -0.5f,  0.5f, -0.5f, // Top-right
+         0.5f,  0.5f, -0.5f, // Top-left
+         0.5f, -0.5f, -0.5f, // Bottom-left
+
+         // Left face
+         -0.5f, -0.5f, -0.5f, // Bottom-back
+         -0.5f, -0.5f,  0.5f, // Bottom-front
+         -0.5f,  0.5f,  0.5f, // Top-front
+
+         -0.5f,  0.5f,  0.5f, // Top-front
+         -0.5f,  0.5f, -0.5f, // Top-back
+         -0.5f, -0.5f, -0.5f, // Bottom-back
+
+         // Right face
+          0.5f, -0.5f,  0.5f, // Bottom-back
+          0.5f, -0.5f, -0.5f, // Bottom-front
+          0.5f,  0.5f, -0.5f, // Top-front
+
+          0.5f,  0.5f, -0.5f, // Top-front
+          0.5f,  0.5f,  0.5f, // Top-back
+          0.5f, -0.5f,  0.5f, // Bottom-back
+
+          // Top face
+          -0.5f,  0.5f,  0.5f, // Front-left
+           0.5f,  0.5f,  0.5f, // Front-right
+           0.5f,  0.5f, -0.5f, // Back-right
+
+            0.5f,  0.5f, -0.5f, // Back-right
+          -0.5f,  0.5f, -0.5f, // Back-left
+          -0.5f,  0.5f,  0.5f, // Front-left
+
+          // Bottom face
+          -0.5f, -0.5f, -0.5f, // Front-left
+           0.5f, -0.5f, -0.5f, // Front-right
+           0.5f, -0.5f,  0.5f, // Back-right
+            0.5f, -0.5f,  0.5f, // Back-right
+          -0.5f, -0.5f,  0.5f  // Back-left
+          - 0.5f, -0.5f, -0.5f, // Front-left
+    };
+    GLfloat skyUVs[72] = {
+        // Front face
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+         skyFace.br.x, skyFace.br.y, // Bottom-right
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+        skyFace.tl.x, skyFace.tl.y, // Top-left
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+        // Back face
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+         skyFace.br.x, skyFace.br.y, // Bottom-right
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+        skyFace.tl.x, skyFace.tl.y, // Top-left
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+        // Left face
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+         skyFace.br.x, skyFace.br.y, // Bottom-right
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+        skyFace.tl.x, skyFace.tl.y, // Top-left
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+
+        // Right face
+         skyFace.bl.x, skyFace.bl.y, // Bottom-left
+         skyFace.br.x, skyFace.br.y, // Bottom-right
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+        skyFace.tl.x, skyFace.tl.y, // Top-left
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+
+         // Top face
+         skyFace.bl.x, skyFace.bl.y, // Bottom-left
+         skyFace.br.x, skyFace.br.y, // Bottom-right
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+        skyFace.tl.x, skyFace.tl.y, // Top-left
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+
+         // Bottom face
+         skyFace.bl.x, skyFace.bl.y, // Bottom-left
+         skyFace.br.x, skyFace.br.y, // Bottom-right
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+
+         skyFace.tr.x, skyFace.tr.y, // Top-right
+        skyFace.tl.x, skyFace.tl.y, // Top-left
+        skyFace.bl.x, skyFace.bl.y, // Bottom-left
+    };
+    GLfloat skyCols[108] = {
+        // Front face
+          0.0f, 0.0f, 0.5f, // Bottom-left
+          0.0f, 0.0f, 0.5f, // Bottom-right
+          0.5f, 0.5f, 1.0f, // Top-right
+
+          0.5f, 0.5f, 1.0f, // Top-right
+          0.5f, 0.5f, 1.0f, // Top-left
+          0.0f, 0.0f, 0.5f, // Bottom-left
+
+          // Back face
+           0.0f, 0.0f, 0.5f, // Bottom-left
+           0.0f, 0.0f, 0.5f, // Bottom-right
+          0.5f, 0.5f, 1.0f, // Top-right
+
+           0.5f, 0.5f, 1.0f, // Top-right
+          0.5f, 0.5f, 1.0f, // Top-left
+          0.0f, 0.0f, 0.5f, // Bottom-left
+
+          // Left face
+           0.0f, 0.0f, 0.5f, // Bottom-back
+           0.0f, 0.0f, 0.5f, // Bottom-front
+          0.5f, 0.5f, 1.0f, // Top-front
+
+          0.5f, 0.5f, 1.0f, // Top-front
+          0.5f, 0.5f, 1.0f, // Top-back
+          0.0f, 0.0f, 0.5f, // Bottom-back
+
+          // Right face
+           0.0f, 0.0f, 0.5f, // Bottom-back
+           0.0f, 0.0f, 0.5f, // Bottom-front
+          0.5f, 0.5f, 1.0f, // Top-front
+
+          0.5f, 0.5f, 1.0f, // Top-front
+          0.5f, 0.5f, 1.0f, // Top-back
+          0.0f, 0.0f, 0.5f, // Bottom-back
+
+          // Top face
+          0.5f, 0.5f, 1.0f, // Front-left
+          0.5f, 0.5f, 1.0f, // Front-right
+          0.5f, 0.5f, 1.0f, // Back-right
+
+          0.5f, 0.5f, 1.0f, // Back-right
+          0.5f, 0.5f, 1.0f, // Back-left
+          0.5f, 0.5f, 1.0f, // Front-left
+
+          // Bottom face
+          0.0f, 0.0f, 0.5f, // Front-left
+          0.0f, 0.0f, 0.5f, // Front-right
+          0.0f, 0.0f, 0.5f, // Back-right
+
+          0.0f, 0.0f, 0.5f, // Back-right
+          0.0f, 0.0f, 0.5f,  // Back-left
+          0.0f, 0.0f, 0.5f, // Front-left
+    };
+    GLuint skyVBOV;
+    GLuint skyVBOC;
+    GLuint skyVBOUV;
+
+    glGenBuffers(1, &skyVBOV);
+    glGenBuffers(1, &skyVBOC);
+    glGenBuffers(1, &skyVBOUV);
+
+    for (int i = 0; i < 108; i++)
+    {
+        skyVerts[i] *= 500;
+    }
+    wrap.bindGeometry(
+        skyVBOV,
+        skyVBOC,
+        skyVBOUV,
+        &skyVerts[0],
+        &skyCols[0],
+        &skyUVs[0],
+        sizeof(GLfloat)* 108,
+        sizeof(GLfloat)* 108,
+        sizeof(GLfloat)* 72);
+
     while (!glfwWindowShouldClose(wrap.window))
     {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         wrap.orientCamera();
+
+        //SKY BIT
+        wrap.bindGeometryNoUpload(
+            skyVBOV,
+            skyVBOC,
+            skyVBOUV);
+        glDrawArrays(GL_TRIANGLES, 0, 72);
+        //END SKY BIT
 
         for (auto& pair : game.activeChunks) {
             Chunk& c = pair.second;

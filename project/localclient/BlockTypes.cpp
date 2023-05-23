@@ -4,7 +4,7 @@
 
 const float onePixel = 0.0018382352941176;     // 1/544      Padding
 const float textureWidth = 0.0588235294117647; // 1/17       32 pixel texture width
-
+const float oneOver16 = 0.0625;
 
 BlockType::BlockType(
 	bool allOneTexture,
@@ -89,38 +89,42 @@ TextureFace::TextureFace(
 
 }
 
+TextureFace::TextureFace(
+	int x,
+	int y
+) : 
+	tl(glm::vec2(0.0f + onePixel + (oneOver16 * (float)x), 1.0f - ((float)y * oneOver16) - onePixel)),
+	bl(glm::vec2(0.0f + onePixel + (oneOver16 * (float)x), 1.0f - ((float)y * oneOver16) - textureWidth - onePixel)),
+	br(glm::vec2(0.0f + onePixel + (oneOver16 * (float)x) + textureWidth, 1.0f - ((float)y * oneOver16) - textureWidth - onePixel)),
+	tr(glm::vec2(0.0f + onePixel + (oneOver16 * (float)x) + textureWidth, 1.0f - ((float)y * oneOver16) - onePixel))
+{
+
+}
+
+enum MyFlags {
+	COLORIZABLE = true,
+};
+
 const BlockType blockTypes[] = {
 	BlockType(
 		true,
 		TextureFace(
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 0.0f)               , 1.0f - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 0.0f)               , 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 0.0f) + textureWidth, 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 0.0f) + textureWidth, 1.0f - onePixel)
+			0, 0
 		),
-		true,
+		COLORIZABLE,
 		glm::vec3(0.1, 0.6, 0.09),
 		0.35f
 	),
 	BlockType(
 		false,
 		TextureFace(
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f)               , 1.0f - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f)               , 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f) + textureWidth, 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f) + textureWidth, 1.0f - onePixel)
+			2, 0
 		),
 		TextureFace(
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 1.0f)               , 1.0f - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 1.0f)               , 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 1.0f) + textureWidth, 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 1.0f) + textureWidth, 1.0f - onePixel)
+			1, 0
 		),
 		TextureFace(
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f)               , 1.0f - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f)               , 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f) + textureWidth, 1.0f - textureWidth - onePixel),
-			glm::vec2(0.0f + onePixel + ((textureWidth + (onePixel * 2.0f)) * 2.0f) + textureWidth, 1.0f - onePixel)
+			2, 0
 		)
 	),
 };
