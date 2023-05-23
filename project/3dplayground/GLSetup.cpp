@@ -1,0 +1,331 @@
+#include "GLSetup.hpp";
+
+
+GLWrapper* GLWrapper::instance = nullptr;
+
+GLWrapper::GLWrapper()
+{
+    // Camera position and rotation
+    this->cameraPos = glm::vec3(0.0f, 7.0f, 0.0f);
+    this->cameraTarget = glm::vec3(0.0f, 7.0f, -3.0f);
+    this->cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+    this->cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    this->cameraUp = glm::cross(cameraDirection, cameraRight);
+    this->cameraSpeed = 0.1f;
+    this->cameraYaw = -90.0f;
+    this->cameraPitch = 0.0f;
+    this->lastX = 400;
+    this->lastY = 300;
+    this->firstMouse = true;
+    this->deltaTime = 0;
+    this->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    this->vao = 0;
+    instance = this;
+}
+
+void GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if(instance)
+    {
+        if (instance->firstMouse)
+        {
+            instance->lastX = xpos;
+            instance->lastY = ypos;
+            instance->firstMouse = false;
+        }
+
+        float xoffset = xpos - instance->lastX;
+        float yoffset = instance->lastY - ypos;
+        instance->lastX = xpos;
+        instance->lastY = ypos;
+
+        float sensitivity = 0.1f;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+
+        instance->cameraYaw += xoffset;
+        instance->cameraPitch += yoffset;
+
+        if (instance->cameraPitch > 89.0f)
+            instance->cameraPitch = 89.0f;
+        if (instance->cameraPitch < -89.0f)
+            instance->cameraPitch = -89.0f;
+
+
+        glm::vec3 front;
+        front.x = cos(glm::radians(instance->cameraYaw)) * cos(glm::radians(instance->cameraPitch));
+        front.y = sin(glm::radians(instance->cameraPitch));
+        front.z = sin(glm::radians(instance->cameraYaw)) * cos(glm::radians(instance->cameraPitch));
+        instance->cameraFront = glm::normalize(front);
+    }
+
+}
+
+void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if(instance)
+    {
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            instance->firstMouse = true;
+        }
+        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            instance->firstMouse = true;
+        }
+    }
+}
+
+void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (instance)
+    {
+        if (key == GLFW_KEY_W)
+        {
+            if (action == GLFW_PRESS) instance->activeState.forward = true;
+            if (action == GLFW_RELEASE) instance->activeState.forward = false;
+        }
+    }
+}
+
+int GLWrapper::initializeGL() {
+    // Initialize GLFW
+    if (!glfwInit())
+    {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return -1;
+    }
+
+    // Set up GLFW window hints
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Create a GLFW window
+    window = glfwCreateWindow(1280, 720, "My C++ Client", NULL, NULL);
+    if (!this->window)
+    {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(this->window);
+
+    // Initialize GLEW
+    if (glewInit() != GLEW_OK)
+    {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    // Set up the viewport
+    glViewport(0, 0, 1280, 720);
+
+    // Enable depth testing
+    glEnable(GL_DEPTH_TEST);
+
+    // Set up GLM for 3D math
+    model = glm::mat4(1.0f);
+
+
+    projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+
+    // Enable pointer-locking first-person controls
+    glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // Set up event callbacks
+    glfwSetCursorPosCallback(this->window, GLWrapper::mouse_callback);
+    glfwSetMouseButtonCallback(this->window, GLWrapper::mouse_button_callback);
+
+    glfwSetKeyCallback(this->window, GLWrapper::keyCallback);
+    // Create vertex shader object
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+    // Set vertex shader source code
+    const GLchar* vertexShaderSource =
+        "#version 450 core\n"
+        "layout (location = 0) in vec3 position;\n"
+        "layout (location = 1) in vec3 color;\n"
+        "layout (location = 2) in vec2 uv;\n"
+        "out vec3 vertexColor;\n"
+        "out vec2 TexCoord;\n"
+        "uniform mat4 mvp;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_Position = mvp * vec4(position, 1.0);\n"
+        "    vertexColor = color;\n"
+        "    TexCoord = uv;\n"
+        "}\n";
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+
+    // Compile vertex shader
+    glCompileShader(vertexShader);
+
+    // Check vertex shader compilation errors
+    GLint success;
+    GLchar infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
+    }
+
+    // Create fragment shader object
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    // Set fragment shader source code
+    const GLchar* fragmentShaderSource =
+        "#version 450 core\n"
+        "in vec3 vertexColor;\n"
+        "in vec2 TexCoord;\n"
+        "out vec4 FragColor;\n"
+        "uniform sampler2D ourTexture;\n"
+        "void main()\n"
+        "{\n"
+        "    FragColor = vec4(vertexColor, 0) * texture(ourTexture, TexCoord);\n"
+        "}\n";
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+
+    // Compile fragment shader
+    glCompileShader(fragmentShader);
+
+    // Check fragment shader compilation errors
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
+    }
+
+    // Create shader program object store it on this.shaderProgram
+    this->shaderProgram = glCreateProgram();
+
+    // Attach vertex and fragment shaders to shader program
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+
+    // Link shader program
+    glLinkProgram(shaderProgram);
+
+    // Check shader program linking errors
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cerr << "Shader program linking error: " << infoLog << std::endl;
+    }
+
+    // Delete shader objects
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+}
+
+void GLWrapper::setupVAO() {
+    // Generate a vertex array object (VAO)
+
+    glGenVertexArrays(1, &this->vao);
+    glBindVertexArray(this->vao);
+
+    // Use our shader program
+    glUseProgram(this->shaderProgram);
+
+}
+
+void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, GLuint vbouv, const GLfloat* vertices, const GLfloat* colors, const GLfloat* uv, int vsize, int csize, int usize) {
+
+    // Generate a vertex buffer object (VBO) for the position data
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbov);
+    glBufferData(GL_ARRAY_BUFFER, vsize, vertices, GL_STATIC_DRAW);
+    // Set up the vertex attribute pointers for the position buffer object
+    GLint pos_attrib = glGetAttribLocation(this->shaderProgram, "position");
+    glEnableVertexAttribArray(pos_attrib);
+    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    // Generate a vertex buffer object (VBO) for the color data
+    glBindBuffer(GL_ARRAY_BUFFER, vboc);
+    glBufferData(GL_ARRAY_BUFFER, csize, colors, GL_STATIC_DRAW);
+
+    // Set up the vertex attribute pointers for the color buffer object
+    GLint col_attrib = glGetAttribLocation(this->shaderProgram, "color");
+    glEnableVertexAttribArray(col_attrib);
+    glVertexAttribPointer(col_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Generate a vertex buffer object (VBO) for the uv data
+    glBindBuffer(GL_ARRAY_BUFFER, vbouv);
+    glBufferData(GL_ARRAY_BUFFER, usize, uv, GL_STATIC_DRAW);
+
+    // Set up the vertex attribute pointers for the uv buffer object
+    GLint uv_attrib = glGetAttribLocation(this->shaderProgram, "uv");
+    glEnableVertexAttribArray(uv_attrib);
+    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+}
+
+void GLWrapper::bindGeometryNoUpload(GLuint vbov, GLuint vboc, GLuint vbouv) {
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbov);
+    // Set up the vertex attribute pointers for the position buffer object
+    GLint pos_attrib = glGetAttribLocation(this->shaderProgram, "position");
+    glEnableVertexAttribArray(pos_attrib);
+    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    // Generate a vertex buffer object (VBO) for the color data
+    glBindBuffer(GL_ARRAY_BUFFER, vboc);
+
+    // Set up the vertex attribute pointers for the color buffer object
+    GLint col_attrib = glGetAttribLocation(this->shaderProgram, "color");
+    glEnableVertexAttribArray(col_attrib);
+    glVertexAttribPointer(col_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Generate a vertex buffer object (VBO) for the uv data
+    glBindBuffer(GL_ARRAY_BUFFER, vbouv);
+
+    // Set up the vertex attribute pointers for the uv buffer object
+    GLint uv_attrib = glGetAttribLocation(this->shaderProgram, "uv");
+    glEnableVertexAttribArray(uv_attrib);
+    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+}
+
+void GLWrapper::orientCamera() {
+
+    // Calculate the new direction vector based on the yaw and pitch angles
+
+    direction.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
+    direction.y = sin(glm::radians(cameraPitch));
+    direction.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
+
+    // Normalize the direction vector
+    direction = glm::normalize(direction);
+    this->cameraDirection = direction;
+    // Set up the view matrix 
+    view = glm::lookAt(cameraPos, cameraPos + direction, cameraUp);
+
+    mvp = projection * view * model;
+
+
+    // Set the mvp matrix uniform in the shader
+    GLuint mvpLoc = glGetUniformLocation(shaderProgram, "mvp");
+    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+}
+
+void GLWrapper::runGLLoop() {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    this->orientCamera();
+
+    // Draw the triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glfwSwapBuffers(this->window);
+
+    glfwPollEvents();
+}
