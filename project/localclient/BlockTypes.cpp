@@ -101,13 +101,15 @@ TextureFace::TextureFace(
 
 }
 
-enum MyFlags {
+enum MyFlags { 
 	COLORIZABLE = true,
+	UNIFORM = true,
+	NOT_UNIFORM = false
 };
 
 const BlockType blockTypes[] = {
 	BlockType(
-		true,
+		UNIFORM,
 		TextureFace(
 			0, 0
 		),
@@ -116,7 +118,7 @@ const BlockType blockTypes[] = {
 		0.35f
 	),
 	BlockType(
-		false,
+		NOT_UNIFORM,
 		TextureFace(
 			2, 0
 		),

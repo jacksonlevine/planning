@@ -38,6 +38,7 @@ public:
 	glm::mat4 mvp;
 	glm::vec3 direction;
 	GLuint shaderProgram;
+	GLuint vao;
 	GLFWwindow* window;
 	float deltaTime;
 	InputState activeState;

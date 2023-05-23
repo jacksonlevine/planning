@@ -21,6 +21,7 @@ GLWrapper::GLWrapper()
     this->firstMouse = true;
     this->deltaTime = 0;
     this->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    this->vao = 0;
     instance = this;
 }
 
@@ -228,9 +229,9 @@ int GLWrapper::initializeGL() {
 
 void GLWrapper::setupVAO() {
     // Generate a vertex array object (VAO)
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+
+    glGenVertexArrays(1, &this->vao);
+    glBindVertexArray(this->vao);
 
     // Use our shader program
     glUseProgram(this->shaderProgram);

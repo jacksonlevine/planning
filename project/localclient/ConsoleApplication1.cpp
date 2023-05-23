@@ -11,6 +11,91 @@
 #include "stb_image.h"
 #include "BlockTypes.hpp"
 
+
+void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
+    float bot_r, float bot_g, float bot_b, float bot_a)
+{
+    glDisable(GL_DEPTH_TEST);
+
+    static GLuint background_vao = 0;
+    static GLuint background_shader = 0;
+
+    if (background_vao == 0)
+    {
+        glGenVertexArrays(1, &background_vao);
+
+        const GLchar* vs_src =
+            "#version 450 core\n"
+            "out vec2 v_uv;\n"
+            "void main()\n"
+            " {\n"
+            " uint idx = gl_VertexID;\n"
+            " gl_Position = vec4(idx & 1, idx >> 1, 0.0, 0.5) * 4.0 - 1.0;\n"
+            "v_uv = vec2(gl_Position.xy * 0.5 + 0.5);\n"
+            "}";
+
+
+        const GLchar* fs_src =
+            " #version 450 core\n"
+            "uniform vec4 top_color;\n"
+            "uniform vec4 bot_color;\n"
+            "in vec2 v_uv;\n"
+            "out vec4 frag_color;\n"
+
+            "void main()\n"
+            "{\n"
+            "frag_color = bot_color * (1 - v_uv.y) + top_color * v_uv.y;\n"
+            "}";
+        
+        GLuint vs_id, fs_id;
+        vs_id = glCreateShader(GL_VERTEX_SHADER);
+        fs_id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(vs_id, 1, &vs_src, NULL);
+        glShaderSource(fs_id, 1, &fs_src, NULL);
+        glCompileShader(vs_id);
+
+        GLint success;
+        GLchar infoLog[512];
+        glGetShaderiv(vs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(vs_id, 512, NULL, infoLog);
+            std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
+        }
+
+        glCompileShader(fs_id);
+
+
+        glGetShaderiv(fs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(fs_id, 512, NULL, infoLog);
+            std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
+        }
+
+        background_shader = glCreateProgram();
+        glAttachShader(background_shader, vs_id);
+        glAttachShader(background_shader, fs_id);
+        glLinkProgram(background_shader);
+        glDetachShader(background_shader, fs_id);
+        glDetachShader(background_shader, vs_id);
+        glDeleteShader(fs_id);
+        glDeleteShader(vs_id);
+    }
+
+    glUseProgram(background_shader);
+    GLuint top_color_loc = glGetUniformLocation(background_shader, "top_color");
+    GLuint bot_color_loc = glGetUniformLocation(background_shader, "bot_color");
+    glUniform4f(top_color_loc, top_r, top_g, top_b, top_a);
+    glUniform4f(bot_color_loc, bot_r, bot_g, bot_b, bot_a);
+
+    glBindVertexArray(background_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
+}
+
 int main()
 {
     GLWrapper wrap;
@@ -62,191 +147,7 @@ int main()
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-    TextureFace skyFace = TextureFace(0,0);
-    GLfloat skyVerts[108] = {
-        // Front face
-        -0.5f, -0.5f,  0.5f, // Bottom-left
-         0.5f, -0.5f,  0.5f, // Bottom-right
-         0.5f,  0.5f,  0.5f, // Top-right
-
-          0.5f,  0.5f,  0.5f, // Top-right
-        -0.5f,  0.5f,  0.5f, // Top-left
-        -0.5f, -0.5f,  0.5f, // Bottom-left
-
-        // Back face
-         0.5f, -0.5f, -0.5f, // Bottom-left
-        -0.5f, -0.5f, -0.5f, // Bottom-right
-        -0.5f,  0.5f, -0.5f, // Top-right
-
-        -0.5f,  0.5f, -0.5f, // Top-right
-         0.5f,  0.5f, -0.5f, // Top-left
-         0.5f, -0.5f, -0.5f, // Bottom-left
-
-         // Left face
-         -0.5f, -0.5f, -0.5f, // Bottom-back
-         -0.5f, -0.5f,  0.5f, // Bottom-front
-         -0.5f,  0.5f,  0.5f, // Top-front
-
-         -0.5f,  0.5f,  0.5f, // Top-front
-         -0.5f,  0.5f, -0.5f, // Top-back
-         -0.5f, -0.5f, -0.5f, // Bottom-back
-
-         // Right face
-          0.5f, -0.5f,  0.5f, // Bottom-back
-          0.5f, -0.5f, -0.5f, // Bottom-front
-          0.5f,  0.5f, -0.5f, // Top-front
-
-          0.5f,  0.5f, -0.5f, // Top-front
-          0.5f,  0.5f,  0.5f, // Top-back
-          0.5f, -0.5f,  0.5f, // Bottom-back
-
-          // Top face
-          -0.5f,  0.5f,  0.5f, // Front-left
-           0.5f,  0.5f,  0.5f, // Front-right
-           0.5f,  0.5f, -0.5f, // Back-right
-
-            0.5f,  0.5f, -0.5f, // Back-right
-          -0.5f,  0.5f, -0.5f, // Back-left
-          -0.5f,  0.5f,  0.5f, // Front-left
-
-          // Bottom face
-          -0.5f, -0.5f, -0.5f, // Front-left
-           0.5f, -0.5f, -0.5f, // Front-right
-           0.5f, -0.5f,  0.5f, // Back-right
-            0.5f, -0.5f,  0.5f, // Back-right
-          -0.5f, -0.5f,  0.5f  // Back-left
-          - 0.5f, -0.5f, -0.5f, // Front-left
-    };
-    GLfloat skyUVs[72] = {
-        // Front face
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-         skyFace.br.x, skyFace.br.y, // Bottom-right
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-        skyFace.tl.x, skyFace.tl.y, // Top-left
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-        // Back face
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-         skyFace.br.x, skyFace.br.y, // Bottom-right
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-        skyFace.tl.x, skyFace.tl.y, // Top-left
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-        // Left face
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-         skyFace.br.x, skyFace.br.y, // Bottom-right
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-        skyFace.tl.x, skyFace.tl.y, // Top-left
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-
-        // Right face
-         skyFace.bl.x, skyFace.bl.y, // Bottom-left
-         skyFace.br.x, skyFace.br.y, // Bottom-right
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-        skyFace.tl.x, skyFace.tl.y, // Top-left
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-
-         // Top face
-         skyFace.bl.x, skyFace.bl.y, // Bottom-left
-         skyFace.br.x, skyFace.br.y, // Bottom-right
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-        skyFace.tl.x, skyFace.tl.y, // Top-left
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-
-         // Bottom face
-         skyFace.bl.x, skyFace.bl.y, // Bottom-left
-         skyFace.br.x, skyFace.br.y, // Bottom-right
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-
-         skyFace.tr.x, skyFace.tr.y, // Top-right
-        skyFace.tl.x, skyFace.tl.y, // Top-left
-        skyFace.bl.x, skyFace.bl.y, // Bottom-left
-    };
-    GLfloat skyCols[108] = {
-        // Front face
-          0.0f, 0.0f, 0.5f, // Bottom-left
-          0.0f, 0.0f, 0.5f, // Bottom-right
-          0.5f, 0.5f, 1.0f, // Top-right
-
-          0.5f, 0.5f, 1.0f, // Top-right
-          0.5f, 0.5f, 1.0f, // Top-left
-          0.0f, 0.0f, 0.5f, // Bottom-left
-
-          // Back face
-           0.0f, 0.0f, 0.5f, // Bottom-left
-           0.0f, 0.0f, 0.5f, // Bottom-right
-          0.5f, 0.5f, 1.0f, // Top-right
-
-           0.5f, 0.5f, 1.0f, // Top-right
-          0.5f, 0.5f, 1.0f, // Top-left
-          0.0f, 0.0f, 0.5f, // Bottom-left
-
-          // Left face
-           0.0f, 0.0f, 0.5f, // Bottom-back
-           0.0f, 0.0f, 0.5f, // Bottom-front
-          0.5f, 0.5f, 1.0f, // Top-front
-
-          0.5f, 0.5f, 1.0f, // Top-front
-          0.5f, 0.5f, 1.0f, // Top-back
-          0.0f, 0.0f, 0.5f, // Bottom-back
-
-          // Right face
-           0.0f, 0.0f, 0.5f, // Bottom-back
-           0.0f, 0.0f, 0.5f, // Bottom-front
-          0.5f, 0.5f, 1.0f, // Top-front
-
-          0.5f, 0.5f, 1.0f, // Top-front
-          0.5f, 0.5f, 1.0f, // Top-back
-          0.0f, 0.0f, 0.5f, // Bottom-back
-
-          // Top face
-          0.5f, 0.5f, 1.0f, // Front-left
-          0.5f, 0.5f, 1.0f, // Front-right
-          0.5f, 0.5f, 1.0f, // Back-right
-
-          0.5f, 0.5f, 1.0f, // Back-right
-          0.5f, 0.5f, 1.0f, // Back-left
-          0.5f, 0.5f, 1.0f, // Front-left
-
-          // Bottom face
-          0.0f, 0.0f, 0.5f, // Front-left
-          0.0f, 0.0f, 0.5f, // Front-right
-          0.0f, 0.0f, 0.5f, // Back-right
-
-          0.0f, 0.0f, 0.5f, // Back-right
-          0.0f, 0.0f, 0.5f,  // Back-left
-          0.0f, 0.0f, 0.5f, // Front-left
-    };
-    GLuint skyVBOV;
-    GLuint skyVBOC;
-    GLuint skyVBOUV;
-
-    glGenBuffers(1, &skyVBOV);
-    glGenBuffers(1, &skyVBOC);
-    glGenBuffers(1, &skyVBOUV);
-
-    for (int i = 0; i < 108; i++)
-    {
-        skyVerts[i] *= 500;
-    }
-    wrap.bindGeometry(
-        skyVBOV,
-        skyVBOC,
-        skyVBOUV,
-        &skyVerts[0],
-        &skyCols[0],
-        &skyUVs[0],
-        sizeof(GLfloat)* 108,
-        sizeof(GLfloat)* 108,
-        sizeof(GLfloat)* 72);
+   
 
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -256,13 +157,14 @@ int main()
         wrap.orientCamera();
 
         //SKY BIT
-        wrap.bindGeometryNoUpload(
-            skyVBOV,
-            skyVBOC,
-            skyVBOUV);
-        glDrawArrays(GL_TRIANGLES, 0, 72);
+ 
+        mygl_GradientBackground(0.5f, 0.5f, 1.0f, 1.0f,
+            0.0f, 0.0f, 0.5f, 1.0f);
         //END SKY BIT
+        glBindVertexArray(wrap.vao);
 
+
+        glUseProgram(wrap.shaderProgram);
         for (auto& pair : game.activeChunks) {
             Chunk& c = pair.second;
             if (c.vertices.size() && c.colors.size() && c.uv.size()) {
@@ -291,7 +193,7 @@ int main()
                 glDrawArrays(GL_TRIANGLES, 0, c.colors.size());
             }
         }
-        
+        glBindVertexArray(0);
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         wrap.deltaTime = deltaTime;
