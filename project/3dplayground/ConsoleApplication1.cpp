@@ -288,80 +288,90 @@ int main()
 
     //MODEL CREATION
     //glBindVertexArray(wrap.vao);
+
+    class TreeModel {
+
+    public:
     GLuint vboV;
     GLuint vboC;
     GLuint vboUV;
-
-    glGenBuffers(1, &vboV);
-    glGenBuffers(1, &vboC);
-    glGenBuffers(1, &vboUV);
+    float x;
+    float y;
+    float z;
 
     std::vector<GLfloat> verts;
     std::vector<GLfloat> cols;
     std::vector<GLfloat> uvs;
 
- 
-
-    TrianglePen pen(
-        glm::vec3(0.0, 0.0, 0.0),
-        glm::vec3(-0.5, 0.0, 0.7),
-        glm::vec3(0.5, 0.0, 0.8)
-    );
-
-    TrianglePen penBack(
-        glm::vec3(0.0, 0.0, 0.0),
-        glm::vec3(-0.5, 0.0, 0.7),
-        glm::vec3(0.5, 0.0, 0.8)
-    );
-
-    srand((unsigned)time(NULL));
-
-    int posOrNeg2 = rando() > 0.5 ? -1 : 1;
-
-    glm::vec3 currentDirection(0, 0.5f, 0);
-    threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection);
-
-
-    glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
-    int leftBranches = rando() * 8.0;
-    int rightBranches = rando() * 8.0;
-
-    for (int z = 0; z < leftBranches; z++)
-    {
-        int branchLength = rando() * 20;
-        glm::vec3 currentDirection2(-rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, -(rando() / 2));
-
-        TrianglePen pen2(
-            pen.front,
-            pen.bl,
-            tbCenter
-        );
-
-        TrianglePen pen2Back(
-            pen.front,
-            pen.bl,
-            tbCenter
-        );
-  
-        threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2);
-    }
-    for(int z = 0; z < rightBranches; z++)
-    {
-        int branchLength = rando() * 20;
-        glm::vec3 currentDirection3(rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, (rando() / 2));
-        TrianglePen pen3(
-            pen.front,
-            tbCenter,
-            pen.br
-        );
-        TrianglePen pen3Back(
-            pen.front,
-            tbCenter,
-            pen.br
-        );
-        threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
+    TreeModel() {
+        glGenBuffers(1, &vboV);
+        glGenBuffers(1, &vboC);
+        glGenBuffers(1, &vboUV);
     }
 
+    void generateMesh() {
+
+        TrianglePen pen(
+            glm::vec3(0.0+x, 0.0+y, 0.0+z),
+            glm::vec3(-0.5 + x, 0.0 + y, 0.7 + z),
+            glm::vec3(0.5 + x, 0.0 + y, 0.8 + z)
+        );
+
+        TrianglePen penBack(
+            glm::vec3(0.0 + x, 0.0 + y, 0.0 + z),
+            glm::vec3(-0.5 + x, 0.0 + y, 0.7 + z),
+            glm::vec3(0.5 + x, 0.0 + y, 0.8 + z)
+        );
+
+        srand((unsigned)time(NULL));
+
+        int posOrNeg2 = rando() > 0.5 ? -1 : 1;
+
+        glm::vec3 currentDirection(0, 0.5f, 0);
+        threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection);
+
+
+        glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
+        int leftBranches = rando() * 8.0;
+        int rightBranches = rando() * 8.0;
+
+        for (int z = 0; z < leftBranches; z++)
+        {
+            int branchLength = rando() * 20;
+            glm::vec3 currentDirection2(-rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, -(rando() / 2));
+
+            TrianglePen pen2(
+                pen.front,
+                pen.bl,
+                tbCenter
+            );
+
+            TrianglePen pen2Back(
+                pen.front,
+                pen.bl,
+                tbCenter
+            );
+
+            threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2);
+        }
+        for (int z = 0; z < rightBranches; z++)
+        {
+            int branchLength = rando() * 20;
+            glm::vec3 currentDirection3(rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, (rando() / 2));
+            TrianglePen pen3(
+                pen.front,
+                tbCenter,
+                pen.br
+            );
+            TrianglePen pen3Back(
+                pen.front,
+                tbCenter,
+                pen.br
+            );
+            threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
+        }
+    }
+    };
 
     //END MODEL CREATION
    
