@@ -298,6 +298,7 @@ int main()
     float x;
     float y;
     float z;
+    bool dirty;
 
     std::vector<GLfloat> verts;
     std::vector<GLfloat> cols;
@@ -370,12 +371,17 @@ int main()
             );
             threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
         }
+        dirty = true;
     }
     };
 
     //END MODEL CREATION
    
-    
+    //INSTANTIATING MODELS
+
+
+
+    //END INSTANTIATING MODELS
 
     while (!glfwWindowShouldClose(wrap.window))
     {
