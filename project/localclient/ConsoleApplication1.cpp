@@ -13,7 +13,7 @@
 
 
 void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
-    float bot_r, float bot_g, float bot_b, float bot_a)
+    float bot_r, float bot_g, float bot_b, float bot_a, float cameraPitch)
 {
     glDisable(GL_DEPTH_TEST);
 
@@ -27,11 +27,13 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
         const GLchar* vs_src =
             "#version 450 core\n"
             "out vec2 v_uv;\n"
+            "uniform float cpitch;\n"
             "void main()\n"
             " {\n"
             " uint idx = gl_VertexID;\n"
-            " gl_Position = vec4(idx & 1, idx >> 1, 0.0, 0.5) * 4.0 - 1.0;\n"
-            "v_uv = vec2(gl_Position.xy * 0.5 + 0.5);\n"
+
+            " gl_Position = vec4(idx & 1, (idx >> 1), 0.0, 0.5) * 4.0 - 1.0;\n"
+            "v_uv = vec2(gl_Position.xy * 0.5 + 0.5+(cpitch/100));\n"
             "}";
 
 
@@ -46,7 +48,7 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
             "{\n"
             "frag_color = bot_color * (1 - v_uv.y) + top_color * v_uv.y;\n"
             "}";
-        
+
         GLuint vs_id, fs_id;
         vs_id = glCreateShader(GL_VERTEX_SHADER);
         fs_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -88,6 +90,9 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
     GLuint bot_color_loc = glGetUniformLocation(background_shader, "bot_color");
     glUniform4f(top_color_loc, top_r, top_g, top_b, top_a);
     glUniform4f(bot_color_loc, bot_r, bot_g, bot_b, bot_a);
+    GLuint cpitch_loc = glGetUniformLocation(background_shader, "cpitch");
+
+    glUniform1f(cpitch_loc, cameraPitch);
 
     glBindVertexArray(background_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -159,7 +164,7 @@ int main()
         //SKY BIT
  
         mygl_GradientBackground(0.5f, 0.5f, 1.0f, 1.0f,
-            0.0f, 0.0f, 0.5f, 1.0f);
+            0.0f, 0.0f, 0.5f, 1.0f, wrap.cameraPitch);
         //END SKY BIT
         glBindVertexArray(wrap.vao);
 
