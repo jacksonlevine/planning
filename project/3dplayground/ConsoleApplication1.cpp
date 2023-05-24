@@ -100,6 +100,8 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
 float rando() {
     return (float)(rand() / (float)RAND_MAX);
 }
+
+
 glm::vec3 rotateAroundPoint(const glm::vec3& point, const glm::vec3& center, float angle)
 {
     glm::vec3 translated = point - center;
@@ -111,6 +113,127 @@ glm::vec3 rotateAroundPoint(const glm::vec3& point, const glm::vec3& center, flo
 
     return finalPoint;
 }
+class TrianglePen {
+public:
+    glm::vec3 front;
+    glm::vec3 bl;
+    glm::vec3 br;
+    TrianglePen(
+        glm::vec3 front,
+        glm::vec3 bl,
+        glm::vec3 br
+    ) :
+        front(front),
+        bl(bl),
+        br(br)
+    {
+
+    }
+    void move(glm::vec3 d)
+    {
+        front += d;
+        bl += d;
+        br += d;
+
+    }
+    void moveToPen(TrianglePen& pen)
+    {
+        front = pen.front;
+        bl = pen.bl;
+        br = pen.br;
+    }
+    void rotate(float ang)
+    {
+        glm::vec3 center = (front + bl + br) / 3.0f;
+        float angle = glm::radians(ang);
+
+        front = rotateAroundPoint(front, center, angle);
+        bl = rotateAroundPoint(bl, center, angle);
+        br = rotateAroundPoint(br, center, angle);
+    }
+};
+
+
+void threadThesePens(
+    TrianglePen &pen,
+    TrianglePen &penBack, 
+    std::vector<GLfloat>& verts, 
+    std::vector<GLfloat>& cols,
+    std::vector<GLfloat>& uvs,
+    int length,
+    glm::vec3 currentDirection
+) 
+{
+
+   
+
+
+    TextureFace trunkFace(3, 0);
+    for (int b = 0; b < length; b++)
+    {
+
+        int posOrNeg = rando() > 0.5 ? -1 : 1;
+
+        currentDirection += glm::vec3((rando() * -posOrNeg) / 10, 0, (rando() * posOrNeg) / 10);
+
+        pen.move(currentDirection);
+        pen.rotate(-10.0f);
+
+
+        verts.insert(verts.end(), {
+            //left side
+            penBack.bl.x, penBack.bl.y, penBack.bl.z,
+            penBack.front.x, penBack.front.y, penBack.front.z,
+            pen.front.x, pen.front.y, pen.front.z,
+
+            pen.front.x, pen.front.y, pen.front.z,
+            pen.bl.x, pen.bl.y, pen.bl.z,
+            penBack.bl.x, penBack.bl.y, penBack.bl.z,
+
+            //right side
+            penBack.front.x, penBack.front.y, penBack.front.z,
+            penBack.br.x, penBack.br.y, penBack.br.z,
+            pen.br.x, pen.br.y, pen.br.z,
+
+            pen.br.x, pen.br.y, pen.br.z,
+            pen.front.x, pen.front.y, pen.front.z,
+            penBack.front.x, penBack.front.y, penBack.front.z,
+
+            //back side
+            penBack.br.x, penBack.br.y, penBack.br.z,
+            penBack.bl.x, penBack.bl.y, penBack.bl.z,
+            pen.bl.x, pen.bl.y, pen.bl.z,
+
+            pen.bl.x, pen.bl.y, pen.bl.z,
+            pen.br.x, pen.br.y, pen.br.z,
+            penBack.br.x, penBack.br.y, penBack.br.z,
+
+            });
+        penBack.moveToPen(pen);
+
+        for (int i = 0; i < 18; i++)
+        {
+            cols.insert(cols.end(), { 1.0, 1.0, 1.0 });
+
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            uvs.insert(uvs.end(), {
+                trunkFace.bl.x, trunkFace.bl.y,
+                trunkFace.br.x, trunkFace.br.y,
+                trunkFace.tr.x, trunkFace.tr.y,
+
+                trunkFace.tr.x, trunkFace.tr.y,
+                trunkFace.tl.x, trunkFace.tl.y,
+                trunkFace.bl.x, trunkFace.bl.y,
+
+                });
+
+        }
+    }
+}
+
+
 int main()
 {
 
@@ -177,47 +300,7 @@ int main()
     std::vector<GLfloat> cols;
     std::vector<GLfloat> uvs;
 
-    class TrianglePen {
-    public:
-        glm::vec3 front;
-        glm::vec3 bl;
-        glm::vec3 br;
-        TrianglePen(
-            glm::vec3 front,
-            glm::vec3 bl,
-            glm::vec3 br
-        ) :
-            front(front),
-            bl(bl),
-            br(br)
-        {
-
-        }
-        void move(glm::vec3 d)
-        {
-            front += d;
-            bl += d;
-            br += d;
-            
-        }
-        void moveToPen(TrianglePen &pen)
-        {
-            front = pen.front;
-            bl = pen.bl;
-            br = pen.br;
-        }
-        void rotate(float ang)
-        {
-            glm::vec3 center = (front + bl + br) / 3.0f;
-            float angle = glm::radians(ang);
-
-            front = rotateAroundPoint(front, center, angle);
-            bl = rotateAroundPoint(bl, center, angle);
-            br = rotateAroundPoint(br, center, angle);
-        }
-    };
-
-    TextureFace trunkFace(3, 0);
+ 
 
     TrianglePen pen(
         glm::vec3(0.0, 0.0, 0.0),
@@ -236,69 +319,49 @@ int main()
     int posOrNeg2 = rando() > 0.5 ? -1 : 1;
 
     glm::vec3 currentDirection(0, 0.5f, 0);
+    threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection);
 
-    for(int b = 0; b < 9; b++)
+
+    glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
+    int leftBranches = rando() * 8.0;
+    int rightBranches = rando() * 8.0;
+
+    for (int z = 0; z < leftBranches; z++)
     {
+        int branchLength = rando() * 20;
+        glm::vec3 currentDirection2(-rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, -(rando() / 2));
 
-        int posOrNeg = rando() > 0.5 ? -1 : 1;
-        
-        currentDirection += glm::vec3((rando() * -posOrNeg)/10, 0, (rando() * posOrNeg)/10);
+        TrianglePen pen2(
+            pen.front,
+            pen.bl,
+            tbCenter
+        );
 
-        pen.move(currentDirection);
-        pen.rotate(-10.0f);
-
-
-        verts.insert(verts.end(), {
-            //left side
-            penBack.bl.x, penBack.bl.y, penBack.bl.z,
-            penBack.front.x, penBack.front.y, penBack.front.z,
-            pen.front.x, pen.front.y, pen.front.z,
-
-            pen.front.x, pen.front.y, pen.front.z,
-            pen.bl.x, pen.bl.y, pen.bl.z,
-            penBack.bl.x, penBack.bl.y, penBack.bl.z,
-
-            //right side
-            penBack.front.x, penBack.front.y, penBack.front.z,
-            penBack.br.x, penBack.br.y, penBack.br.z,
-            pen.br.x, pen.br.y, pen.br.z,
-
-            pen.br.x, pen.br.y, pen.br.z,
-            pen.front.x, pen.front.y, pen.front.z,
-            penBack.front.x, penBack.front.y, penBack.front.z,
-
-            //back side
-            penBack.br.x, penBack.br.y, penBack.br.z,
-            penBack.bl.x, penBack.bl.y, penBack.bl.z,
-            pen.bl.x, pen.bl.y, pen.bl.z,
-
-            pen.bl.x, pen.bl.y, pen.bl.z,
-            pen.br.x, pen.br.y, pen.br.z,
-            penBack.br.x, penBack.br.y, penBack.br.z,
-
-            });
-        penBack.moveToPen(pen);
-
-        for (int i = 0; i < 18; i++)
-        {
-            cols.insert(cols.end(), { 1.0, 1.0, 1.0 });
-            
-        }
-        for (int i = 0; i < 3; i++)
-        {
-            uvs.insert(uvs.end(), { 
-                trunkFace.bl.x, trunkFace.bl.y,
-                trunkFace.br.x, trunkFace.br.y,
-                trunkFace.tr.x, trunkFace.tr.y,
-
-                trunkFace.tr.x, trunkFace.tr.y,
-                trunkFace.tl.x, trunkFace.tl.y,
-                trunkFace.bl.x, trunkFace.bl.y,
-
-                });
-
-        }
+        TrianglePen pen2Back(
+            pen.front,
+            pen.bl,
+            tbCenter
+        );
+  
+        threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2);
     }
+    for(int z = 0; z < rightBranches; z++)
+    {
+        int branchLength = rando() * 20;
+        glm::vec3 currentDirection3(rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, (rando() / 2));
+        TrianglePen pen3(
+            pen.front,
+            tbCenter,
+            pen.br
+        );
+        TrianglePen pen3Back(
+            pen.front,
+            tbCenter,
+            pen.br
+        );
+        threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
+    }
+
 
     //END MODEL CREATION
    
