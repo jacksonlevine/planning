@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+enum TreeFlags {
+    NO_LEAVES = false,
+    LEAVES = true
+};
 
 void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
     float bot_r, float bot_g, float bot_b, float bot_a, float cameraPitch)
@@ -118,6 +122,42 @@ glm::vec3 rotateAroundPoint(const glm::vec3& point, const glm::vec3& center, flo
 
     return finalPoint;
 }
+void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)
+{
+    TextureFace stickFace(4, 0);
+    int posOrNeg = rando() < 0.5 ? -1 : 1;
+
+    glm::vec3 direc(rando()*posOrNeg, rando(), rando() * posOrNeg);
+
+    glm::vec3 lastVert(vs[vs.size() - 3], vs[vs.size() - 2],vs[vs.size() - 1]);
+    glm::vec3 nextLastVert(vs[vs.size() - 6], vs[vs.size() - 5], vs[vs.size() - 4]);
+
+    vs.insert(vs.end(), {
+        lastVert.x, lastVert.y, lastVert.z,
+        nextLastVert.x, nextLastVert.y, nextLastVert.z,
+        nextLastVert.x + direc.x, nextLastVert.y+direc.y, nextLastVert.z+direc.z,
+
+        nextLastVert.x + direc.x, nextLastVert.y + direc.y, nextLastVert.z + direc.z,
+        lastVert.x + direc.x, lastVert.y + direc.y, lastVert.z + direc.z,
+        lastVert.x, lastVert.y, lastVert.z,
+        });
+
+    for (int i = 0; i < 6; i++) {
+        cs.insert(cs.end(), {
+            1.0, 1.0, 1.0
+            });
+    }
+    uv.insert(uv.end(), {
+           stickFace.bl.x, stickFace.bl.y,
+           stickFace.br.x, stickFace.br.y,
+           stickFace.tr.x, stickFace.tr.y,
+
+           stickFace.tr.x, stickFace.tr.y,
+           stickFace.tl.x, stickFace.tl.y,
+           stickFace.bl.x, stickFace.bl.y
+        });
+}
+
 class TrianglePen {
 public:
     glm::vec3 front;
@@ -166,14 +206,21 @@ void threadThesePens(
     std::vector<GLfloat>& cols,
     std::vector<GLfloat>& uvs,
     int length,
-    glm::vec3 currentDirection
+    glm::vec3 currentDirection,
+    bool leaves
 ) 
 {
 
     TextureFace trunkFace(3, 0);
     for (int b = 0; b < length; b++)
     {
-
+        if (verts.size() > 6 && leaves == true)
+        {
+            if (rando() > 0.5)
+            {
+                throwAStickOnHere(verts, cols, uvs);
+            }
+        }
         int posOrNeg = rando() > 0.5 ? -1 : 1;
 
         currentDirection += glm::vec3((rando() * -posOrNeg) / 10, 0, (rando() * posOrNeg) / 10);
@@ -261,6 +308,7 @@ public:
         glGenBuffers(1, &vboC);
         glGenBuffers(1, &vboUV);
     }
+    
 
     void generateMesh() {
 
@@ -281,7 +329,7 @@ public:
         int posOrNeg2 = rando() > 0.5 ? -1 : 1;
 
         glm::vec3 currentDirection(0, 0.5f, 0);
-        threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection);
+        threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection, NO_LEAVES);
 
 
         glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
@@ -305,7 +353,7 @@ public:
                 tbCenter
             );
 
-            threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2);
+            threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2, LEAVES);
         }
         for (int z = 0; z < rightBranches; z++)
         {
@@ -321,7 +369,7 @@ public:
                 tbCenter,
                 pen.br
             );
-            threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
+            threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3, LEAVES);
         }
         dirty = true;
     }
@@ -352,12 +400,14 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the minification filter to nearest neighbor
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Set the magnification filter to nearest neighbor
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // load and generate the texture
     int width, height, nrChannels;
     unsigned char* data = stbi_load("texture.png", &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -415,10 +465,12 @@ int main()
         glBindVertexArray(wrap.vao);
 
         glUseProgram(wrap.shaderProgram);
+  
         for (TreeModel &t : trees)
         {
             if (t.dirty == true)
             {
+
                 wrap.bindGeometry(
                     t.vboV,
                     t.vboC,
@@ -440,8 +492,6 @@ int main()
 
             glDrawArrays(GL_TRIANGLES, 0, t.verts.size());
         }
-
-
 
      
 
