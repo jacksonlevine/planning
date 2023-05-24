@@ -379,7 +379,16 @@ int main()
    
     //INSTANTIATING MODELS
 
-
+    std::vector<TreeModel> trees;
+    for (int i = 0; i < 50; i++)
+    {
+        TreeModel t;
+        t.x = rando() * 100.0;
+        t.y = 0;
+        t.z = rando() * 100.0;
+        t.generateMesh();
+        trees.push_back(t);
+    }
 
     //END INSTANTIATING MODELS
 
@@ -398,23 +407,34 @@ int main()
         glBindVertexArray(wrap.vao);
 
         glUseProgram(wrap.shaderProgram);
-        wrap.bindGeometry(
-            vboV,
-            vboC,
-            vboUV,
-            &(verts[0]),
-            &(cols[0]),
-            &(uvs[0]),
-            sizeof(GLfloat)* verts.size(),
-            sizeof(GLfloat)* cols.size(),
-            sizeof(GLfloat)* uvs.size());
+        for (TreeModel& t : trees)
+        {
+            if (t.dirty)
+            {
+                wrap.bindGeometry(
+                    t.vboV,
+                    t.vboC,
+                    t.vboUV,
+                    &(t.verts[0]),
+                    &(t.cols[0]),
+                    &(t.uvs[0]),
+                    sizeof(GLfloat)* t.verts.size(),
+                    sizeof(GLfloat)* t.cols.size(),
+                    sizeof(GLfloat)* t.uvs.size());
+            }
+            else {
+                wrap.bindGeometryNoUpload(
+                    t.vboV,
+                    t.vboC,
+                    t.vboUV);
+            }
 
-        // BIND ONCE ^^ 
+            glDrawArrays(GL_TRIANGLES, 0, t.verts.size());
+        }
 
 
 
-               
-        glDrawArrays(GL_TRIANGLES, 0, verts.size());
+
      
 
         glBindVertexArray(0);
