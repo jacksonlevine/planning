@@ -217,6 +217,8 @@ int main()
         }
     };
 
+    TextureFace trunkFace(3, 0);
+
     TrianglePen pen(
         glm::vec3(0.0, 0.0, 0.0),
         glm::vec3(-0.5, 0.0, 0.7),
@@ -231,14 +233,18 @@ int main()
 
     srand((unsigned)time(NULL));
 
+    int posOrNeg2 = rando() > 0.5 ? -1 : 1;
 
+    glm::vec3 currentDirection(0, 0.5f, 0);
 
-    for(int b = 0; b < 20; b++)
+    for(int b = 0; b < 9; b++)
     {
 
         int posOrNeg = rando() > 0.5 ? -1 : 1;
+        
+        currentDirection += glm::vec3((rando() * -posOrNeg)/10, 0, (rando() * posOrNeg)/10);
 
-        pen.move(glm::vec3(rando()*posOrNeg, 0.5f, rando()* -posOrNeg));
+        pen.move(currentDirection);
         pen.rotate(-10.0f);
 
 
@@ -275,19 +281,19 @@ int main()
 
         for (int i = 0; i < 18; i++)
         {
-            cols.insert(cols.end(), { rando(), rando(), rando() });
+            cols.insert(cols.end(), { 1.0, 1.0, 1.0 });
             
         }
         for (int i = 0; i < 3; i++)
         {
             uvs.insert(uvs.end(), { 
-                0.0, 0.0,
-                1.0, 0.0,
-                1.0, 1.0,
+                trunkFace.bl.x, trunkFace.bl.y,
+                trunkFace.br.x, trunkFace.br.y,
+                trunkFace.tr.x, trunkFace.tr.y,
 
-                1.0, 1.0,
-                0.0, 1.0,
-                0.0, 0.0
+                trunkFace.tr.x, trunkFace.tr.y,
+                trunkFace.tl.x, trunkFace.tl.y,
+                trunkFace.bl.x, trunkFace.bl.y,
 
                 });
 
