@@ -100,6 +100,17 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
 float rando() {
     return (float)(rand() / (float)RAND_MAX);
 }
+glm::vec3 rotateAroundPoint(const glm::vec3& point, const glm::vec3& center, float angle)
+{
+    glm::vec3 translated = point - center;
+
+    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::vec3 rotated = glm::vec3(rotationMatrix * glm::vec4(translated, 1.0f));
+
+    glm::vec3 finalPoint = rotated + center;
+
+    return finalPoint;
+}
 int main()
 {
 
@@ -187,12 +198,22 @@ int main()
             front += d;
             bl += d;
             br += d;
+            
         }
         void moveToPen(TrianglePen &pen)
         {
             front = pen.front;
             bl = pen.bl;
             br = pen.br;
+        }
+        void rotate(float ang)
+        {
+            glm::vec3 center = (front + bl + br) / 3.0f;
+            float angle = glm::radians(ang);
+
+            front = rotateAroundPoint(front, center, angle);
+            bl = rotateAroundPoint(bl, center, angle);
+            br = rotateAroundPoint(br, center, angle);
         }
     };
 
@@ -214,7 +235,12 @@ int main()
 
     for(int b = 0; b < 20; b++)
     {
-        pen.move(glm::vec3(0, 1, 0));
+
+        int posOrNeg = rando() > 0.5 ? -1 : 1;
+
+        pen.move(glm::vec3(rando()*posOrNeg, 0.5f, rando()* -posOrNeg));
+        pen.rotate(-10.0f);
+
 
         verts.insert(verts.end(), {
             //left side
