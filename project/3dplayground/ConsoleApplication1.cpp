@@ -165,9 +165,6 @@ void threadThesePens(
 ) 
 {
 
-   
-
-
     TextureFace trunkFace(3, 0);
     for (int b = 0; b < length; b++)
     {
@@ -209,13 +206,19 @@ void threadThesePens(
             penBack.br.x, penBack.br.y, penBack.br.z,
 
             });
-        penBack.moveToPen(pen);
+        
 
         for (int i = 0; i < 18; i++)
         {
+            glm::vec2 centerOfLast = (glm::vec2(penBack.front.x, penBack.front.z) + glm::vec2(penBack.bl.x, penBack.bl.z) + glm::vec2(penBack.br.x, penBack.br.z)) / 3.0f;
+
+            //float xzoffset = glm::distance(glm::vec2(verts[i], verts[i + 2]), centerOfLast);
+
+            //float minY = std::min(pen.front.y)
             cols.insert(cols.end(), { 1.0, 1.0, 1.0 });
 
         }
+        penBack.moveToPen(pen);
         for (int i = 0; i < 3; i++)
         {
             uvs.insert(uvs.end(), {
@@ -233,10 +236,95 @@ void threadThesePens(
     }
 }
 
+class TreeModel {
+
+public:
+    GLuint vboV;
+    GLuint vboC;
+    GLuint vboUV;
+    float x;
+    float y;
+    float z;
+    bool dirty;
+
+    std::vector<GLfloat> verts;
+    std::vector<GLfloat> cols;
+    std::vector<GLfloat> uvs;
+
+    TreeModel() : dirty(false), x(0), y(0), z(0) {
+        glGenBuffers(1, &vboV);
+        glGenBuffers(1, &vboC);
+        glGenBuffers(1, &vboUV);
+    }
+
+    void generateMesh() {
+
+        TrianglePen pen(
+            glm::vec3(0.0 + x, 0.0 + y, 0.0 + z),
+            glm::vec3(-0.5 + x, 0.0 + y, 0.7 + z),
+            glm::vec3(0.5 + x, 0.0 + y, 0.8 + z)
+        );
+
+        TrianglePen penBack(
+            glm::vec3(0.0 + x, 0.0 + y, 0.0 + z),
+            glm::vec3(-0.5 + x, 0.0 + y, 0.7 + z),
+            glm::vec3(0.5 + x, 0.0 + y, 0.8 + z)
+        );
+
+  
+
+        int posOrNeg2 = rando() > 0.5 ? -1 : 1;
+
+        glm::vec3 currentDirection(0, 0.5f, 0);
+        threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection);
+
+
+        glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
+        int leftBranches = rando() * 8.0;
+        int rightBranches = rando() * 8.0;
+
+        for (int z = 0; z < leftBranches; z++)
+        {
+            int branchLength = rando() * 20;
+            glm::vec3 currentDirection2(-rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, -(rando() / 2));
+
+            TrianglePen pen2(
+                pen.front,
+                pen.bl,
+                tbCenter
+            );
+
+            TrianglePen pen2Back(
+                pen.front,
+                pen.bl,
+                tbCenter
+            );
+
+            threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2);
+        }
+        for (int z = 0; z < rightBranches; z++)
+        {
+            int branchLength = rando() * 20;
+            glm::vec3 currentDirection3(rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, (rando() / 2));
+            TrianglePen pen3(
+                pen.front,
+                tbCenter,
+                pen.br
+            );
+            TrianglePen pen3Back(
+                pen.front,
+                tbCenter,
+                pen.br
+            );
+            threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
+        }
+        dirty = true;
+    }
+};
 
 int main()
 {
-
+    srand((unsigned)time(NULL));
     GLWrapper wrap;
     wrap.initializeGL();
     wrap.setupVAO();
@@ -289,91 +377,6 @@ int main()
     //MODEL CREATION
     //glBindVertexArray(wrap.vao);
 
-    class TreeModel {
-
-    public:
-    GLuint vboV;
-    GLuint vboC;
-    GLuint vboUV;
-    float x;
-    float y;
-    float z;
-    bool dirty;
-
-    std::vector<GLfloat> verts;
-    std::vector<GLfloat> cols;
-    std::vector<GLfloat> uvs;
-
-    TreeModel() {
-        glGenBuffers(1, &vboV);
-        glGenBuffers(1, &vboC);
-        glGenBuffers(1, &vboUV);
-    }
-
-    void generateMesh() {
-
-        TrianglePen pen(
-            glm::vec3(0.0+x, 0.0+y, 0.0+z),
-            glm::vec3(-0.5 + x, 0.0 + y, 0.7 + z),
-            glm::vec3(0.5 + x, 0.0 + y, 0.8 + z)
-        );
-
-        TrianglePen penBack(
-            glm::vec3(0.0 + x, 0.0 + y, 0.0 + z),
-            glm::vec3(-0.5 + x, 0.0 + y, 0.7 + z),
-            glm::vec3(0.5 + x, 0.0 + y, 0.8 + z)
-        );
-
-        srand((unsigned)time(NULL));
-
-        int posOrNeg2 = rando() > 0.5 ? -1 : 1;
-
-        glm::vec3 currentDirection(0, 0.5f, 0);
-        threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection);
-
-
-        glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
-        int leftBranches = rando() * 8.0;
-        int rightBranches = rando() * 8.0;
-
-        for (int z = 0; z < leftBranches; z++)
-        {
-            int branchLength = rando() * 20;
-            glm::vec3 currentDirection2(-rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, -(rando() / 2));
-
-            TrianglePen pen2(
-                pen.front,
-                pen.bl,
-                tbCenter
-            );
-
-            TrianglePen pen2Back(
-                pen.front,
-                pen.bl,
-                tbCenter
-            );
-
-            threadThesePens(pen2, pen2Back, verts, cols, uvs, branchLength, currentDirection2);
-        }
-        for (int z = 0; z < rightBranches; z++)
-        {
-            int branchLength = rando() * 20;
-            glm::vec3 currentDirection3(rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, (rando() / 2));
-            TrianglePen pen3(
-                pen.front,
-                tbCenter,
-                pen.br
-            );
-            TrianglePen pen3Back(
-                pen.front,
-                tbCenter,
-                pen.br
-            );
-            threadThesePens(pen3, pen3Back, verts, cols, uvs, branchLength, currentDirection3);
-        }
-        dirty = true;
-    }
-    };
 
     //END MODEL CREATION
    
@@ -383,9 +386,9 @@ int main()
     for (int i = 0; i < 50; i++)
     {
         TreeModel t;
-        t.x = rando() * 100.0;
+        t.x = (float)rando() * 50.0f;
         t.y = 0;
-        t.z = rando() * 100.0;
+        t.z = (float)rando() * 50.0f;
         t.generateMesh();
         trees.push_back(t);
     }
@@ -407,9 +410,9 @@ int main()
         glBindVertexArray(wrap.vao);
 
         glUseProgram(wrap.shaderProgram);
-        for (TreeModel& t : trees)
+        for (TreeModel &t : trees)
         {
-            if (t.dirty)
+            if (t.dirty == true)
             {
                 wrap.bindGeometry(
                     t.vboV,
@@ -421,6 +424,7 @@ int main()
                     sizeof(GLfloat)* t.verts.size(),
                     sizeof(GLfloat)* t.cols.size(),
                     sizeof(GLfloat)* t.uvs.size());
+                t.dirty = false;
             }
             else {
                 wrap.bindGeometryNoUpload(
@@ -431,7 +435,6 @@ int main()
 
             glDrawArrays(GL_TRIANGLES, 0, t.verts.size());
         }
-
 
 
 

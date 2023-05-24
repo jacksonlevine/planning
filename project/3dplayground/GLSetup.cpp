@@ -134,7 +134,7 @@ int GLWrapper::initializeGL() {
     model = glm::mat4(1.0f);
 
 
-    projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+    projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 5000.0f);
 
     // Enable pointer-locking first-person controls
     glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
