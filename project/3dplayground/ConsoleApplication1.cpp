@@ -124,6 +124,7 @@ glm::vec3 rotateAroundPoint(const glm::vec3& point, const glm::vec3& center, flo
 }
 
 void extrudeQuadFromPoints(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv, glm::vec3 lastVert, glm::vec3 nextLastVert, glm::vec3 direc, TextureFace stickFace) {
+    TextureFace appleFace(7, 0);
     vs.insert(vs.end(), {
         lastVert.x, lastVert.y, lastVert.z,
         nextLastVert.x, nextLastVert.y, nextLastVert.z,
@@ -148,25 +149,115 @@ void extrudeQuadFromPoints(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, s
            stickFace.tl.x, stickFace.tl.y,
            stickFace.bl.x, stickFace.bl.y
         });
+
+    glm::vec3 end = nextLastVert + glm::vec3(0.0f, -0.8, 0.0f) - (direc*0.5f);
+
+    vs.insert(vs.end(), {
+        end.x + direc.x - 0.5f, end.y + direc.y, end.z + direc.z,
+        end.x + direc.x + 0.5f, end.y + direc.y, end.z + direc.z,
+        end.x + direc.x + 0.5f, end.y + direc.y + 1.0f, end.z + direc.z,
+
+        end.x + direc.x + 0.5f, end.y + direc.y + 1.0f, end.z + direc.z,
+        end.x + direc.x - 0.5f, end.y + direc.y + 1.0f, end.z + direc.z,
+        end.x + direc.x - 0.5f, end.y + direc.y, end.z + direc.z,
+
+        end.x + direc.x, end.y + direc.y, end.z + direc.z - 0.5f,
+        end.x + direc.x, end.y + direc.y, end.z + direc.z + 0.5f,
+        end.x + direc.x , end.y + direc.y + 1.0f, end.z + direc.z + 0.5f,
+
+        end.x + direc.x, end.y + direc.y + 1.0f, end.z + direc.z + 0.5f,
+        end.x + direc.x, end.y + direc.y + 1.0f, end.z + direc.z - 0.5f,
+        end.x + direc.x, end.y + direc.y, end.z + direc.z - 0.5f,
+        });
+    for (int i = 0; i < 12; i++) {
+        cs.insert(cs.end(), {
+            1.0, 1.0, 1.0
+            });
+    }
+    uv.insert(uv.end(), {
+           appleFace.bl.x, appleFace.bl.y,
+           appleFace.br.x, appleFace.br.y,
+           appleFace.tr.x, appleFace.tr.y,
+
+           appleFace.tr.x, appleFace.tr.y,
+           appleFace.tl.x, appleFace.tl.y,
+           appleFace.bl.x, appleFace.bl.y
+        });
+    uv.insert(uv.end(), {
+           appleFace.bl.x, appleFace.bl.y,
+           appleFace.br.x, appleFace.br.y,
+           appleFace.tr.x, appleFace.tr.y,
+
+           appleFace.tr.x, appleFace.tr.y,
+           appleFace.tl.x, appleFace.tl.y,
+           appleFace.bl.x, appleFace.bl.y
+        });
+
 }
 
 
 void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)
 {
     TextureFace stickFace(4, 0);
+
+
     int posOrNeg = rando() < 0.5 ? -1 : 1;
 
     glm::vec3 direc(rando()*posOrNeg, rando(), rando() * posOrNeg);
-    direc *= 2;
+    direc *= 1.5f;
     glm::vec3 lastVert(vs[vs.size() - 3], vs[vs.size() - 2],vs[vs.size() - 1]);
     glm::vec3 nextLastVert(vs[vs.size() - 36], vs[vs.size() - 35], vs[vs.size() - 34]);
 
 
-    glm::vec3 lastVert2(vs[vs.size() - 27], vs[vs.size() -26], vs[vs.size() - 25]);
-    glm::vec3 nextLastVert2(vs[vs.size() - 18], vs[vs.size() - 17], vs[vs.size() - 16]);
-
-    extrudeQuadFromPoints(vs, cs, uv, lastVert2, nextLastVert2, direc, stickFace);
     extrudeQuadFromPoints(vs, cs, uv, lastVert, nextLastVert, direc, stickFace);
+}
+
+void topItOffYogurt(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)
+{
+    if (vs.size() >= 6) {
+        glm::vec3 top(vs[vs.size() - 6], vs[vs.size() - 5], vs[vs.size() - 4]);
+
+        vs.insert(vs.end(), {
+            top.x - 2, top.y, top.z,
+            top.x + 2, top.y, top.z,
+            top.x + 2, top.y + 4, top.z,
+
+            top.x + 2, top.y + 4, top.z,
+            top.x - 2, top.y + 4, top.z,
+            top.x - 2, top.y, top.z,
+
+            top.x, top.y,     top.z - 2,
+            top.x, top.y,     top.z + 2,
+            top.x, top.y + 4, top.z + 2,
+
+            top.x, top.y + 4, top.z + 2,
+            top.x, top.y + 4, top.z - 2,
+            top.x, top.y,     top.z - 2
+            });
+        for (int i = 0; i < 12; i++)
+        {
+            cs.insert(cs.end(), {
+                1.0, 1.0, 1.0
+                });
+        }
+        TextureFace tl(5, 1);
+        TextureFace bl(5, 0);
+        TextureFace br(6, 0);
+        TextureFace tr(6, 1);
+
+        for (int i = 0; i < 2; i++)
+        {
+            uv.insert(uv.end(), {
+                    bl.tl.x, bl.tl.y,
+                    br.tr.x, br.tr.y,
+                    tr.br.x, tr.br.y,
+
+                    tr.br.x, tr.br.y,
+                    tl.bl.x, tl.bl.y,
+                    bl.tl.x, bl.tl.y,
+                });
+        }
+    }
 }
 
 class TrianglePen {
@@ -225,18 +316,13 @@ void threadThesePens(
     TextureFace trunkFace(3, 0);
     for (int b = 0; b < length; b++)
     {
-        if (verts.size() > 50 && leaves == true)
-        {
-
-                throwAStickOnHere(verts, cols, uvs);
-   
-        }
+       
         int posOrNeg = rando() > 0.5 ? -1 : 1;
 
         currentDirection += glm::vec3((rando() * -posOrNeg) / 10, 0, (rando() * posOrNeg) / 10);
 
-        pen.move(currentDirection*4.0f);
-        pen.rotate(-70.0f);
+        pen.move(currentDirection*2.0f);
+        pen.rotate(-10.0f);
 
 
         verts.insert(verts.end(), {
@@ -272,7 +358,7 @@ void threadThesePens(
 
         for (int i = 0; i < 18; i++)
         {
-            glm::vec2 centerOfLast = (glm::vec2(penBack.front.x, penBack.front.z) + glm::vec2(penBack.bl.x, penBack.bl.z) + glm::vec2(penBack.br.x, penBack.br.z)) / 3.0f;
+            //glm::vec2 centerOfLast = (glm::vec2(penBack.front.x, penBack.front.z) + glm::vec2(penBack.bl.x, penBack.bl.z) + glm::vec2(penBack.br.x, penBack.br.z)) / 3.0f;
 
             //float xzoffset = glm::distance(glm::vec2(verts[i], verts[i + 2]), centerOfLast);
 
@@ -294,8 +380,25 @@ void threadThesePens(
 
                 });
 
+        } 
+        if (b == length-1)
+        {
+            if (leaves == LEAVES)
+            {
+                topItOffYogurt(verts, cols, uvs);
+            }
+        }
+        else
+        {
+            if (verts.size() > 50 && leaves == true && rando() < 0.05)
+            {
+
+                throwAStickOnHere(verts, cols, uvs);
+
+            }
         }
     }
+    
 }
 
 class TreeModel {
