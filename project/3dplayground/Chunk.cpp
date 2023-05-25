@@ -413,9 +413,11 @@ void Chunk::rebuildMesh() {
 				for (int x = 0; x < width; x++)
 				{
 					intTup tup((this->x * this->gref->chunkWidth) + x, (this->y * this->gref->chunkWidth) + y, (this->z * this->gref->chunkWidth) + z);
+					
 					if (this->gref->world.data.find(tup) != this->gref->world.data.end())
 					{
 						uint8_t blockID = this->gref->world.data.at(tup);
+						
 						if (this->gref->world.data.find(intTup(tup.x - 1, tup.y, tup.z)) == this->gref->world.data.end())
 						{
 							this->vertices.insert(this->vertices.end(),

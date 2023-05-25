@@ -225,7 +225,7 @@ void threadThesePens(
     TextureFace trunkFace(3, 0);
     for (int b = 0; b < length; b++)
     {
-        if (verts.size() > 36 && leaves == true)
+        if (verts.size() > 50 && leaves == true)
         {
 
                 throwAStickOnHere(verts, cols, uvs);
@@ -236,7 +236,7 @@ void threadThesePens(
         currentDirection += glm::vec3((rando() * -posOrNeg) / 10, 0, (rando() * posOrNeg) / 10);
 
         pen.move(currentDirection*4.0f);
-        pen.rotate(-10.0f);
+        pen.rotate(-70.0f);
 
 
         verts.insert(verts.end(), {
@@ -451,9 +451,9 @@ int main()
     for (int i = 0; i < 50; i++)
     {
         TreeModel t;
-        t.x = (float)rando() * 50.0f;
+        t.x = (float)rando() * 100.0f;
         t.y = 0;
-        t.z = (float)rando() * 50.0f;
+        t.z = (float)rando() * 100.0f;
         t.generateMesh();
         trees.push_back(t);
     }
