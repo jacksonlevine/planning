@@ -1,6 +1,9 @@
+#pragma once
+#include "Tree.hpp"
 #include "Game.hpp"
 #include "Perlin.h"
-#include "Tree.hpp"
+
+#include "Maths.hpp"
 perlin p;
 
 void World::generate() {
@@ -44,7 +47,11 @@ int World::generateOneChunk(intTup coord) {
 				
 				if (localY < noise)
 				{
-					if(std::abs(localY-noise) < 0.5 && )
+					if (std::abs(localY - noise) < 0.5 && rando() < 0.005)
+					{
+						Model m = Tree::getTreeModel(tup.x, tup.y, tup.z);
+						this->models.insert_or_assign(tup, m);
+					}
 					this->data.insert_or_assign(tup, 0);
 					blockCount++;
 					if (blockCount == std::pow(CHUNK_WIDTH, 3))

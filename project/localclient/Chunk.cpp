@@ -413,6 +413,29 @@ void Chunk::rebuildMesh() {
 				for (int x = 0; x < width; x++)
 				{
 					intTup tup((this->x * this->gref->chunkWidth) + x, (this->y * this->gref->chunkWidth) + y, (this->z * this->gref->chunkWidth) + z);
+					if(this->gref->world.models.find(tup) != this->gref->world.models.end()) { 
+						ModelShower grabbed = *(this->gref->modelShowerPool.begin());
+						this->gref->modelShowerPool.erase(this->gref->modelShowerPool.begin());
+						Model& model = this->gref->world.models.at(tup);
+						grabbed.length = model.verts.size();
+						this->gref->wrap->bindGeometry(
+							grabbed.vbov,
+							grabbed.vboc,
+							grabbed.vbouv,
+							&(model.verts[0]),
+							&(model.cols[0]),
+							&(model.uvs[0]),
+							sizeof(GLfloat) * model.verts.size(),
+							sizeof(GLfloat) * model.cols.size(),
+							sizeof(GLfloat) * model.uvs.size()
+						);
+						if (!grabbed.active)
+						{
+							grabbed.active = true;
+							this->gref->activeShowers.push_back(grabbed);
+						}
+						this->gref->modelShowerPool.push_back(grabbed);
+					}
 					if (this->gref->world.data.find(tup) != this->gref->world.data.end())
 					{
 						uint8_t blockID = this->gref->world.data.at(tup);

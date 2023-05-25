@@ -46,7 +46,7 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> hasBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> fullBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> isHandledMarks;
-    folly::F14FastMap<intTup, Model, intTupHash> models;
+    std::unordered_map<intTup, Model, intTupHash> models;
     void generate();
     int generateOneChunk(intTup pos);
 };
@@ -70,6 +70,11 @@ public:
     std::unordered_map<intTup, Chunk, intTupHash> activeChunks;
     std::unordered_set<intTup, intTupHash> neededChunks;
     std::vector<intTup> sortedNeededChunks;
+
+    std::vector<ModelShower> modelShowerPool;
+    std::vector<ModelShower> activeShowers;
+
+
     Game(GLWrapper* wr);
     void updateTasks(float delt);
     void addTask(std::function<void(Game* g)> func, float interval, uint8_t id);

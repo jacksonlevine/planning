@@ -1,3 +1,9 @@
+#pragma once
 #include "Model.hpp"
 
-Model getTreeModel(float x, float y, float z);
+
+
+	class Tree {
+	public:
+		static Model getTreeModel(float x, float y, float z);
+	};

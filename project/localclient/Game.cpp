@@ -1,5 +1,6 @@
+#pragma once
 #include "Game.hpp"
-
+#include "Model.hpp"
 Game* Game::instance = nullptr;
 
 bool intTup::operator==(const intTup& other) const {
@@ -91,6 +92,11 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
+	}
+	for (int i = 0; i < 200; i++)
+	{
+		ModelShower m;
+		this->modelShowerPool.push_back(m);
 	}
 	instance = this;
 }

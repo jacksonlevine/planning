@@ -1,4 +1,6 @@
+#pragma once
 #include <vector>
+#include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
 class Model {
@@ -9,5 +11,11 @@ public:
 };
 
 class ModelShower {
-
+public:
+    GLuint vbov;
+    GLuint vboc;
+    GLuint vbouv;
+    int length;
+    bool active;
+    ModelShower();
 };

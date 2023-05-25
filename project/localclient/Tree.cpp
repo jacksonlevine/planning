@@ -1,3 +1,4 @@
+#pragma once
 #include "Tree.hpp"
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -293,7 +294,7 @@ void threadThesePens(
 
 }
 
-Model getTreeModel(float x, float y, float z)
+Model Tree::getTreeModel(float x, float y, float z)
 {
 	Model model;
     TrianglePen pen(

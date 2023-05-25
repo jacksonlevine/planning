@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <format>
 #include <GL/glew.h>
@@ -117,6 +118,9 @@ int main()
     game.addTask(chunkQueueTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     /*TEXTURE BIT*/
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -130,7 +134,7 @@ int main()
     unsigned char* data = stbi_load("texture.png", &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -197,6 +201,15 @@ int main()
                
                 glDrawArrays(GL_TRIANGLES, 0, c.colors.size());
             }
+        }
+
+        for (ModelShower& v : game.activeShowers)
+        {
+            wrap.bindGeometryNoUpload(
+                v.vbov,
+                v.vboc,
+                v.vbouv);
+            glDrawArrays(GL_TRIANGLES, 0, v.length);
         }
         glBindVertexArray(0);
         float currentFrame = glfwGetTime();

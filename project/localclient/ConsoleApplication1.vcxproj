@@ -133,16 +133,22 @@
     <ClCompile Include="ConsoleApplication1.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GLSetup.cpp" />
+    <ClCompile Include="Maths.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Perlin.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="Tree.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlockTypes.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GLSetup.hpp" />
+    <ClInclude Include="Maths.hpp" />
+    <ClInclude Include="Model.hpp" />
     <ClInclude Include="Perlin.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Tree.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="texture.png" />
