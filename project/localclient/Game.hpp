@@ -3,6 +3,7 @@
 #include <folly/container/F14Map.h>
 #include <folly/container/F14Set.h>
 #include "GLSetup.hpp"
+#include "Model.hpp"
 
 #define CHUNK_WIDTH 20
 
@@ -45,6 +46,7 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> hasBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> fullBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> isHandledMarks;
+    folly::F14FastMap<intTup, Model, intTupHash> models;
     void generate();
     int generateOneChunk(intTup pos);
 };
