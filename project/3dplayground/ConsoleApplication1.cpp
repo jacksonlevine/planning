@@ -122,20 +122,12 @@ glm::vec3 rotateAroundPoint(const glm::vec3& point, const glm::vec3& center, flo
 
     return finalPoint;
 }
-void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)
-{
-    TextureFace stickFace(4, 0);
-    int posOrNeg = rando() < 0.5 ? -1 : 1;
 
-    glm::vec3 direc(rando()*posOrNeg, rando(), rando() * posOrNeg);
-
-    glm::vec3 lastVert(vs[vs.size() - 3], vs[vs.size() - 2],vs[vs.size() - 1]);
-    glm::vec3 nextLastVert(vs[vs.size() - 6], vs[vs.size() - 5], vs[vs.size() - 4]);
-
+void extrudeQuadFromPoints(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv, glm::vec3 lastVert, glm::vec3 nextLastVert, glm::vec3 direc, TextureFace stickFace) {
     vs.insert(vs.end(), {
         lastVert.x, lastVert.y, lastVert.z,
         nextLastVert.x, nextLastVert.y, nextLastVert.z,
-        nextLastVert.x + direc.x, nextLastVert.y+direc.y, nextLastVert.z+direc.z,
+        nextLastVert.x + direc.x, nextLastVert.y + direc.y, nextLastVert.z + direc.z,
 
         nextLastVert.x + direc.x, nextLastVert.y + direc.y, nextLastVert.z + direc.z,
         lastVert.x + direc.x, lastVert.y + direc.y, lastVert.z + direc.z,
@@ -156,6 +148,25 @@ void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::
            stickFace.tl.x, stickFace.tl.y,
            stickFace.bl.x, stickFace.bl.y
         });
+}
+
+
+void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)
+{
+    TextureFace stickFace(4, 0);
+    int posOrNeg = rando() < 0.5 ? -1 : 1;
+
+    glm::vec3 direc(rando()*posOrNeg, rando(), rando() * posOrNeg);
+    direc *= 2;
+    glm::vec3 lastVert(vs[vs.size() - 3], vs[vs.size() - 2],vs[vs.size() - 1]);
+    glm::vec3 nextLastVert(vs[vs.size() - 36], vs[vs.size() - 35], vs[vs.size() - 34]);
+
+
+    glm::vec3 lastVert2(vs[vs.size() - 27], vs[vs.size() -26], vs[vs.size() - 25]);
+    glm::vec3 nextLastVert2(vs[vs.size() - 18], vs[vs.size() - 17], vs[vs.size() - 16]);
+
+    extrudeQuadFromPoints(vs, cs, uv, lastVert2, nextLastVert2, direc, stickFace);
+    extrudeQuadFromPoints(vs, cs, uv, lastVert, nextLastVert, direc, stickFace);
 }
 
 class TrianglePen {
@@ -214,18 +225,17 @@ void threadThesePens(
     TextureFace trunkFace(3, 0);
     for (int b = 0; b < length; b++)
     {
-        if (verts.size() > 6 && leaves == true)
+        if (verts.size() > 36 && leaves == true)
         {
-            if (rando() > 0.5)
-            {
+
                 throwAStickOnHere(verts, cols, uvs);
-            }
+   
         }
         int posOrNeg = rando() > 0.5 ? -1 : 1;
 
         currentDirection += glm::vec3((rando() * -posOrNeg) / 10, 0, (rando() * posOrNeg) / 10);
 
-        pen.move(currentDirection);
+        pen.move(currentDirection*4.0f);
         pen.rotate(-10.0f);
 
 
@@ -329,7 +339,7 @@ public:
         int posOrNeg2 = rando() > 0.5 ? -1 : 1;
 
         glm::vec3 currentDirection(0, 0.5f, 0);
-        threadThesePens(pen, penBack, verts, cols, uvs, 9, currentDirection, NO_LEAVES);
+        threadThesePens(pen, penBack, verts, cols, uvs, rando()*4, currentDirection, NO_LEAVES);
 
 
         glm::vec3 tbCenter = (pen.bl + pen.br) / 2.0f;
@@ -338,7 +348,7 @@ public:
 
         for (int z = 0; z < leftBranches; z++)
         {
-            int branchLength = rando() * 20;
+            int branchLength = rando() * 7;
             glm::vec3 currentDirection2(-rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, -(rando() / 2));
 
             TrianglePen pen2(
@@ -357,7 +367,7 @@ public:
         }
         for (int z = 0; z < rightBranches; z++)
         {
-            int branchLength = rando() * 20;
+            int branchLength = rando() * 7;
             glm::vec3 currentDirection3(rando() / 3 + (rando() / 10) * posOrNeg2, 0.5f, (rando() / 2));
             TrianglePen pen3(
                 pen.front,
