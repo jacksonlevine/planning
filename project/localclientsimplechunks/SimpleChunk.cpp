@@ -120,7 +120,7 @@ void SimpleChunk::rebuildMesh()
 				});
 		}
 	}
-	/*this->gref->wrap->bindVAO();
+	this->gref->wrap->bindVAO();
 	this->gref->wrap->bindGeometry(
 		this->vbov,
 		this->vboc,
@@ -132,7 +132,7 @@ void SimpleChunk::rebuildMesh()
 		cols.size() * sizeof(GLfloat),
 		uvs.size() * sizeof(GLfloat)
 	);
-	glDrawArrays(GL_TRIANGLES, 0, verts.size());*/
+	//glDrawArrays(GL_TRIANGLES, 0, verts.size());
 	this->length = verts.size();
 	if (!this->active) {
 		this->gref->activeSimpChunks.insert_or_assign(overallTup, *this);

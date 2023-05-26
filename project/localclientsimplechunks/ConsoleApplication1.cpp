@@ -216,16 +216,10 @@ int main()
         {
             SimpleChunk s = pair.second;
             if (s.verts.size() > 0) {
-                wrap.bindGeometry(
+                wrap.bindGeometryNoUpload(
                     s.vbov,
                     s.vboc,
-                    s.vbouv,
-                    &(s.verts[0]),
-                    &(s.cols[0]),
-                    &(s.uvs[0]),
-                    s.verts.size() * sizeof(GLfloat),
-                    s.cols.size() * sizeof(GLfloat),
-                    s.uvs.size() * sizeof(GLfloat));
+                    s.vbouv);
                 glDrawArrays(GL_TRIANGLES, 0, s.verts.size());
             }
         }
