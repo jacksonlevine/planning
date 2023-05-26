@@ -93,7 +93,7 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 		Chunk c(this);
 		this->chunkPool.push_back(c);
 	}
-	for (int i = 0; i < 200; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		ModelShower m;
 		this->modelShowerPool.push_back(m);

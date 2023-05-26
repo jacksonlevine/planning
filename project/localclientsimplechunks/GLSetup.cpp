@@ -193,13 +193,7 @@ int GLWrapper::initializeGL() {
         "if(texColor.a < 0.1){\n"
         "discard;}\n"
 
-         "float fogFactor = gl_FragDepth*70.0;\n"
-         "fogFactor = clamp(fogFactor, 0.0, 1.0);\n"
-
-        "       vec3 fogColor = vec3(0.4, 0.4, 1.0);\n" // Adjust the fog color as desired
-
-        "    vec3 finalColor = mix(vertexColor, fogColor, fogFactor);\n"
-        "    FragColor = vec4(finalColor, 1.0) * texColor;\n"
+        "    FragColor = vec4(vertexColor, 255) * texColor;\n"
         "}\n";
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
