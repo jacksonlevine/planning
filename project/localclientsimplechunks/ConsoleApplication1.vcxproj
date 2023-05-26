@@ -136,6 +136,7 @@
     <ClCompile Include="Maths.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Perlin.cpp" />
+    <ClCompile Include="SimpleChunk.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="Tree.cpp" />
     <ClCompile Include="World.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Perlin.h" />
+    <ClInclude Include="SimpleChunk.hpp" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Tree.hpp" />
   </ItemGroup>
