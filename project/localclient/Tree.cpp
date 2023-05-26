@@ -101,11 +101,11 @@ void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::
 
     glm::vec3 direc(rando() * posOrNeg, rando(), rando() * posOrNeg);
     direc *= 1.5f;
-    glm::vec3 lastVert(vs[vs.size() - 3], vs[vs.size() - 2], vs[vs.size() - 1]);
-    glm::vec3 nextLastVert(vs[vs.size() - 36], vs[vs.size() - 35], vs[vs.size() - 34]);
-
-
-    extrudeQuadFromPoints(vs, cs, uv, lastVert, nextLastVert, direc, stickFace);
+    if (vs.size() >= 36) {
+        glm::vec3 lastVert(vs[vs.size() - 3], vs[vs.size() - 2], vs[vs.size() - 1]);
+        glm::vec3 nextLastVert(vs[vs.size() - 36], vs[vs.size() - 35], vs[vs.size() - 34]);
+        extrudeQuadFromPoints(vs, cs, uv, lastVert, nextLastVert, direc, stickFace);
+    }
 }
 
 void topItOffYogurt(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)

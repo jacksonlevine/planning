@@ -171,9 +171,9 @@ int main()
             0.0f, 0.0f, 0.5f, 1.0f, wrap.cameraPitch);
         //END SKY BIT
         glBindVertexArray(wrap.vao);
-
-
+        
         glUseProgram(wrap.shaderProgram);
+        glDepthMask(GL_TRUE);
         for (auto& pair : game.activeChunks) {
             Chunk& c = pair.second;
             if (c.vertices.size() && c.colors.size() && c.uv.size()) {
@@ -211,6 +211,7 @@ int main()
                 v.vbouv);
             glDrawArrays(GL_TRIANGLES, 0, v.length);
         }
+       // glDepthMask(GL_FALSE);
         glBindVertexArray(0);
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
