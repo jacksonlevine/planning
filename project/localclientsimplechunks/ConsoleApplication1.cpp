@@ -111,12 +111,12 @@ int main()
     Game game(&wrap);
     game.world.generate();
     std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
-    std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
-    std::function<void(Game* g)> sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
+    //std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
+    //std::function<void(Game* g)> sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
 
     game.addTask(surveyTask, 5.0f, 1);
-    game.addTask(chunkQueueTask, 0.1, 2);
-    game.addTask(sortChunkPoolTask, 7.0f, 3);
+    //game.addTask(chunkQueueTask, 0.1, 2);
+    //game.addTask(sortChunkPoolTask, 7.0f, 3);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -205,11 +205,13 @@ int main()
 
         for (ModelShower& v : game.activeShowers)
         {
-            wrap.bindGeometryNoUpload(
-                v.vbov,
-                v.vboc,
-                v.vbouv);
-            glDrawArrays(GL_TRIANGLES, 0, v.length);
+            if (v.length > 0) {
+                wrap.bindGeometryNoUpload(
+                    v.vbov,
+                    v.vboc,
+                    v.vbouv);
+                glDrawArrays(GL_TRIANGLES, 0, v.length);
+            }
         }
 
         for (auto& pair : game.activeSimpChunks)

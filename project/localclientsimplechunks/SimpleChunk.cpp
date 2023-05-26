@@ -64,17 +64,20 @@ void SimpleChunk::rebuildMesh()
 				this->gref->modelShowerPool.erase(this->gref->modelShowerPool.begin());
 				Model& model = this->gref->world.models.at(tup);
 				grabbed.length = model.verts.size();
-				this->gref->wrap->bindGeometry(
-					grabbed.vbov,
-					grabbed.vboc,
-					grabbed.vbouv,
-					&(model.verts[0]),
-					&(model.cols[0]),
-					&(model.uvs[0]),
-					sizeof(GLfloat) * model.verts.size(),
-					sizeof(GLfloat) * model.cols.size(),
-					sizeof(GLfloat) * model.uvs.size()
-				);
+
+				if (model.verts.size() > 0) {
+					this->gref->wrap->bindGeometry(
+						grabbed.vbov,
+						grabbed.vboc,
+						grabbed.vbouv,
+						&(model.verts[0]),
+						&(model.cols[0]),
+						&(model.uvs[0]),
+						sizeof(GLfloat) * model.verts.size(),
+						sizeof(GLfloat) * model.cols.size(),
+						sizeof(GLfloat) * model.uvs.size()
+					);
+				}
 				if (!grabbed.active)
 				{
 					grabbed.active = true;
@@ -120,18 +123,20 @@ void SimpleChunk::rebuildMesh()
 				});
 		}
 	}
-	this->gref->wrap->bindVAO();
-	this->gref->wrap->bindGeometry(
-		this->vbov,
-		this->vboc,
-		this->vbouv,
-		&(this->verts[0]),
-		&(this->cols[0]),
-		&(this->uvs[0]),
-		verts.size() * sizeof(GLfloat),
-		cols.size() * sizeof(GLfloat),
-		uvs.size() * sizeof(GLfloat)
-	);
+	//this->gref->wrap->bindVAO();
+	if (verts.size() > 0) {
+		this->gref->wrap->bindGeometry(
+			this->vbov,
+			this->vboc,
+			this->vbouv,
+			&(this->verts[0]),
+			&(this->cols[0]),
+			&(this->uvs[0]),
+			verts.size() * sizeof(GLfloat),
+			cols.size() * sizeof(GLfloat),
+			uvs.size() * sizeof(GLfloat)
+		);
+	}
 	//glDrawArrays(GL_TRIANGLES, 0, verts.size());
 	this->length = verts.size();
 	if (!this->active) {

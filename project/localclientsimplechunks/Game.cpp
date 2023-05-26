@@ -118,17 +118,17 @@ void Game::removeTask(uint8_t id)
 
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 300; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
 	}
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		ModelShower m;
 		this->modelShowerPool.push_back(m);
 	}
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		SimpleChunk s(this);
 		this->simpleChunkPool.push_back(s);
@@ -141,8 +141,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z) * 6;
-	int xSkew = (dir.x) * 6;
+	int zSkew = (dir.z) * 8.0f;
+	int xSkew = (dir.x) * 8.0f;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
@@ -158,11 +158,11 @@ void Game::surveyNeededChunks()
 
 		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
 		int dirxp = std::floor(xSkew < 0 ? 1 : std::round(xSkew));
-		for (int i = chunkX - dirxn - 2; i < chunkX + dirxp + 2; i++)
+		for (int i = chunkX - dirxn - 1; i < chunkX + dirxp + 1; i++)
 		{
 			int dirzn = std::floor(zSkew > 0 ? 1 : std::round(std::abs(zSkew)));
 			int dirzp = std::floor(zSkew < 0 ? 1 : std::round(zSkew));
-			for (int k = chunkZ - dirzn - 2; k < chunkZ + dirzp + 2; k++)
+			for (int k = chunkZ - dirzn - 1; k < chunkZ + dirzp + 1; k++)
 			{
 				intTup tup(i, j, k);
 
@@ -173,7 +173,7 @@ void Game::surveyNeededChunks()
 				}
 				if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end())
 				{
-					if (simpleChunkPool.size() > 0) {
+					if (simpleChunkPool.size() > 5) {
 						SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
 						this->simpleChunkPool.erase(this->simpleChunkPool.begin());
 

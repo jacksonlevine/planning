@@ -110,7 +110,7 @@ void throwAStickOnHere(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::
 
 void topItOffYogurt(std::vector<GLfloat>& vs, std::vector<GLfloat>& cs, std::vector<GLfloat>& uv)
 {
-    if (vs.size() >= 6) {
+    if (vs.size() > 6) {
         glm::vec3 top(vs[vs.size() - 6], vs[vs.size() - 5], vs[vs.size() - 4]);
 
         vs.insert(vs.end(), {
