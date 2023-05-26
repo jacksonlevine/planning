@@ -1,10 +1,15 @@
 #pragma once
 #include "Game.hpp"
 #include "Model.hpp"
+#include "glm/glm.hpp"
 Game* Game::instance = nullptr;
 
 bool intTup::operator==(const intTup& other) const {
 	return (x == other.x) && (y == other.y) && (z == other.z);
+}
+
+bool intTup::operator==(const SimpleChunk* other) const {
+	return (x == other->x) && (z == other->z);
 }
 
 intTup& intTup::operator+=(const intTup& other)
@@ -123,6 +128,11 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 		ModelShower m;
 		this->modelShowerPool.push_back(m);
 	}
+	for (int i = 0; i < 500; i++)
+	{
+		SimpleChunk s(this);
+		this->simpleChunkPool.push_back(s);
+	}
 	instance = this;
 }
 
@@ -143,7 +153,7 @@ void Game::surveyNeededChunks()
 	int chunkX = std::floor((x + (CHUNK_WIDTH - (x % CHUNK_WIDTH))) / CHUNK_WIDTH);
 	int chunkY = std::floor((y  - (y % CHUNK_WIDTH)) / CHUNK_WIDTH);
 	int chunkZ = std::floor((z + (CHUNK_WIDTH - (z % CHUNK_WIDTH))) / CHUNK_WIDTH);
-	int j = chunkY - 1;
+	int j = 0;
 	
 
 		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
@@ -155,30 +165,27 @@ void Game::surveyNeededChunks()
 			for (int k = chunkZ - dirzn - 2; k < chunkZ + dirzp + 2; k++)
 			{
 				intTup tup(i, j, k);
+
+				//Generate
+				if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
+				{
+					this->world.generateOneChunk(tup);
+				}
+				if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end())
+				{
+					if (simpleChunkPool.size() > 0) {
+						SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+						this->simpleChunkPool.erase(this->simpleChunkPool.begin());
+
+						grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
+
+						this->simpleChunkPool.push_back(grabbedSimp);
+					}
+				}
+
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
 				{
 					
-					//Generate
-					if (this->world.isHandledMarks.find(tup) == this->world.isHandledMarks.end())
-					{
-						int head = 0;
-						int maxLoadUp = 8;
-						intTup test(tup.x, tup.y + head, tup.z);
-						bool lastOneHadBlocks = true;
-
-						while (this->world.isHandledMarks.find(test) == this->world.isHandledMarks.end() && head < maxLoadUp && lastOneHadBlocks)
-						{
-							if (this->world.generateOneChunk(test) == 0)
-							{
-								lastOneHadBlocks = false;
-							}
-							else 
-							{
-								head += 1;
-								test = intTup(tup.x, tup.y + head, tup.z);
-							}
-						}
-					}
 					
 					//Or mesh
 					if (this->neededChunks.find(tup) == this->neededChunks.end() && this->world.hasBlockMarks.find(tup) != this->world.hasBlockMarks.end())
@@ -206,7 +213,7 @@ void Game::surveyNeededChunks()
 
 void Game::rebuildNextChunk()
 {
-	if (this->neededChunks.size() > 5)
+	if (this->neededChunks.size() > 1)
 	{
 		intTup neededSpot = *(this->neededChunks.begin());
 		this->neededChunks.erase(this->neededChunks.begin());

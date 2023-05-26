@@ -243,6 +243,13 @@ void GLWrapper::setupVAO() {
 
 }
 
+
+void GLWrapper::bindVAO() {
+    glBindVertexArray(this->vao);
+
+    // Use our shader program
+    glUseProgram(this->shaderProgram);
+}
 void GLWrapper::bindGeometry(GLuint vbov, GLuint vboc, GLuint vbouv, const GLfloat* vertices, const GLfloat* colors, const GLfloat* uv, int vsize, int csize, int usize) {
 
     // Generate a vertex buffer object (VBO) for the position data

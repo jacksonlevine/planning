@@ -211,6 +211,24 @@ int main()
                 v.vbouv);
             glDrawArrays(GL_TRIANGLES, 0, v.length);
         }
+
+        for (auto& pair : game.activeSimpChunks)
+        {
+            SimpleChunk s = pair.second;
+            if (s.verts.size() > 0) {
+                wrap.bindGeometry(
+                    s.vbov,
+                    s.vboc,
+                    s.vbouv,
+                    &(s.verts[0]),
+                    &(s.cols[0]),
+                    &(s.uvs[0]),
+                    s.verts.size() * sizeof(GLfloat),
+                    s.cols.size() * sizeof(GLfloat),
+                    s.uvs.size() * sizeof(GLfloat));
+                glDrawArrays(GL_TRIANGLES, 0, s.verts.size());
+            }
+        }
        // glDepthMask(GL_FALSE);
         glBindVertexArray(0);
         float currentFrame = glfwGetTime();

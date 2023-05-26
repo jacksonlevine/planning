@@ -4,6 +4,9 @@
 #include <folly/container/F14Set.h>
 #include "GLSetup.hpp"
 #include "Model.hpp"
+class Game;
+struct intTup;
+#include "SimpleChunk.hpp"
 
 #define CHUNK_WIDTH 20
 
@@ -15,25 +18,20 @@ public:
     intTup(int x, int y, int z);
     intTup(int x, int z);
     bool operator==(const intTup& other) const;
-
+    bool operator==(const SimpleChunk* other) const;
     intTup& operator+=(const intTup& other);
     
 };
 // non-mutating => non-member function
 intTup operator+(intTup first, // parameter as value, move-construct (or elide)
-    const intTup& second)
-{
-    first.x += second.x;
-    first.z += second.z;
+    const intTup& second);
 
-    return first; // NRVO (or move-construct)
-}
 
 struct intTupHash {
     std::size_t operator()(const intTup& tup) const;
 };
 
-class Game;
+
 class Chunk {
 public:
     int x;
@@ -59,6 +57,7 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> hasBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> fullBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> isHandledMarks;
+    folly::F14FastMap<intTup, uint8_t, intTupHash> hasSimpMarks;
     std::unordered_map<intTup, Model, intTupHash> models;
     std::unordered_map<intTup, float, intTupHash> heights;
     void generate();
@@ -88,6 +87,8 @@ public:
     std::vector<ModelShower> modelShowerPool;
     std::vector<ModelShower> activeShowers;
 
+    std::vector<SimpleChunk> simpleChunkPool;
+    std::unordered_map<intTup, SimpleChunk, intTupHash> activeSimpChunks;
 
     Game(GLWrapper* wr);
     void updateTasks(float delt);
