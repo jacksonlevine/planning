@@ -14,20 +14,29 @@ void SimpleChunk::rebuildMesh()
 	std::vector<GLfloat> verts;
 	std::vector<GLfloat> cols;
 	std::vector<GLfloat> uvs;
+	std::unordered_map<intTup, glm::vec3, intTupHash> localHeights;
 
-	for (int i = 0; i < CHUNK_WIDTH; i++)
+	for (int i = -1; i < CHUNK_WIDTH+1; i++)
 	{
-		for (int k = 0; k < CHUNK_WIDTH; k++)
+		for (int k = -1; k < CHUNK_WIDTH+1; k++)
 		{
 			intTup tup((this->x * CHUNK_WIDTH) + i, (this->z * CHUNK_WIDTH) + k);
 			if (this->gref->world.heights.find(tup) != this->gref->world.heights.end())
 			{
-
+				localHeights.insert_or_assign(tup, glm::vec3(tup.x, this->gref->world.heights.at(tup), tup.z));
 			}	
 			else {
 				this->gref->world.generateOneChunk(intTup(this->x, this->z));
 				this->rebuildMesh();
 			}
+		}
+	}
+
+	for (int i = 0; i < CHUNK_WIDTH; i++)
+	{
+		for (int k = 0; k < CHUNK_WIDTH; k++)
+		{
+			
 		}
 	}
 }
