@@ -15,8 +15,19 @@ public:
     intTup(int x, int y, int z);
     intTup(int x, int z);
     bool operator==(const intTup& other) const;
-};
 
+    intTup& operator+=(const intTup& other);
+    
+};
+// non-mutating => non-member function
+intTup operator+(intTup first, // parameter as value, move-construct (or elide)
+    const intTup& second)
+{
+    first.x += second.x;
+    first.z += second.z;
+
+    return first; // NRVO (or move-construct)
+}
 
 struct intTupHash {
     std::size_t operator()(const intTup& tup) const;

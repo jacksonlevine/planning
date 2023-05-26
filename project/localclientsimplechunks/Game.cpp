@@ -7,6 +7,25 @@ bool intTup::operator==(const intTup& other) const {
 	return (x == other.x) && (y == other.y) && (z == other.z);
 }
 
+intTup& intTup::operator+=(const intTup& other)
+{
+	x += other.x;
+	y += other.y;
+	z += other.z;
+
+	return *this;
+}
+
+intTup operator+(intTup first, // parameter as value, move-construct (or elide)
+	const intTup& second)
+{
+	first.x += second.x;
+	first.y += second.y;
+	first.z += second.z;
+
+	return first; // NRVO (or move-construct)
+}
+
 intTup::intTup(int x, int y, int z)
 {
 	this->x = x;

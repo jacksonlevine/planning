@@ -36,7 +36,17 @@ void SimpleChunk::rebuildMesh()
 	{
 		for (int k = 0; k < CHUNK_WIDTH; k++)
 		{
-			
+			intTup tup((this->x * CHUNK_WIDTH) + i, (this->z * CHUNK_WIDTH) + k);
+
+			verts.insert(verts.end(), {
+				(float)(tup.x), localHeights.at(tup).y, (float)(tup.z),
+				(float)(tup.x) + 1, localHeights.at(tup + intTup(1,0)).y, (float)(tup.z),
+				(float)(tup.x) + 1, localHeights.at(tup + intTup(1,1)).y, (float)(tup.z) + 1,
+
+				(float)(tup.x) + 1, localHeights.at(tup + intTup(1,1)).y, (float)(tup.z) + 1,
+				(float)(tup.x), localHeights.at(tup + intTup(0,1)).y, (float)(tup.z) + 1,
+				(float)(tup.x), localHeights.at(tup).y, (float)(tup.z),
+				});
 		}
 	}
 }
