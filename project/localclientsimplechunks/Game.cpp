@@ -14,6 +14,12 @@ intTup::intTup(int x, int y, int z)
 	this->z = z;
 }
 
+intTup::intTup(int x, int z)
+{
+	this->x = x;
+	this->y = 0;
+	this->z = z;
+}
 IntervalTask::IntervalTask(float interval, std::function<void(Game* g)> lambda, uint8_t id) : interval(interval), lambda(lambda), id(id), timer(0.0f) {
 
 }

@@ -13,8 +13,10 @@ public:
     int y;
     int z;
     intTup(int x, int y, int z);
+    intTup(int x, int z);
     bool operator==(const intTup& other) const;
 };
+
 
 struct intTupHash {
     std::size_t operator()(const intTup& tup) const;
@@ -47,6 +49,7 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> fullBlockMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> isHandledMarks;
     std::unordered_map<intTup, Model, intTupHash> models;
+    std::unordered_map<intTup, float, intTupHash> heights;
     void generate();
     int generateOneChunk(intTup pos);
 };

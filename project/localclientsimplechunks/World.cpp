@@ -11,11 +11,10 @@ void World::generate() {
 	{
 		for (int z = -5; z < 5; z++)
 		{
-			for (int y = -5; y < 5; y++)
-			{
-				intTup tup(x,y,z);
+
+				intTup tup(x,z);
 				this->generateOneChunk(tup);
-			}
+
 		}
 	}
 }
@@ -31,39 +30,28 @@ int World::generateOneChunk(intTup coord) {
 
 
 	this->isHandledMarks.insert_or_assign(coord, 1);
-	for (int y = 0; y < CHUNK_WIDTH; y++)
-	{
-		for (int x = 0; x < CHUNK_WIDTH; x++)
-		{
-			for (int z = 0; z < CHUNK_WIDTH; z++)
-			{
-				int localX = realX + x;
-				int localY = realY + y;
-				int localZ = realZ + z;
 
-				intTup tup(localX, localY, localZ);
-				double noise = p.noise((double)localX / 45.25, 30.253, (double)localZ / 45.25)*15;
+	for (int x = -1; x < CHUNK_WIDTH+1; x++)
+	{
+		for (int z = -1; z < CHUNK_WIDTH+1; z++)
+		{
+			int localX = realX + x;
+			int localZ = realZ + z;
+
+			intTup tup(localX, localZ);
+			double noise = p.noise((double)localX / 45.25, 30.253, (double)localZ / 45.25)*15;
 
 				
-				if (localY < noise)
+			
+				if (rando() < 0.005)
 				{
-					if (std::abs(localY - noise) < 0.5 && rando() < 0.005)
-					{
-						Model m = Tree::getTreeModel(tup.x, tup.y, tup.z);
-						this->models.insert_or_assign(tup, m);
-					}
-					this->data.insert_or_assign(tup, 0);
-					blockCount++;
-					if (blockCount == std::pow(CHUNK_WIDTH, 3))
-					{
-						this->fullBlockMarks.insert_or_assign(coord, 1);
-					}
-					if (this->hasBlockMarks.find(coord) == this->hasBlockMarks.end())
-					{
-						this->hasBlockMarks.insert_or_assign(coord, 1);
-					}
+					Model m = Tree::getTreeModel(tup.x, noise, tup.z);
+					this->models.insert_or_assign(tup, m);
 				}
-			}
+				this->heights.insert_or_assign(tup, (float)noise);
+				
+
+			
 		}
 	}
 	return blockCount;
