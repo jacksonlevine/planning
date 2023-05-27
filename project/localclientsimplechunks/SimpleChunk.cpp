@@ -23,7 +23,6 @@ void SimpleChunk::rebuildMesh()
 	std::vector<GLfloat>().swap(this->verts);
 	std::vector<GLfloat>().swap(this->cols);
 	std::vector<GLfloat>().swap(this->uvs);
-	std::unordered_map<intTup, glm::vec3, intTupHash> localHeights;
 
 	std::function<void(glm::vec3*, intTup, float)> addColor = [](glm::vec3* color, intTup tup, float vol) {
 
@@ -34,31 +33,22 @@ void SimpleChunk::rebuildMesh()
 
 	intTup overallTup(this->x, this->z);
 
-	for (int i = -1; i < CHUNK_WIDTH+1; i++)
+
+
+
+	for (int i = 0; i < CHUNK_WIDTH; i++)
 	{
-		for (int k = -1; k < CHUNK_WIDTH+1; k++)
+		for (int k = 0; k < CHUNK_WIDTH; k++)
 		{
-			intTup tup2(i, k);
+
 			intTup tup((this->x * CHUNK_WIDTH) + i, (this->z * CHUNK_WIDTH) + k);
+
 			while (this->gref->world.heights.find(tup) == this->gref->world.heights.end())
 			{
 				this->gref->world.generateOneChunk(intTup(this->x, this->z));
 				//this->rebuildMesh();
 			}
 
-
-				localHeights.insert_or_assign(tup2, glm::vec3(tup.x, this->gref->world.heights.at(tup), tup.z));
-		
-
-		}
-	}
-
-	for (int i = 0; i < CHUNK_WIDTH; i++)
-	{
-		for (int k = 0; k < CHUNK_WIDTH; k++)
-		{
-			intTup tup2(i, k);
-			intTup tup((this->x * CHUNK_WIDTH) + i, (this->z * CHUNK_WIDTH) + k);
 			if (this->gref->world.models.find(tup) != this->gref->world.models.end()) {
 				ModelShower grabbed = *(this->gref->modelShowerPool.begin());
 				this->gref->modelShowerPool.erase(this->gref->modelShowerPool.begin());
@@ -86,19 +76,19 @@ void SimpleChunk::rebuildMesh()
 				this->gref->modelShowerPool.push_back(grabbed);
 			}
 
-			uint8_t blockID = (localHeights.at(tup2).y > -2 && localHeights.at(tup2).y < 9) ? 0
-				: (localHeights.at(tup2).y > 9 && localHeights.at(tup2).y < 24) ? 1 : 0;
+			uint8_t blockID = (this->gref->world.heights.at(tup) > -2 && this->gref->world.heights.at(tup) < 9) ? 0
+				: (this->gref->world.heights.at(tup) > 9 && this->gref->world.heights.at(tup) < 24) ? 1 : 0;
 
 			if (p3.noise(tup.x / 12.5f, tup.y / 12.5f, tup.z / 12.5f) * 10 > 5) blockID = 2;
 
 			verts.insert(verts.end(), {
-				(float)(tup.x), localHeights.at(tup2).y, (float)(tup.z),
-				(float)(tup.x) + 1, localHeights.at(tup2 + intTup(1,0)).y, (float)(tup.z),
-				(float)(tup.x) + 1, localHeights.at(tup2 + intTup(1,1)).y, (float)(tup.z) + 1,
+				(float)(tup.x), this->gref->world.heights.at(tup), (float)(tup.z),
+				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,0)), (float)(tup.z),
+				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,1)), (float)(tup.z) + 1,
 
-				(float)(tup.x) + 1, localHeights.at(tup2 + intTup(1,1)).y, (float)(tup.z) + 1,
-				(float)(tup.x), localHeights.at(tup2 + intTup(0,1)).y, (float)(tup.z) + 1,
-				(float)(tup.x), localHeights.at(tup2).y, (float)(tup.z),
+				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,1)), (float)(tup.z) + 1,
+				(float)(tup.x), this->gref->world.heights.at(tup + intTup(0,1)), (float)(tup.z) + 1,
+				(float)(tup.x), this->gref->world.heights.at(tup), (float)(tup.z),
 				});
 			TextureFace face = blockTypes[blockID].top;
 			glm::vec3 color = blockTypes[blockID].baseColor;
