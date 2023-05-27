@@ -132,4 +132,14 @@ const BlockType blockTypes[] = {
 		)
 	),
 
+	BlockType(
+		UNIFORM,
+		TextureFace(
+			8, 0
+		),
+		COLORIZABLE,
+		glm::vec3(178.0/255.0, 119.0/255.0, 86.0/255.0),
+		0.56f
+	),
+
 };

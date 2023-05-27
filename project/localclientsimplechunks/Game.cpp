@@ -123,12 +123,12 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 		Chunk c(this);
 		this->chunkPool.push_back(c);
 	}
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 2000; i++)
 	{
 		ModelShower m;
 		this->modelShowerPool.push_back(m);
 	}
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 1500; i++)
 	{
 		SimpleChunk s(this);
 		this->simpleChunkPool.push_back(s);
@@ -141,8 +141,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z) * 8.0f;
-	int xSkew = (dir.x) * 8.0f;
+	int zSkew = (dir.z) * 9.0f;
+	int xSkew = (dir.x) * 9.0f;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 

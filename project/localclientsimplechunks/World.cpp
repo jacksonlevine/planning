@@ -41,7 +41,7 @@ int World::generateOneChunk(intTup coord) {
 			int localZ = realZ + z;
 
 			intTup tup(localX, localZ);
-			double noise = p.noise((double)localX / 45.25, 30.253, (double)localZ / 45.25)*15;
+			double noise = p.noise((double)localX / 65.25, 30.253, (double)localZ / 65.25)*25;
 
 				
 			
