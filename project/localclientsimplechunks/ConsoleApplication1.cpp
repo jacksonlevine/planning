@@ -243,8 +243,22 @@ int main()
         if (wrap.activeState.forwardVelocity > 0)
         {
 
-            wrap.cameraPos += (wrap.cameraDirection * wrap.activeState.forwardVelocity) * 0.75f;
+            wrap.cameraPos += (wrap.cameraDirection * wrap.activeState.forwardVelocity) * 0.65f;
             wrap.activeState.forwardVelocity *= friction;
+        }
+        intTup camTup((int)std::round(wrap.cameraPos.x), (int)std::round(wrap.cameraPos.z));
+        if (game.world.heights.find(camTup) != game.world.heights.end()) {
+            float velocity = 0.0f;
+            if (wrap.cameraPos.y - 2 > game.world.heights.at(camTup)) {
+                velocity += deltaTime * 6;
+
+            }
+            else {
+                wrap.cameraPos.y += ( - ((wrap.cameraPos.y) - (game.world.heights.at(camTup) + 2)))/4.0f;
+                velocity = 0;
+            }
+            wrap.cameraPos += glm::vec3(0, -velocity, 0);
+
         }
         glfwPollEvents();
     }

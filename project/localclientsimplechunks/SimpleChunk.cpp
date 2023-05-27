@@ -28,7 +28,7 @@ void SimpleChunk::rebuildMesh()
 	std::function<void(glm::vec3*, intTup, float)> addColor = [](glm::vec3* color, intTup tup, float vol) {
 
 		color->r += vol * p3.noise(tup.x / 24.3, tup.z / 24.3);
-		color->b += vol * p3.noise(tup.x / 48.3, tup.z / 48.3);
+		color->g += vol * p3.noise(tup.x / 48.3, tup.z / 48.3);
 		color->b += vol * p3.noise(tup.x / 32.3, tup.z / 32.3);
 	};
 

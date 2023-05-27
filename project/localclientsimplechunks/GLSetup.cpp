@@ -100,13 +100,17 @@ int GLWrapper::initializeGL() {
         return -1;
     }
 
+    int wi = 1900;
+    int he = 1060;
+    
+
     // Set up GLFW window hints
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a GLFW window
-    window = glfwCreateWindow(1280, 720, "My C++ Client", NULL, NULL);
+    window = glfwCreateWindow(wi, he, "MimosDono v15.0.0", NULL, NULL);
     if (!this->window)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -125,7 +129,7 @@ int GLWrapper::initializeGL() {
     }
 
     // Set up the viewport
-    glViewport(0, 0, 1280, 720);
+    glViewport(0, 0, wi, he);
 
     // Enable depth testing
     //glDepthMask(GL_TRUE);
@@ -135,7 +139,7 @@ int GLWrapper::initializeGL() {
     model = glm::mat4(1.0f);
 
 
-    projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+    projection = glm::perspective(glm::radians(90.0f), (float)wi/(float)he, 0.1f, 500.0f);
 
     // Enable pointer-locking first-person controls
     glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -198,14 +202,14 @@ int GLWrapper::initializeGL() {
 
             // Calculate the distance between fragment and camera
 
-        "       vec3 fogColor = vec3(0.4, 0.4, 1.0);\n" // Adjust the fog color as desired
+        "       vec3 fogColor = vec3(0.2, 0.2, 0.8);\n" // Adjust the fog color as desired
 
         "float diss = pow(     gl_FragCoord.z , 2);\n"
 
-        "if(gl_FragCoord.z < 0.998f) { diss = 0; } else { diss = (diss-0.998f)*1000; }  \n"
+        "if(gl_FragCoord.z < 0.9965f) { diss = 0; } else { diss = (diss-0.9965f)*1000; }  \n"
 
-        "    vec3 finalColor = mix(vertexColor, fogColor, max(diss, 0));\n"
-        "    FragColor = mix(vec4(finalColor, 1.0) * texColor, vec4(fogColor, 1.0), max(diss, 0));\n"
+        "    vec3 finalColor = mix(vertexColor, fogColor, max(diss/2.5f, 0));\n"
+        "    FragColor = mix(vec4(finalColor, 1.0) * texColor, vec4(fogColor, 1.0), max(diss/2.5f, 0));\n"
         "}\n";
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
