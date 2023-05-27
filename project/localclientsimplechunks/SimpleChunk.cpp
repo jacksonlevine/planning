@@ -89,7 +89,7 @@ void SimpleChunk::rebuildMesh()
 			uint8_t blockID = (localHeights.at(tup2).y > -2 && localHeights.at(tup2).y < 9) ? 0
 				: (localHeights.at(tup2).y > 9 && localHeights.at(tup2).y < 24) ? 1 : 0;
 
-			if (p3.noise(tup.x / 6.5f, tup.y / 6.5f, tup.z / 6.5f) * 10 > 5) blockID = 2;
+			if (p3.noise(tup.x / 12.5f, tup.y / 12.5f, tup.z / 12.5f) * 10 > 5) blockID = 2;
 
 			verts.insert(verts.end(), {
 				(float)(tup.x), localHeights.at(tup2).y, (float)(tup.z),

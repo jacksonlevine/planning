@@ -187,13 +187,25 @@ int GLWrapper::initializeGL() {
         "in vec2 TexCoord;\n"
         "out vec4 FragColor;\n"
         "uniform sampler2D ourTexture;\n"
+        "uniform vec3 camPos;\n"
+
         "void main()\n"
         "{\n"
         "vec4 texColor = texture(ourTexture, TexCoord);\n"
         "if(texColor.a < 0.1){\n"
         "discard;}\n"
 
-        "    FragColor = vec4(vertexColor, 255) * texColor;\n"
+
+            // Calculate the distance between fragment and camera
+
+        "       vec3 fogColor = vec3(0.4, 0.4, 1.0);\n" // Adjust the fog color as desired
+
+        "float diss = pow(     gl_FragCoord.z , 2);\n"
+
+        "if(gl_FragCoord.z < 0.998f) { diss = 0; } else { diss = (diss-0.998f)*1000; }  \n"
+
+        "    vec3 finalColor = mix(vertexColor, fogColor, max(diss, 0));\n"
+        "    FragColor = mix(vec4(finalColor, 1.0) * texColor, vec4(fogColor, 1.0), max(diss, 0));\n"
         "}\n";
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
@@ -326,6 +338,10 @@ void GLWrapper::orientCamera() {
     // Set the mvp matrix uniform in the shader
     GLuint mvpLoc = glGetUniformLocation(shaderProgram, "mvp");
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+    GLuint camPosLoc = glGetUniformLocation(shaderProgram, "camPos");
+    glUniform3f(camPosLoc, this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
+
 }
 
 void GLWrapper::runGLLoop() {
