@@ -89,6 +89,10 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
             if (action == GLFW_PRESS) instance->activeState.forward = true;
             if (action == GLFW_RELEASE) instance->activeState.forward = false;
         }
+        if (key == GLFW_KEY_SPACE)
+        {
+            if (action == GLFW_PRESS) instance->activeState.jump = true;
+        }
     }
 }
 

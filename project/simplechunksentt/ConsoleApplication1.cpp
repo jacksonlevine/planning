@@ -158,6 +158,7 @@ int main()
 
    
     float velocity = 0.0f;
+    float jumpTimer = 0.0f;
     while (!glfwWindowShouldClose(wrap.window))
     {
 
@@ -214,6 +215,11 @@ int main()
             wrap.cameraPos += (dir * wrap.activeState.forwardVelocity) * 0.65f;
             wrap.activeState.forwardVelocity *= friction;
         }
+        if (wrap.activeState.jump)
+        {
+            jumpTimer += deltaTime/2.0f;
+            velocity -= (deltaTime*25) - jumpTimer;
+        }
         intTup camTup((int)std::floor(wrap.cameraPos.x), (int)std::floor(wrap.cameraPos.z));
         if (game.world.heights.find(camTup) != game.world.heights.end()) {
         
@@ -248,14 +254,19 @@ int main()
             else {
                 //wrap.cameraPos.y += ( - ((wrap.cameraPos.y) - (height + 2))   )/4.0f;
                 wrap.cameraPos.y = height + 2;
-                velocity = 0;
+                //velocity = 0;
+                wrap.activeState.jump = false;
+                jumpTimer = 0.0f;
             }
-            if ((wrap.cameraPos.y-2) - velocity > height)
+            if ((wrap.cameraPos.y-2) - velocity >= height)
             {
                 wrap.cameraPos += glm::vec3(0, -velocity, 0);
             }
             else {
                 wrap.cameraPos.y = height + 2;
+                velocity = 0;
+                wrap.activeState.jump = false;
+                jumpTimer = 0.0f;
             }
 
         }
