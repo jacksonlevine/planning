@@ -157,7 +157,7 @@ int main()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
    
-
+    float velocity = 0.0f;
     while (!glfwWindowShouldClose(wrap.window))
     {
 
@@ -193,65 +193,6 @@ int main()
         }
 
 
-
-
-
-
-
-
-
-        /*for (auto& pair : game.activeChunks) {
-            Chunk& c = pair.second;
-            if (c.vertices.size() && c.colors.size() && c.uv.size()) {
-                if (c.dirty || c.bufferDeleted)
-                {
-                    wrap.bindGeometry(
-                        c.vbov,
-                        c.vboc,
-                        c.vbouv,
-                        &(c.vertices[0]),
-                        &(c.colors[0]),
-                        &(c.uv[0]),
-                        sizeof(GLfloat) * c.vertices.size(),
-                        sizeof(GLfloat) * c.colors.size(),
-                        sizeof(GLfloat) * c.uv.size());
-                    c.dirty = false;
-                    c.bufferDeleted = false;
-                }
-                else if(c.vbov != 0 && c.vboc != 0 && c.vbouv != 0) {
-                    wrap.bindGeometryNoUpload(
-                        c.vbov,
-                        c.vboc,
-                        c.vbouv);
-                }
-               
-                glDrawArrays(GL_TRIANGLES, 0, c.colors.size());
-            }
-        }
-
-        for (ModelShower& v : game.activeShowers)
-        {
-            if (v.length > 0) {
-                wrap.bindGeometryNoUpload(
-                    v.vbov,
-                    v.vboc,
-                    v.vbouv);
-                glDrawArrays(GL_TRIANGLES, 0, v.length);
-            }
-        }
-
-        for (auto& pair : game.activeSimpChunks)
-        {
-            SimpleChunk s = pair.second;
-            if (s.verts.size() > 0) {
-                wrap.bindGeometryNoUpload(
-                    s.vbov,
-                    s.vboc,
-                    s.vbouv);
-                glDrawArrays(GL_TRIANGLES, 0, s.verts.size());
-            }
-        }*/
-       // glDepthMask(GL_FALSE);
         glBindVertexArray(0);
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -273,18 +214,49 @@ int main()
             wrap.cameraPos += (dir * wrap.activeState.forwardVelocity) * 0.65f;
             wrap.activeState.forwardVelocity *= friction;
         }
-        intTup camTup((int)std::round(wrap.cameraPos.x), (int)std::round(wrap.cameraPos.z));
+        intTup camTup((int)std::floor(wrap.cameraPos.x), (int)std::floor(wrap.cameraPos.z));
         if (game.world.heights.find(camTup) != game.world.heights.end()) {
-            float velocity = 0.0f;
-            if (wrap.cameraPos.y - 2 > game.world.heights.at(camTup)) {
+        
+
+            float xi = std::floor(wrap.cameraPos.x);
+            float zi = std::floor(wrap.cameraPos.z);
+            
+
+            float tx = wrap.cameraPos.x - xi;
+            float tz = wrap.cameraPos.z - zi;
+
+            float q11 = game.world.heights.at(camTup);
+            float q12 = game.world.heights.at(camTup + intTup(1, 0));
+            float q21 = game.world.heights.at(camTup + intTup(0,1));
+
+            float q22 = game.world.heights.at(camTup + intTup(1, 1));
+
+
+
+
+            //float height = (1 - tx) * (1 - tz) * q11 + tx * (1 - tz) * q21 + (1 - tx) * tz * q12 + tx * tz * q22;
+
+         // Perform bilinear interpolation
+            float height = glm::mix(glm::mix(q11, q12, tx), glm::mix(q21, q22, tx), tz);
+
+
+
+            if (wrap.cameraPos.y - 2 > height) {
                 velocity += deltaTime * 6;
 
             }
             else {
-                wrap.cameraPos.y += ( - ((wrap.cameraPos.y) - (game.world.heights.at(camTup) + 2)))/4.0f;
+                //wrap.cameraPos.y += ( - ((wrap.cameraPos.y) - (height + 2))   )/4.0f;
+                wrap.cameraPos.y = height + 2;
                 velocity = 0;
             }
-            wrap.cameraPos += glm::vec3(0, -velocity, 0);
+            if ((wrap.cameraPos.y-2) - velocity > height)
+            {
+                wrap.cameraPos += glm::vec3(0, -velocity, 0);
+            }
+            else {
+                wrap.cameraPos.y = height + 2;
+            }
 
         }
         glfwPollEvents();
