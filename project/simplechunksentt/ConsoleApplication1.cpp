@@ -105,7 +105,7 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
 void waterTile(
     float bot_r, float bot_g, float bot_b, float bot_a, float wheight, glm::mat4 mvp, glm::mat4 model, glm::vec3 camPos)
 {
-    //glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     static GLuint water_vao = 0;
     static GLuint water_shader = 0;
@@ -225,9 +225,9 @@ void waterTile(
             "{\n"
 
             "vec2 worldPosition = v_uv + vec2(gl_FragCoord.x, gl_FragCoord.y);"
-            "float p1 =  gln_perlin(   vec3((worldPosition.x/500.35) + time, time,  worldPosition.y/500.35 + time)  );\n"
+            "float p1 =  gln_perlin(   vec3((worldPosition.x/1000.35) + time, time,  worldPosition.y/1000.35 + time)  );\n"
 
-            "frag_color = vec4(1.0,1.0,1.0,0.7) * p1;\n"
+            "frag_color = mix((vec4(1.0,1.0,1.0,0.3) * p1) , vec4(0.1, 0.2, 1.0, 1.0), 0.3);\n"
             "}";
 
         GLuint vs_id, fs_id;
@@ -355,7 +355,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     float velocity = 0.0f;
     float jumpTimer = 0.0f;
-
+    float waterHeight = -5.0f;
     auto meshesView = game.registry.view<MeshComponent>();
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -378,16 +378,38 @@ int main()
         //glDepthMask(GL_TRUE);
         //END SKY BIT
         glBindVertexArray(wrap.vao);
-        
+
+
+        // Set the mvp matrix uniform in the shader
+
+
         glUseProgram(wrap.shaderProgram);
-       
+
+        GLuint mvpLoc = glGetUniformLocation(wrap.shaderProgram, "mvp");
+        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(wrap.mvp));
+
+        GLuint camPosLoc = glGetUniformLocation(wrap.shaderProgram, "camPos");
+        glUniform3f(camPosLoc, wrap.cameraPos.x, wrap.cameraPos.y, wrap.cameraPos.z);
 
 
+        GLuint uwLoc = glGetUniformLocation(wrap.shaderProgram, "underWater");
+        int uwV = (wrap.cameraPos.y < waterHeight) ? 1 : 0;
+        int uwFeet = (wrap.cameraPos.y-2 < waterHeight) ? 1 : 0;
+        glUniform1i(uwLoc, uwV);
+        float buoyancy = 0;
+        if (uwFeet == 1)
+        {
 
-
-
-
-        for (auto& entity : meshesView)
+            buoyancy = std::min(std::abs(wrap.cameraPos.y - waterHeight), 0.5f);
+        }
+        if (uwV == 1)
+        {
+            wrap.setFOV(70);
+        }
+        else {
+            wrap.setFOV(100);
+        }
+        for (const entt::entity entity : meshesView)
         {
             MeshComponent& m = game.registry.get<MeshComponent>(entity);
             wrap.bindGeometryNoUpload(
@@ -397,12 +419,18 @@ int main()
 
             glDrawArrays(GL_TRIANGLES, 0, m.length);
         }
-
+        glBindVertexArray(0);
         waterTile(
-            0.0f, 0.0f, 1.0f, 1.0f, 5.0f, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
+            0.0f, 0.0f, 1.0f, 1.0f, waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
+
+       
+
+
+
+
 
        // glDepthMask(GL_FALSE);
-        glBindVertexArray(0);
+
 
 
         float currentFrame = glfwGetTime();
@@ -428,11 +456,11 @@ int main()
             wrap.cameraPos += (dir * wrap.activeState.forwardVelocity) * 0.65f;
             wrap.activeState.forwardVelocity *= friction;
         }
-        if (wrap.activeState.jump)
+        /*if (wrap.activeState.jump)
         {
             jumpTimer += deltaTime/2.0f;
             velocity -= (deltaTime*25) - jumpTimer;
-        }
+        }*/
         intTup camTup((int)std::floor(wrap.cameraPos.x), (int)std::floor(wrap.cameraPos.z));
 
 
@@ -441,51 +469,66 @@ int main()
 
         if (game.world.heights.find(camTup) != game.world.heights.end()) {
         
+            if (uwFeet == 1) {
+                if (wrap.activeState.jump == true)
+                {
 
-            float xi = std::floor(wrap.cameraPos.x);
-            float zi = std::floor(wrap.cameraPos.z);
-            
-
-            float tx = wrap.cameraPos.x - xi;
-            float tz = wrap.cameraPos.z - zi;
-
-            float q11 = game.world.heights.at(camTup);
-            float q12 = game.world.heights.at(camTup + intTup(1, 0));
-            float q21 = game.world.heights.at(camTup + intTup(0,1));
-
-            float q22 = game.world.heights.at(camTup + intTup(1, 1));
-
-
-
-
-            //float height = (1 - tx) * (1 - tz) * q11 + tx * (1 - tz) * q21 + (1 - tx) * tz * q12 + tx * tz * q22;
-
-         // Perform bilinear interpolation
-            float height = glm::mix(glm::mix(q11, q12, tx), glm::mix(q21, q22, tx), tz);
-
-
-
-            if (wrap.cameraPos.y - 2 > height) {
-                velocity += deltaTime * 6;
+                    velocity -= buoyancy * 0.025;
+                }
 
             }
-            else {
-                //wrap.cameraPos.y += ( - ((wrap.cameraPos.y) - (height + 2))   )/4.0f;
-                wrap.cameraPos.y = height + 2;
-                //velocity = 0;
-                wrap.activeState.jump = false;
-                jumpTimer = 0.0f;
+             {
+                float xi = std::floor(wrap.cameraPos.x);
+                float zi = std::floor(wrap.cameraPos.z);
+
+
+                float tx = wrap.cameraPos.x - xi;
+                float tz = wrap.cameraPos.z - zi;
+
+                float q11 = game.world.heights.at(camTup);
+                float q12 = game.world.heights.at(camTup + intTup(1, 0));
+                float q21 = game.world.heights.at(camTup + intTup(0, 1));
+
+                float q22 = game.world.heights.at(camTup + intTup(1, 1));
+
+
+
+
+                //float height = (1 - tx) * (1 - tz) * q11 + tx * (1 - tz) * q21 + (1 - tx) * tz * q12 + tx * tz * q22;
+
+             // Perform bilinear interpolation
+                float height = glm::mix(glm::mix(q11, q12, tx), glm::mix(q21, q22, tx), tz);
+
+
+
+                if (wrap.cameraPos.y - 2 > height && uwFeet == 0) {
+                    velocity += deltaTime * 6;
+
+                }
+                else if (uwFeet == 0){
+                    //wrap.cameraPos.y += ( - ((wrap.cameraPos.y) - (height + 2))   )/4.0f;
+                    wrap.cameraPos.y = height + 2;
+                    //velocity = 0;
+                    //wrap.activeState.jump = false;
+                    jumpTimer = 0.0f;
+                }
+                else if (uwFeet == 1) {
+                    velocity += (deltaTime*0.05);
+                }
+
+               
+                if ((wrap.cameraPos.y - 2) - velocity >= height)
+                {
+                    wrap.cameraPos += glm::vec3(0, -velocity, 0);
+                }
+                else {
+                    wrap.cameraPos.y = height + 2;
+                    velocity = 0;
+                    //wrap.activeState.jump = false;
+                    jumpTimer = 0.0f;
+                }
             }
-            if ((wrap.cameraPos.y-2) - velocity >= height)
-            {
-                wrap.cameraPos += glm::vec3(0, -velocity, 0);
-            }
-            else {
-                wrap.cameraPos.y = height + 2;
-                velocity = 0;
-                wrap.activeState.jump = false;
-                jumpTimer = 0.0f;
-            }
+          
 
         }
         glfwPollEvents();

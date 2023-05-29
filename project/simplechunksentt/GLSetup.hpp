@@ -34,6 +34,10 @@ public:
 	bool firstMouse;
 	glm::mat4 view;
 	glm::mat4 model;
+
+	int wi;
+	int he;
+
 	glm::mat4 projection;
 	glm::mat4 mvp;
 	glm::vec3 direction;
@@ -45,6 +49,7 @@ public:
 	GLWrapper();
 	int initializeGL();
 	void runGLLoop();
+	void setFOV(int newF);
 	void bindGeometry(GLuint vbov, GLuint vboc, GLuint vbouv, const GLfloat* vertices, const GLfloat* colors, const GLfloat* uv, int vsize, int csize, int usize);
 	void bindGeometryNoUpload(GLuint vbov, GLuint vboc, GLuint vbouv);
 	void setupVAO();

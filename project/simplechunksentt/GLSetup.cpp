@@ -92,8 +92,15 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
         if (key == GLFW_KEY_SPACE)
         {
             if (action == GLFW_PRESS) instance->activeState.jump = true;
+            if (action == GLFW_RELEASE) instance->activeState.jump = false;
         }
     }
+}
+
+void GLWrapper::setFOV(int newFOV)
+{
+
+    projection = glm::perspective(glm::radians((float)newFOV), (float)this->wi / (float)this->he, 0.1f, 500.0f);
 }
 
 int GLWrapper::initializeGL() {
@@ -104,8 +111,8 @@ int GLWrapper::initializeGL() {
         return -1;
     }
 
-    int wi = 1900;
-    int he = 1060;
+    this->wi = 1900;
+    this->he = 1060;
     
 
     // Set up GLFW window hints
@@ -196,7 +203,7 @@ int GLWrapper::initializeGL() {
         "out vec4 FragColor;\n"
         "uniform sampler2D ourTexture;\n"
         "uniform vec3 camPos;\n"
-
+        "uniform int underWater;"
         "void main()\n"
         "{\n"
         "vec4 texColor = texture(ourTexture, TexCoord);\n"
@@ -209,9 +216,9 @@ int GLWrapper::initializeGL() {
         "       vec3 fogColor = vec3(0.2, 0.2, 0.8);\n" // Adjust the fog color as desired
 
         "float diss = pow(     gl_FragCoord.z , 2);\n"
-
+        "if(underWater == 0) {\n"
         "if(gl_FragCoord.z < 0.9965f) { diss = 0; } else { diss = (diss-0.9965f)*1000; }  \n"
-
+        "} else { diss = (diss-0.6)*4; } \n"
         "    vec3 finalColor = mix(vertexColor, fogColor, max(diss/2.5f, 0));\n"
         "    FragColor = mix(vec4(finalColor, 1.0) * texColor, vec4(fogColor, 1.0), max(diss/2.5f, 0));\n"
         "}\n";
@@ -343,12 +350,6 @@ void GLWrapper::orientCamera() {
     mvp = projection * view * model;
 
 
-    // Set the mvp matrix uniform in the shader
-    GLuint mvpLoc = glGetUniformLocation(shaderProgram, "mvp");
-    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-
-    GLuint camPosLoc = glGetUniformLocation(shaderProgram, "camPos");
-    glUniform3f(camPosLoc, this->cameraPos.x, this->cameraPos.y, this->cameraPos.z);
 
 }
 
