@@ -37,8 +37,6 @@ void SimpleChunk::rebuildMesh()
 	intTup overallTup(this->x, this->z);
 
 
-
-
 	for (int i = 0; i < CHUNK_WIDTH; i++)
 	{
 		for (int k = 0; k < CHUNK_WIDTH; k++)

@@ -102,6 +102,113 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
     glEnable(GL_DEPTH_TEST);
 }
 
+void waterTile(
+    float bot_r, float bot_g, float bot_b, float bot_a, float wheight, glm::mat4 mvp, glm::vec3 camPos)
+{
+    //glDisable(GL_DEPTH_TEST);
+    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    static GLuint water_vao = 0;
+    static GLuint water_shader = 0;
+
+    if (water_vao == 0)
+    {
+        glGenVertexArrays(1, &water_vao);
+
+        const GLchar* vs_src =
+            "#version 450 core\n"
+            "out vec2 v_uv;\n"
+            "uniform float wheight;\n"
+            "uniform mat4 mvp;\n"
+            "uniform vec2 camPos;\n"
+            "void main()\n"
+            " {\n"
+            " uint idx = gl_VertexID;\n"
+
+            " gl_Position = mvp * vec4(  ((camPos.x-2500) + (idx & 1)*5000), wheight, ((camPos.y - 2500) + (idx >> 1) * 5000), 1.0  ) * 5000.0 - 1.0;\n"
+            "gl_Position *= 1000.0f;\n"
+            "v_uv = vec2(gl_Position.xy * 0.5 + 0.5);\n"
+            "}";
+
+
+        const GLchar* fs_src =
+            " #version 450 core\n"
+            "uniform float time;\n"
+            "uniform vec4 base_color;\n"
+            "in vec2 v_uv;\n"
+            "out vec4 frag_color;\n"
+
+           " float rand(vec2 co) {\n"
+           " return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n"
+            " }\n"
+
+            "void main()\n"
+            "{\n"
+            "frag_color = vec4(1.0,1.0,1.0,1.0) * rand(vec2((v_uv.x + time)/100000000, (v_uv.y + time)/100000000));\n"
+            "}";
+
+        GLuint vs_id, fs_id;
+        vs_id = glCreateShader(GL_VERTEX_SHADER);
+        fs_id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(vs_id, 1, &vs_src, NULL);
+        glShaderSource(fs_id, 1, &fs_src, NULL);
+        glCompileShader(vs_id);
+
+        GLint success;
+        GLchar infoLog[512];
+        glGetShaderiv(vs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(vs_id, 512, NULL, infoLog);
+            std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
+        }
+
+        glCompileShader(fs_id);
+
+
+        glGetShaderiv(fs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(fs_id, 512, NULL, infoLog);
+            std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
+        }
+
+        water_shader = glCreateProgram();
+        glAttachShader(water_shader, vs_id);
+        glAttachShader(water_shader, fs_id);
+        glLinkProgram(water_shader);
+        glDetachShader(water_shader, fs_id);
+        glDetachShader(water_shader, vs_id);
+        glDeleteShader(fs_id);
+        glDeleteShader(vs_id);
+    }
+
+    glUseProgram(water_shader);
+    GLuint time_loc = glGetUniformLocation(water_shader, "time");
+    GLuint base_color_loc = glGetUniformLocation(water_shader, "base_color");
+    glUniform1f(time_loc, (float)glfwGetTime());
+    glUniform4f(base_color_loc, bot_r, bot_g, bot_b, bot_a);
+
+    GLuint mvp_loc = glGetUniformLocation(water_shader, "mvp");
+
+    glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+    GLuint camPos_loc = glGetUniformLocation(water_shader, "camPos");
+
+    glUniform2f(camPos_loc, camPos.x, camPos.z);
+
+
+    GLuint wheight_loc = glGetUniformLocation(water_shader, "wheight");
+
+    glUniform1f(wheight_loc, wheight);
+
+    glBindVertexArray(water_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+    //glEnable(GL_DEPTH_TEST);
+}
+
 int main()
 {
     GLWrapper wrap;
@@ -161,7 +268,10 @@ int main()
     float jumpTimer = 0.0f;
     while (!glfwWindowShouldClose(wrap.window))
     {
-
+       /* std::cout << wrap.cameraPos.x;
+        std::cout << "   z:";
+        std::cout << wrap.cameraPos.z;
+        std::cout << "   x:";*/
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         wrap.orientCamera();
@@ -170,11 +280,15 @@ int main()
  
         mygl_GradientBackground(0.5f, 0.5f, 1.0f, 1.0f,
             0.0f, 0.0f, 0.5f, 1.0f, wrap.cameraPitch);
+
+
+        waterTile(
+            0.0f, 0.0f, 1.0f, 1.0f, -10.0f, wrap.mvp, wrap.cameraPos + glm::vec3(1000, 0, 0));
         //END SKY BIT
         glBindVertexArray(wrap.vao);
         
         glUseProgram(wrap.shaderProgram);
-        glDepthMask(GL_TRUE);
+        //glDepthMask(GL_TRUE);
 
 
 
@@ -194,12 +308,18 @@ int main()
         }
 
 
+       // glDepthMask(GL_FALSE);
         glBindVertexArray(0);
+
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         wrap.deltaTime = deltaTime;
         lastFrame = currentFrame;
         game.updateTasks(deltaTime*10);
+
+
+
 
         glfwSwapBuffers(wrap.window);
 
@@ -221,6 +341,11 @@ int main()
             velocity -= (deltaTime*25) - jumpTimer;
         }
         intTup camTup((int)std::floor(wrap.cameraPos.x), (int)std::floor(wrap.cameraPos.z));
+
+
+
+
+
         if (game.world.heights.find(camTup) != game.world.heights.end()) {
         
 
