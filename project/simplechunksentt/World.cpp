@@ -41,11 +41,11 @@ int World::generateOneChunk(intTup coord) {
 			int localZ = realZ + z;
 
 			intTup tup(localX, localZ);
-			double noise = p.noise((double)localX / 65.25, 30.253, (double)localZ / 65.25)*25;
+			double noise = p.noise((double)localX / 125.25, 30.253, (double)localZ / 125.25)*25;
 
 				
 			
-				if (rando() < 0.005)
+				if (rando() < 0.0005)
 				{
 					Model m = Tree::getTreeModel(tup.x, noise, tup.z);
 					this->models.insert_or_assign(tup, m);
