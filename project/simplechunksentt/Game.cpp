@@ -141,8 +141,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z) * 9.0f;
-	int xSkew = (dir.x) * 9.0f;
+	int zSkew = (dir.z) * 13.0f;
+	int xSkew = (dir.x) * 13.0f;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 

@@ -502,7 +502,7 @@ int main()
 
 
                 if (wrap.cameraPos.y - 2 > height && uwFeet == 0) {
-                    velocity += deltaTime * 6;
+                    velocity += deltaTime;
 
                 }
                 else if (uwFeet == 0){
@@ -515,7 +515,7 @@ int main()
                 else if (uwFeet == 1) {
                     velocity += (deltaTime*0.05);
                 }
-
+                velocity = std::min(velocity, 0.25f);
                
                 if ((wrap.cameraPos.y - 2) - velocity >= height)
                 {
