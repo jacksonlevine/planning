@@ -136,6 +136,73 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 	instance = this;
 }
 
+void Game::initialSurvey()
+{
+
+	int x = this->wrap->cameraPos.x;
+
+	int y = this->wrap->cameraPos.y;
+
+	int z = this->wrap->cameraPos.z;
+
+	int chunkX = std::floor((x + (CHUNK_WIDTH - (x % CHUNK_WIDTH))) / CHUNK_WIDTH);
+	int chunkY = std::floor((y - (y % CHUNK_WIDTH)) / CHUNK_WIDTH);
+	int chunkZ = std::floor((z + (CHUNK_WIDTH - (z % CHUNK_WIDTH))) / CHUNK_WIDTH);
+	int j = 0;
+
+
+	for (int i = chunkX - 10; i < chunkX + 10; i++)
+	{
+
+		for (int k = chunkZ - 10; k < chunkZ + 10; k++)
+		{
+			intTup tup(i, j, k);
+
+			//Generate
+			if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
+			{
+				this->world.generateOneChunk(tup);
+			}
+			if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end())
+			{
+				if (simpleChunkPool.size() > 5) {
+					SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+					this->simpleChunkPool.erase(this->simpleChunkPool.begin());
+
+					grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
+
+					this->simpleChunkPool.push_back(grabbedSimp);
+				}
+			}
+
+			if (this->activeChunks.find(tup) == this->activeChunks.end())
+			{
+
+
+				//Or mesh
+				if (this->neededChunks.find(tup) == this->neededChunks.end() && this->world.hasBlockMarks.find(tup) != this->world.hasBlockMarks.end())
+				{
+					int head = 0;
+					int maxLoadUp = 8;
+					intTup test2(tup.x, tup.y - 1, tup.z);
+					if (this->neededChunks.find(test2) == this->neededChunks.end() && this->world.hasBlockMarks.find(test2) != this->world.hasBlockMarks.end())
+					{
+						this->neededChunks.insert(test2);
+					}
+					intTup test(tup.x, tup.y + head, tup.z);
+					while (this->neededChunks.find(test) == this->neededChunks.end() && this->world.hasBlockMarks.find(test) != this->world.hasBlockMarks.end() && head < maxLoadUp)
+					{
+						this->neededChunks.insert(test);
+						head += 1;
+						test = intTup(tup.x, tup.y + head, tup.z);
+					}
+				}
+
+			}
+		}
+	}
+}
+
 void Game::surveyNeededChunks()
 {
 	glm::vec3 dir = this->wrap->cameraDirection;

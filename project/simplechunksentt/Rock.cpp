@@ -4,33 +4,40 @@
 Model Rock::getRockModel(float x, float y, float z)
 {
 	Model model;
-	float height = 1.5 + (1.5 * rando());
 
 	float frown = rando()/2.0;
 
-	glm::vec3 fl(x - 0.8, y - 1.5, z - 0.8);
-	glm::vec3 fr(x + 0.8, y - 1.5, z - 0.8);
-	glm::vec3 br(x + 0.8, y - 1.5, z + 0.8);
-	glm::vec3 bl(x - 0.8, y - 1.5, z + 0.8);
+	float bottomTier = 1.8 + rando()/2.0;
+	float secondTierRecess = std::min(rando(), bottomTier-0.2f);
+	float topPointMag = rando();
+
+	float height = 1.5 + (1.5 * rando()) + (bottomTier * rando());
+
+	float sidesOffset = bottomTier;
+
+	glm::vec3 fl(x - bottomTier, y - 1.5, z - bottomTier);
+	glm::vec3 fr(x + bottomTier, y - 1.5, z - bottomTier);
+	glm::vec3 br(x + bottomTier, y - 1.5, z + bottomTier);
+	glm::vec3 bl(x - bottomTier, y - 1.5, z + bottomTier);
 
 	glm::vec3 centerf = glm::mix(fl, fr, 0.5) + glm::vec3(0, height, 0);
-	glm::vec3 centerfleft = glm::mix(fl, fr, 0.5) + glm::vec3(-0.4, height - frown, 0.4);
-	glm::vec3 centerfright = glm::mix(fl, fr, 0.5) + glm::vec3(0.4, height - frown, 0.4);
+	glm::vec3 centerfleft = glm::mix(fl, fr, 0.5) + glm::vec3(-sidesOffset, height - frown, secondTierRecess);
+	glm::vec3 centerfright = glm::mix(fl, fr, 0.5) + glm::vec3(sidesOffset, height - frown, secondTierRecess);
 
 	glm::vec3 centerl = glm::mix(fl, bl, 0.5) + glm::vec3(0, height, 0);
-	glm::vec3 centerlleft = glm::mix(fl, bl, 0.5) + glm::vec3(0.4, height - frown, 0.4);
-	glm::vec3 centerlright = glm::mix(fl, bl, 0.5) + glm::vec3(0.4, height - frown, -0.4);
+	glm::vec3 centerlleft = glm::mix(fl, bl, 0.5) + glm::vec3(secondTierRecess, height - frown, sidesOffset);
+	glm::vec3 centerlright = glm::mix(fl, bl, 0.5) + glm::vec3(secondTierRecess, height - frown, -sidesOffset);
 
 	glm::vec3 centerr = glm::mix(fr, br, 0.5) + glm::vec3(0, height, 0);
-	glm::vec3 centerrleft = glm::mix(fr, br, 0.5) + glm::vec3(-0.4, height - frown, -0.4);
-	glm::vec3 centerrright = glm::mix(fr, br, 0.5) + glm::vec3(-0.4, height - frown, 0.4);
+	glm::vec3 centerrleft = glm::mix(fr, br, 0.5) + glm::vec3(-secondTierRecess, height - frown, -sidesOffset);
+	glm::vec3 centerrright = glm::mix(fr, br, 0.5) + glm::vec3(-secondTierRecess, height - frown, sidesOffset);
 
 	glm::vec3 centerb = glm::mix(br, bl, 0.5) + glm::vec3(0, height, 0);
-	glm::vec3 centerbleft = glm::mix(br, bl, 0.5) + glm::vec3(0.4, height - frown, -0.4);
-	glm::vec3 centerbright = glm::mix(br, bl, 0.5) + glm::vec3(-0.4, height - frown, -0.4);
+	glm::vec3 centerbleft = glm::mix(br, bl, 0.5) + glm::vec3(sidesOffset, height - frown, -secondTierRecess);
+	glm::vec3 centerbright = glm::mix(br, bl, 0.5) + glm::vec3(-sidesOffset, height - frown, -secondTierRecess);
 
 
-		glm::vec3 topcenter = ((centerf + centerb + centerl + centerr) / 4.0f) + glm::vec3(0, rando(), 0);
+		glm::vec3 topcenter = ((centerf + centerb + centerl + centerr) / 4.0f) + glm::vec3(0, topPointMag, 0);
 
 
 	model.verts.insert(model.verts.end(), {

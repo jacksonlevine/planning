@@ -99,6 +99,7 @@ public:
     void addTask(std::function<void(Game* g)> func, float interval, uint8_t id);
     void removeTask(uint8_t id);
     void surveyNeededChunks();
+    void initialSurvey();
     void rebuildNextChunk();
     void sortChunkPool();
     static int compareChunksInPool(const void* a, const void* b);
