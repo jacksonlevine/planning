@@ -61,7 +61,7 @@ void SimpleChunk::rebuildMesh()
 				this->gref->modelShowerPool.push_back(grabbed);
 			}
 
-			uint8_t blockID = (this->gref->world.heights.at(tup) > -2 && this->gref->world.heights.at(tup) < 9) ? 0
+			uint8_t blockID = (this->gref->world.heights.at(tup) < -1.0) ? 3 : (this->gref->world.heights.at(tup) > -2 && this->gref->world.heights.at(tup) < 9) ? 0
 				: (this->gref->world.heights.at(tup) > 9 && this->gref->world.heights.at(tup) < 24) ? 1 : 0;
 
 			if (p3.noise(tup.x / 12.5f, tup.y / 12.5f, tup.z / 12.5f) * 10 > 5) blockID = 2;

@@ -103,6 +103,7 @@ TextureFace::TextureFace(
 
 enum MyFlags { 
 	COLORIZABLE = true,
+	NOT_COLORIZABLE = false,
 	UNIFORM = true,
 	NOT_UNIFORM = false
 };
@@ -138,8 +139,14 @@ const BlockType blockTypes[] = {
 			8, 0
 		),
 		COLORIZABLE,
-		glm::vec3(178.0/255.0, 119.0/255.0, 86.0/255.0),
+		glm::vec3(178.0 / 255.0, 119.0 / 255.0, 86.0 / 255.0),
 		0.00f
 	),
 
+	BlockType(
+		UNIFORM,
+		TextureFace(
+			9, 0
+		)
+	)
 };
