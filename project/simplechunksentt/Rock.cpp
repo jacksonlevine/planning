@@ -4,7 +4,7 @@
 Model Rock::getRockModel(float x, float y, float z)
 {
 	Model model;
-	float height = 1.5 * rando();
+	float height = 1.5 + (1.5 * rando());
 
 	float frown = rando()/2.0;
 
@@ -30,7 +30,7 @@ Model Rock::getRockModel(float x, float y, float z)
 	glm::vec3 centerbright = glm::mix(br, bl, 0.5) + glm::vec3(-0.4, height - frown, -0.4);
 
 
-		glm::vec3 topcenter = (centerf + centerb + centerl + centerr) / 4.0f;
+		glm::vec3 topcenter = ((centerf + centerb + centerl + centerr) / 4.0f) + glm::vec3(0, rando(), 0);
 
 
 	model.verts.insert(model.verts.end(), {
@@ -93,9 +93,9 @@ Model Rock::getRockModel(float x, float y, float z)
 
 				centerfleft.x, centerfleft.y, centerfleft.z,
 				centerf.x, centerf.y, centerf.z,
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 				centerf.x, centerf.y, centerf.z,
 				centerfright.x, centerfright.y, centerfright.z,
 
@@ -103,9 +103,9 @@ Model Rock::getRockModel(float x, float y, float z)
 
 				centerrleft.x, centerrleft.y, centerrleft.z,
 				centerr.x, centerr.y, centerr.z,
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 				centerr.x, centerr.y, centerr.z,
 				centerrright.x, centerrright.y, centerrright.z,
 
@@ -113,9 +113,9 @@ Model Rock::getRockModel(float x, float y, float z)
 
 				centerbleft.x, centerbleft.y, centerbleft.z,
 				centerb.x, centerb.y, centerb.z,
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 				centerb.x, centerb.y, centerb.z,
 				centerbright.x, centerbright.y, centerbright.z,
 
@@ -123,9 +123,9 @@ Model Rock::getRockModel(float x, float y, float z)
 
 				centerlleft.x, centerlleft.y, centerlleft.z,
 				centerl.x, centerl.y, centerl.z,
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 
-				topcenter.x, topcenter.y, topcenter.x,
+				topcenter.x, topcenter.y, topcenter.z,
 				centerl.x, centerl.y, centerl.z,
 				centerlright.x, centerlright.y, centerlright.z
 		});
