@@ -137,6 +137,7 @@
     <ClCompile Include="Maths.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Perlin.cpp" />
+    <ClCompile Include="Rock.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SimpleChunk.cpp" />
     <ClCompile Include="stb_image.cpp" />

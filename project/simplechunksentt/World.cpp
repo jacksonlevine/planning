@@ -50,6 +50,14 @@ int World::generateOneChunk(intTup coord) {
 					Model m = Tree::getTreeModel(tup.x, noise, tup.z);
 					this->models.insert_or_assign(tup, m);
 				}
+				else {
+					if (rando() < 0.001)
+					{
+						Model m = Rock::getRockModel(tup.x, noise, tup.z);
+						this->models.insert_or_assign(tup, m);
+					}
+				}
+
 				this->heights.insert_or_assign(tup, (float)noise);
 				
 
