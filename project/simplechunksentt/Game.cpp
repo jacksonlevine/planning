@@ -151,10 +151,10 @@ void Game::initialSurvey()
 	int j = 0;
 
 
-	for (int i = chunkX - 10; i < chunkX + 10; i++)
+	for (int i = chunkX - 20; i < chunkX + 20; i++)
 	{
 
-		for (int k = chunkZ - 10; k < chunkZ + 10; k++)
+		for (int k = chunkZ - 20; k < chunkZ + 20; k++)
 		{
 			intTup tup(i, j, k);
 

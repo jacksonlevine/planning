@@ -2,11 +2,15 @@
 #include "Tree.hpp"
 #include "Game.hpp"
 #include "Perlin.h"
-
+#include <time.h>
 #include "Maths.hpp"
 perlin p;
 
+long World::worldSeed = 0;
+
 void World::generate() {
+	srand(time(NULL));
+	worldSeed = 10000 + rand()*10000 + rand()*100000;
 	for (int x = -5; x < 5; x++)
 	{
 		for (int z = -5; z < 5; z++)
@@ -41,7 +45,7 @@ int World::generateOneChunk(intTup coord) {
 			int localZ = realZ + z;
 
 			intTup tup(localX, localZ);
-			double noise = p.noise((double)localX / 125.25, 30.253, (double)localZ / 125.25)*25;
+			double noise = p.noise((long double)(worldSeed + localX) / 125.25, 30.253, (long double)(worldSeed + localZ) / 125.25)*25;
 
 				
 			

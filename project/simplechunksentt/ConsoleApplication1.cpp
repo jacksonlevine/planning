@@ -13,7 +13,7 @@
 #include "BlockTypes.hpp"
 #include "entt/entt.hpp"
 #include "Scene.hpp"
-/*void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
+void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
     float bot_r, float bot_g, float bot_b, float bot_a, float cameraPitch)
 {
     glDisable(GL_DEPTH_TEST);
@@ -100,7 +100,7 @@
     glBindVertexArray(0);
 
     glEnable(GL_DEPTH_TEST);
-}*/
+}
 
 
 void waterTile(
@@ -224,11 +224,20 @@ void waterTile(
 
             "void main()\n"
             "{\n"
+            "       vec3 fogColor = vec3(0.1, 0.1, 0.5);\n" // Adjust the fog color as desired
+            "float diss = pow(     gl_FragCoord.z , 2);\n"
+            "if(gl_FragCoord.z < 0.9965f) { diss = 0; } else { diss = (diss-0.9965f)*1000; }  \n"
 
             "vec2 worldPosition = v_uv + vec2(gl_FragCoord.x, gl_FragCoord.y);"
             "float p1 =  gln_perlin(   vec3((worldPosition.x/1000.35) + time, time,  worldPosition.y/1000.35 + time)  );\n"
 
-            "frag_color = mix((vec4(1.0,1.0,1.0,0.3) * p1) , vec4(0.1, 0.2, 1.0, 1.0), 0.3);\n"
+            "vec4 texColor = mix((vec4(1.0,1.0,1.0,0.3) * p1) , vec4(0.0, 0.2, 1.0, 1.0), 0.6);\n"
+
+
+            "    frag_color = mix(texColor, vec4(fogColor, 1.0), max(diss/4f, 0));\n"
+
+
+            
             "}";
 
         GLuint vs_id, fs_id;
@@ -394,7 +403,7 @@ int main()
 
 
         GLuint uwLoc = glGetUniformLocation(wrap.shaderProgram, "underWater");
-        int uwV = (wrap.cameraPos.y < waterHeight) ? 1 : 0;
+        int uwV = (wrap.cameraPos.y - 0.15f < waterHeight) ? 1 : 0;
         int uwFeet = (wrap.cameraPos.y-2 < waterHeight) ? 1 : 0;
         glUniform1i(uwLoc, uwV);
         float buoyancy = 0;
@@ -403,12 +412,13 @@ int main()
 
             buoyancy = std::min(std::abs(wrap.cameraPos.y - waterHeight), 0.5f);
         }
+        int queueFOV = 0;
         if (uwV == 1)
         {
-            wrap.setFOV(70);
+            queueFOV = 70;
         }
         else {
-            wrap.setFOV(100);
+            queueFOV = 90;
         }
         for (const entt::entity entity : meshesView)
         {
@@ -419,6 +429,12 @@ int main()
                 m.vbouv);
 
             glDrawArrays(GL_TRIANGLES, 0, m.length);
+            
+        }
+        if (queueFOV != 0)
+        {
+
+            wrap.setFOV(queueFOV);
         }
         glBindVertexArray(0);
         waterTile(

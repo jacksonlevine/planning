@@ -62,6 +62,9 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> hasSimpMarks;
     std::unordered_map<intTup, Model, intTupHash> models;
     std::unordered_map<intTup, float, intTupHash> heights;
+
+    static long worldSeed;
+
     void generate();
     int generateOneChunk(intTup pos);
 };
