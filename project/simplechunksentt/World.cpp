@@ -25,6 +25,14 @@ std::vector<std::function<Model(float,float,float)>> objs = {
 	)
 	{
 		return Rock::getRockModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Tree::getPineTreeModel(x,y,z);
 	}
 };
 
