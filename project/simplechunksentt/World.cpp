@@ -8,6 +8,30 @@ perlin p;
 
 long World::worldSeed = 0;
 
+std::vector<std::function<Model(float,float,float)>> objs = {
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Tree::getTreeModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Rock::getRockModel(x,y,z);
+	}
+};
+
+Model nextModel(float x, float y, float z)
+{
+
+}
+
 void World::generate() {
 	srand(time(NULL));
 	worldSeed = 10000 + rand()*10000 + rand()*100000;
@@ -24,16 +48,12 @@ void World::generate() {
 }
 
 int World::generateOneChunk(intTup coord) {
-
-
+	
 	int realX = coord.x * CHUNK_WIDTH;
 	int realY = coord.y * CHUNK_WIDTH;
 	int realZ = coord.z * CHUNK_WIDTH;
 
 	int blockCount = 0;
-
-
-	//this->isHandledMarks.insert_or_assign(coord, 1);
 
 	this->hasSimpMarks.insert_or_assign(coord, 1);
 
