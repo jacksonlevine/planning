@@ -7,6 +7,7 @@
 perlin p;
 
 long World::worldSeed = 0;
+int modelNum = 0;
 
 std::vector<std::function<Model(float,float,float)>> objs = {
 	[](
@@ -29,7 +30,8 @@ std::vector<std::function<Model(float,float,float)>> objs = {
 
 Model nextModel(float x, float y, float z)
 {
-
+	modelNum = (modelNum + 1) % objs.size();
+	return objs[modelNum](x, y, z);
 }
 
 void World::generate() {
@@ -71,16 +73,10 @@ int World::generateOneChunk(intTup coord) {
 			
 				if (rando() < 0.0005)
 				{
-					Model m = Tree::getTreeModel(tup.x, noise, tup.z);
+					Model m = nextModel(tup.x, noise, tup.z);
 					this->models.insert_or_assign(tup, m);
 				}
-				else {
-					if (rando() < 0.001)
-					{
-						Model m = Rock::getRockModel(tup.x, noise, tup.z);
-						this->models.insert_or_assign(tup, m);
-					}
-				}
+
 
 				this->heights.insert_or_assign(tup, (float)noise);
 				

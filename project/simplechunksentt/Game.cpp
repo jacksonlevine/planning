@@ -242,6 +242,13 @@ void Game::surveyNeededChunks()
 				{
 					if (simpleChunkPool.size() > 5) {
 						SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+
+						if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
+						{
+							this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
+						}
+
+						grabbedSimp.active = false;
 						this->simpleChunkPool.erase(this->simpleChunkPool.begin());
 
 						grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);

@@ -226,7 +226,7 @@ void waterTile(
             "{\n"
             "       vec3 fogColor = vec3(0.1, 0.1, 0.5);\n" // Adjust the fog color as desired
             "float diss = pow(     gl_FragCoord.z , 2);\n"
-            "if(gl_FragCoord.z < 0.9965f) { diss = 0; } else { diss = (diss-0.9965f)*1000; }  \n"
+            "if(gl_FragCoord.z < 0.9965) { diss = 0; } else { diss = (diss-0.9965)*1000; }  \n"
 
             "vec2 worldPosition = v_uv + vec2(gl_FragCoord.x, gl_FragCoord.y);"
             "float p1 =  gln_perlin(   vec3((worldPosition.x/1000.35) + time, time,  worldPosition.y/1000.35 + time)  );\n"
@@ -234,7 +234,7 @@ void waterTile(
             "vec4 texColor = mix((vec4(1.0,1.0,1.0,0.3) * p1) , vec4(0.0, 0.2, 1.0, 1.0), 0.6);\n"
 
 
-            "    frag_color = mix(texColor, vec4(fogColor, 1.0), max(diss/4f, 0));\n"
+            "    frag_color = mix(texColor, vec4(fogColor, 1.0), max(diss/4.0, 0));\n"
 
 
             

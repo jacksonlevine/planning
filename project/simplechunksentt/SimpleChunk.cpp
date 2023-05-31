@@ -127,6 +127,21 @@ void SimpleChunk::rebuildMesh()
 			);
 			this->gref->registry.emplace<MeshComponent>(this->me, m);
 		}
+		else {
+			MeshComponent& m = this->gref->registry.get<MeshComponent>(this->me);
+			m.length = verts.size();
+			this->gref->wrap->bindGeometry(
+				m.vbov,
+				m.vboc,
+				m.vbouv,
+				&(this->verts[0]),
+				&(this->cols[0]),
+				&(this->uvs[0]),
+				verts.size() * sizeof(GLfloat),
+				cols.size() * sizeof(GLfloat),
+				uvs.size() * sizeof(GLfloat)
+			);
+		}
 	}
 }
 
