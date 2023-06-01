@@ -95,7 +95,7 @@ public:
     std::unordered_map<intTup, Chunk, intTupHash> activeChunks;
     std::unordered_set<intTup, intTupHash> neededChunks;
     std::vector<intTup> sortedNeededChunks;
-
+    float waterHeight;
     std::vector<ModelShower> modelShowerPool;
     std::vector<ModelShower> activeShowers;
 

@@ -365,7 +365,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     float velocity = 0.0f;
     float jumpTimer = 0.0f;
-    float waterHeight = -5.0f;
+    game.waterHeight = -5.0f;
     auto meshesView = game.registry.view<MeshComponent>();
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -403,14 +403,14 @@ int main()
 
 
         GLuint uwLoc = glGetUniformLocation(wrap.shaderProgram, "underWater");
-        int uwV = (wrap.cameraPos.y - 0.15f < waterHeight) ? 1 : 0;
-        int uwFeet = (wrap.cameraPos.y-2 < waterHeight) ? 1 : 0;
+        int uwV = (wrap.cameraPos.y - 0.15f < game.waterHeight) ? 1 : 0;
+        int uwFeet = (wrap.cameraPos.y-2 < game.waterHeight) ? 1 : 0;
         glUniform1i(uwLoc, uwV);
         float buoyancy = 0;
         if (uwFeet == 1)
         {
 
-            buoyancy = std::min(std::abs(wrap.cameraPos.y - waterHeight), 0.5f);
+            buoyancy = std::min(std::abs(wrap.cameraPos.y - game.waterHeight), 0.5f);
         }
         int queueFOV = 0;
         if (uwV == 1)
@@ -438,7 +438,7 @@ int main()
         }
         glBindVertexArray(0);
         waterTile(
-            0.0f, 0.0f, 1.0f, 1.0f, waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
+            0.0f, 0.0f, 1.0f, 1.0f, game.waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
 
        
 

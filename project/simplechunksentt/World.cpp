@@ -72,7 +72,9 @@ std::vector<Biome> biomes =
 
 Model nextModel(float x, float y, float z, Biome& biome)
 {
+
 	modelNum = (modelNum + 1) % biome.objectsHere.size();
+
 	return biome.objectsHere[modelNum](x, y, z);
 }
 
@@ -111,9 +113,9 @@ int World::generateOneChunk(intTup coord) {
 			intTup tup(localX, localZ);
 			double noise = p.noise((long double)(worldSeed + localX) / 125.25, 30.253, (long double)(worldSeed + localZ) / 125.25)*25;
 			double bigNoise = p.noise((long double)(worldSeed + localX) / 200.25, 30.253, (long double)(worldSeed + localZ) / 200.25);
-			int biomeID = bigNoise > 0.5 ? 0 : 1;
+			int biomeID = bigNoise > 0 ? 0 : 1;
 			Biome& biome = biomes[biomeID];
-				if (rando() < 0.0005)
+				if (rando() < 0.0005 && noise > Game::instance->waterHeight)
 				{
 					Model m = nextModel(tup.x, noise, tup.z, biome);
 					this->models.insert_or_assign(tup, m);
