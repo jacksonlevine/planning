@@ -51,11 +51,17 @@ std::vector<Biome> biomes =
 {
 	Biome(
 		objs,
-		[](intTup tup, Game* gref){
-			return (gref->world.heights.at(tup) < -1.0) ? 3 : (gref->world.heights.at(tup) > -2 && gref->world.heights.at(tup) < 9) ? 0
-				: (gref->world.heights.at(tup) > 9 && gref->world.heights.at(tup) < 24) ? 1 : 0;
+		[](float height) {
+			return (height < -1.0) ? 3 : (height > -2 && height < 9) ? 0
+				: (height > 9 && height < 24) ? 1 : 0;
 		}
-	)
+	),
+	Biome(
+		objs2,
+		[](float height) {
+			return 1;
+		}
+	),
 };
 
 
@@ -64,10 +70,10 @@ std::vector<Biome> biomes =
 
 
 
-Model nextModel(float x, float y, float z)
+Model nextModel(float x, float y, float z, Biome& biome)
 {
-	modelNum = (modelNum + 1) % objs.size();
-	return objs[modelNum](x, y, z);
+	modelNum = (modelNum + 1) % biome.objectsHere.size();
+	return biome.objectsHere[modelNum](x, y, z);
 }
 
 void World::generate() {
@@ -104,17 +110,19 @@ int World::generateOneChunk(intTup coord) {
 
 			intTup tup(localX, localZ);
 			double noise = p.noise((long double)(worldSeed + localX) / 125.25, 30.253, (long double)(worldSeed + localZ) / 125.25)*25;
-
-				
-			
+			double bigNoise = p.noise((long double)(worldSeed + localX) / 200.25, 30.253, (long double)(worldSeed + localZ) / 200.25);
+			int biomeID = bigNoise > 0.5 ? 0 : 1;
+			Biome& biome = biomes[biomeID];
 				if (rando() < 0.0005)
 				{
-					Model m = nextModel(tup.x, noise, tup.z);
+					Model m = nextModel(tup.x, noise, tup.z, biome);
 					this->models.insert_or_assign(tup, m);
 				}
+				HeightTile h;
+				h.height = (float)noise;
+				h.blockID = biome.blockIdFunction((float)noise);
 
-
-				this->heights.insert_or_assign(tup, (float)noise);
+				this->heights.insert_or_assign(tup, h);
 				
 
 			

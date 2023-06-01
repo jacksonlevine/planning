@@ -502,11 +502,11 @@ int main()
                 float tx = wrap.cameraPos.x - xi;
                 float tz = wrap.cameraPos.z - zi;
 
-                float q11 = game.world.heights.at(camTup);
-                float q12 = game.world.heights.at(camTup + intTup(1, 0));
-                float q21 = game.world.heights.at(camTup + intTup(0, 1));
+                float q11 = game.world.heights.at(camTup).height;
+                float q12 = game.world.heights.at(camTup + intTup(1, 0)).height;
+                float q21 = game.world.heights.at(camTup + intTup(0, 1)).height;
 
-                float q22 = game.world.heights.at(camTup + intTup(1, 1));
+                float q22 = game.world.heights.at(camTup + intTup(1, 1)).height;
 
 
 

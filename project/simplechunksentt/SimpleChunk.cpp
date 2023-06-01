@@ -60,20 +60,19 @@ void SimpleChunk::rebuildMesh()
 
 				this->gref->modelShowerPool.push_back(grabbed);
 			}
-
-			uint8_t blockID = (this->gref->world.heights.at(tup) < -1.0) ? 3 : (this->gref->world.heights.at(tup) > -2 && this->gref->world.heights.at(tup) < 9) ? 0
-				: (this->gref->world.heights.at(tup) > 9 && this->gref->world.heights.at(tup) < 24) ? 1 : 0;
+			HeightTile& tile = this->gref->world.heights.at(tup);
+			uint8_t blockID = tile.blockID;
 
 			if (p3.noise(tup.x / 12.5f, tup.y / 12.5f, tup.z / 12.5f) * 10 > 5) blockID = 2;
 
 			verts.insert(verts.end(), {
-				(float)(tup.x), this->gref->world.heights.at(tup), (float)(tup.z),
-				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,0)), (float)(tup.z),
-				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,1)), (float)(tup.z) + 1,
+				(float)(tup.x), tile.height, (float)(tup.z),
+				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,0)).height, (float)(tup.z),
+				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,1)).height, (float)(tup.z) + 1,
 
-				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,1)), (float)(tup.z) + 1,
-				(float)(tup.x), this->gref->world.heights.at(tup + intTup(0,1)), (float)(tup.z) + 1,
-				(float)(tup.x), this->gref->world.heights.at(tup), (float)(tup.z),
+				(float)(tup.x) + 1, this->gref->world.heights.at(tup + intTup(1,1)).height, (float)(tup.z) + 1,
+				(float)(tup.x), this->gref->world.heights.at(tup + intTup(0,1)).height, (float)(tup.z) + 1,
+				(float)(tup.x), tile.height, (float)(tup.z),
 				});
 			TextureFace face = blockTypes[blockID].top;
 			glm::vec3 color = blockTypes[blockID].baseColor;
