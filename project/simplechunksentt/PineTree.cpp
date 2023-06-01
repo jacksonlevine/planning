@@ -7,7 +7,10 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 
 	float height = 7.0f + (rando() * 5.0f);
 
-	glm::vec3 centerBottom(x + 0.5, y, z + 0.5);
+	glm::vec3 centerBottom(x + 0.5, y-1.0, z + 0.5);
+
+	float leavesStart = height * 0.35;
+
 
 
 	TextureFace logFace(10, 0);
