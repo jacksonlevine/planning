@@ -2,7 +2,7 @@
 
 Biome::Biome(
 	std::vector<std::function<Model(float, float, float)>> oh,
-	std::function<uint8_t(float, float, float)> bidf
+	std::function<uint8_t(intTup, Game*)> bidf
 ) :
 	objectsHere(oh),
 	blockIdFunction(bidf)

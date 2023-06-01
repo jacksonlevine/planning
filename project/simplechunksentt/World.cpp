@@ -4,12 +4,14 @@
 #include "Perlin.h"
 #include <time.h>
 #include "Maths.hpp"
+#include "Biomes.hpp"
+
 perlin p;
 
 long World::worldSeed = 0;
 int modelNum = 0;
 
-std::vector<std::function<Model(float,float,float)>> objs = {
+std::vector<std::function<Model(float, float, float)>> objs = {
 	[](
 		float x,
 		float y,
@@ -18,6 +20,16 @@ std::vector<std::function<Model(float,float,float)>> objs = {
 	{
 		return Tree::getTreeModel(x,y,z);
 	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Rock::getRockModel(x,y,z);
+	}
+};
+std::vector<std::function<Model(float, float, float)>> objs2 = {
 	[](
 		float x,
 		float y,
@@ -35,6 +47,22 @@ std::vector<std::function<Model(float,float,float)>> objs = {
 		return Tree::getPineTreeModel(x,y,z);
 	}
 };
+std::vector<Biome> biomes =
+{
+	Biome(
+		objs,
+		[](intTup tup, Game* gref){
+			return (gref->world.heights.at(tup) < -1.0) ? 3 : (gref->world.heights.at(tup) > -2 && gref->world.heights.at(tup) < 9) ? 0
+				: (gref->world.heights.at(tup) > 9 && gref->world.heights.at(tup) < 24) ? 1 : 0;
+		}
+	)
+};
+
+
+
+
+
+
 
 Model nextModel(float x, float y, float z)
 {

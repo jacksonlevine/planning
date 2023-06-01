@@ -53,6 +53,13 @@ public:
     void moveAndRebuildMesh(int newX, int newY, int newZ);
  };
 
+struct HeightTile
+{
+public:
+    float height;
+    uint8_t blockID;
+};
+
 class World {
 public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> data;
@@ -61,7 +68,7 @@ public:
     folly::F14FastMap<intTup, uint8_t, intTupHash> isHandledMarks;
     folly::F14FastMap<intTup, uint8_t, intTupHash> hasSimpMarks;
     std::unordered_map<intTup, Model, intTupHash> models;
-    std::unordered_map<intTup, float, intTupHash> heights;
+    std::unordered_map<intTup, HeightTile, intTupHash> heights;
 
     static long worldSeed;
 

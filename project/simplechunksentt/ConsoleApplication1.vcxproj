@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Biomes.cpp" />
     <ClCompile Include="BlockTypes.cpp" />
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Biomes.hpp" />
     <ClInclude Include="BlockTypes.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GLSetup.hpp" />
