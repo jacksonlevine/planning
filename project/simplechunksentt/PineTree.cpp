@@ -5,7 +5,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 {
 	Model model;
 
-	const float height = 7.0f + (rando() * 5.0f);
+	float height = 7.0f + (rando() * 5.0f);
 
 	glm::vec3 centerBottom(x + 0.5, y-1.0, z + 0.5);
 
@@ -32,7 +32,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 		 centerFront.x, centerFront.y, centerFront.z,
 		 center.x, center.y, center.z,
 
-		 // DING!
+		 // DIN
 
 		 center.x, center.y, center.z,
 		 centerFront.x, centerFront.y, centerFront.z,
@@ -62,7 +62,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 
 
 		 leftBack.x, leftBack.y, leftBack.z,
-		 centerRight.x, centerRight.y, centerRight.z,
+		 centerLeft.x, centerLeft.y, centerLeft.z,
 		 center.x, center.y, center.z,
 
 
@@ -75,14 +75,14 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 
 
 
-	const float leavesStart = height * 0.35;
-	const float inter = 1.0 + (rando()/8);
-	for (float i = leavesStart; i < height; i+= inter)	
+	float leavesStart = height * 0.35;
+	float inter = 1.0 + (rando()/8);
+	for (float i = leavesStart; i < height; i+= inter)
 	{
-		float factor = (height - (i + 1));
+		
 		for (int v = 0; v < 72; v+=3)
 		{
-			
+			float factor = (height - (i));
 			model.verts.insert(model.verts.end(), {
 					(leafCircle[v]*factor)+centerBottom.x, i+ leafCircle[v+1], (leafCircle[v+2]*factor)+centerBottom.z
 				});
@@ -91,6 +91,8 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 				});
 		}
 		model.uvs.insert(model.uvs.end(), {
+
+
 				topRight.br.x, topRight.br.y,
 				topLeft.bl.x, topLeft.bl.y,
 				bottomLeft.tl.x, bottomLeft.tl.y,
@@ -123,7 +125,10 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 				bottomRight.tr.x, bottomRight.tr.y,
 				topRight.br.x, topRight.br.y,
 			});
+	
+	
 	}
+
 
 	TextureFace logFace(10, 0);
 	model.verts.insert(model.verts.end(), {
