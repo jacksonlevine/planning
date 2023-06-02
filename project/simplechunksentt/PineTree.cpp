@@ -5,7 +5,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 {
 	Model model;
 
-	float height = 7.0f + (rando() * 5.0f);
+	const float height = 7.0f + (rando() * 5.0f);
 
 	glm::vec3 centerBottom(x + 0.5, y-1.0, z + 0.5);
 
@@ -75,13 +75,14 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 
 
 
-	float leavesStart = height * 0.35;
-	float inter = 0.5 + (rando()/8);
-	for (float i = leavesStart; i < height; i+= inter)
+	const float leavesStart = height * 0.35;
+	const float inter = 1.0 + (rando()/8);
+	for (float i = leavesStart; i < height; i+= inter)	
 	{
-		for (int v = 0; v < 24*3; v+=3)
+		float factor = (height - (i + 1));
+		for (int v = 0; v < 72; v+=3)
 		{
-			float factor = (height - (i+1));
+			
 			model.verts.insert(model.verts.end(), {
 					(leafCircle[v]*factor)+centerBottom.x, i+ leafCircle[v+1], (leafCircle[v+2]*factor)+centerBottom.z
 				});
