@@ -32,7 +32,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 		 centerFront.x, centerFront.y, centerFront.z,
 		 center.x, center.y, center.z,
 
-
+		 // DING!
 
 		 center.x, center.y, center.z,
 		 centerFront.x, centerFront.y, centerFront.z,
@@ -177,5 +177,6 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 		logFace.br.x, logFace.br.y,
 		logFace.tl.x, logFace.tl.y,
 		});
+
 	return model;
 }
