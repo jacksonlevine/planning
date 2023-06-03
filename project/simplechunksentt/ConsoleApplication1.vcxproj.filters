@@ -63,6 +63,9 @@
     <ClCompile Include="Biomes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Cactus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSetup.hpp">

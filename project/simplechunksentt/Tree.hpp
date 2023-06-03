@@ -14,3 +14,7 @@
 		static Model getRockModel(float x, float y, float z);
 	};
 
+	class Plant {
+	public:
+		static Model getCactusModel(float x, float y, float z);
+	};

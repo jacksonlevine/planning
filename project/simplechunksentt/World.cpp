@@ -11,7 +11,7 @@ perlin p;
 long World::worldSeed = 0;
 int modelNum = 0;
 
-std::vector<std::function<Model(float, float, float)>> objs = {
+std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	[](
 		float x,
 		float y,
@@ -29,7 +29,7 @@ std::vector<std::function<Model(float, float, float)>> objs = {
 		return Rock::getRockModel(x,y,z);
 	}
 };
-std::vector<std::function<Model(float, float, float)>> objs2 = {
+std::vector<std::function<Model(float, float, float)>> mountainObjs = {
 	[](
 		float x,
 		float y,
@@ -47,21 +47,38 @@ std::vector<std::function<Model(float, float, float)>> objs2 = {
 		return Tree::getPineTreeModel(x,y,z);
 	}
 };
+
+std::vector<std::function<Model(float, float, float)>> desertObjs = {
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getCactusModel(x,y,z);
+	}
+};
 std::vector<Biome> biomes =
 {
 	Biome(
-		objs,
+		forestObjs,
 		[](float height) {
 			return (height < -1.0) ? 3 : (height > -2 && height < 9) ? 0
 				: (height > 9 && height < 24) ? 1 : 0;
 		}
 	),
 	Biome(
-		objs2,
+		mountainObjs,
 		[](float height) {
 			return 1;
 		}
 	),
+	Biome(
+		desertObjs,
+		[](float height) {
+			return 3;
+		}
+	)
 };
 
 
@@ -113,7 +130,8 @@ int World::generateOneChunk(intTup coord) {
 			intTup tup(localX, localZ);
 			double noise = p.noise((long double)(worldSeed + localX) / 125.25, 30.253, (long double)(worldSeed + localZ) / 125.25)*25;
 			double bigNoise = p.noise((long double)(worldSeed + localX) / 200.25, 30.253, (long double)(worldSeed + localZ) / 200.25);
-			int biomeID = bigNoise > 0 ? 0 : 1;
+			int biomeID = (int)std::abs(bigNoise * 10);
+
 			Biome& biome = biomes[biomeID];
 				if (rando() < 0.0005 && noise > Game::instance->waterHeight)
 				{
