@@ -148,5 +148,12 @@ const BlockType blockTypes[] = {
 		TextureFace(
 			9, 0
 		)
+	),
+
+	BlockType(
+		UNIFORM,
+		TextureFace(
+		0, 1
+		)
 	)
 };

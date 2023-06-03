@@ -16,5 +16,6 @@
 
 	class Plant {
 	public:
-		static Model getCactusModel(float x, float y, float z);
+		static Model getPricklyPearCactusModel(float x, float y, float z);
+		static Model getSaguaroCactusModel(float x, float y, float z);
 	};

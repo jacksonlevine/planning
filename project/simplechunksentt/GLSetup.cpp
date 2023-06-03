@@ -1,5 +1,5 @@
 #include "GLSetup.hpp";
-
+#include "Game.hpp";
 
 GLWrapper* GLWrapper::instance = nullptr;
 
@@ -74,8 +74,7 @@ void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action
         }
         if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            instance->firstMouse = true;
+            Game::instance->onRightClick();
         }
     }
 }
@@ -93,6 +92,11 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
         {
             if (action == GLFW_PRESS) instance->activeState.jump = true;
             if (action == GLFW_RELEASE) instance->activeState.jump = false;
+        }
+        if (key == GLFW_KEY_ESCAPE)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            instance->firstMouse = true;
         }
     }
 }

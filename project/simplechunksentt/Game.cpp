@@ -96,6 +96,62 @@ int Game::compareChunksInPool(const void* a, const void* b)
 	}
 	return 0;
 }
+
+intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance) {
+	float distanceTraveled = 0;
+	float currentX = x;
+	float currentY = y;
+	float currentZ = z;
+
+	while (distanceTraveled < maxDistance) {
+		currentX += d.x * 0.1;
+		currentY += d.y * 0.1;
+		currentZ += d.z * 0.1;
+		distanceTraveled += 0.1;
+	
+
+			intTup key((int)currentX, (int)currentZ);
+	if (this->world.heights.find(key) != this->world.heights.end()) {
+		if (this->world.heights.at(key).height >= currentY)
+		{
+			return intTup((int)currentX, (int)currentY, (int)currentZ);
+		}
+	}
+	}
+
+	return intTup(-69000,69000,0);
+};
+
+void Game::placeBlock(intTup spot, uint8_t blockID)
+{
+	intTup chunkSpot(spot.x / this->chunkWidth, spot.y / this->chunkWidth, spot.z / this->chunkWidth);
+	this->world.data.insert_or_assign(spot, blockID);
+	if (this->world.hasBlockMarks.find(chunkSpot) == this->world.hasBlockMarks.end())
+	{
+		this->world.hasBlockMarks.insert_or_assign(chunkSpot, 1);
+	}
+	if (this->activeChunks.find(chunkSpot) == this->activeChunks.end())
+	{
+		this->neededChunks.insert(chunkSpot);
+	}
+	else {
+		this->activeChunks.at(chunkSpot).rebuildMesh();
+	}
+}
+
+void Game::onRightClick() {
+	glm::vec3& pos = this->wrap->cameraPos;
+	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, wrap->cameraDirection, 7.0f) + intTup(0, 2, 0);
+	std::cout << "   x";
+	std::cout << result.x;
+	std::cout << "   y";
+	std::cout << result.y;
+	if (!(result == intTup(-69000, 69000, 0)))
+	{
+		placeBlock(result, 1);
+	}
+}
+
 void Game::sortChunkPool() {
 	if (this->chunkPool.size() > 0) {
 		std::qsort(&(this->chunkPool[0]), this->chunkPool.size(), sizeof(Chunk), this->compareChunksInPool);

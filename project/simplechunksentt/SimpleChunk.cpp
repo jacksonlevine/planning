@@ -63,7 +63,7 @@ void SimpleChunk::rebuildMesh()
 			HeightTile& tile = this->gref->world.heights.at(tup);
 			uint8_t blockID = tile.blockID;
 
-			if (p3.noise(tup.x / 12.5f, tup.y / 12.5f, tup.z / 12.5f) * 10 > 5) blockID = 2;
+			//if (p3.noise(tup.x / 12.5f, tup.y / 12.5f, tup.z / 12.5f) * 10 > 5) blockID = 2;
 
 			verts.insert(verts.end(), {
 				(float)(tup.x), tile.height, (float)(tup.z),

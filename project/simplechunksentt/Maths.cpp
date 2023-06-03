@@ -11,9 +11,9 @@ glm::vec3 rotateVector(glm::vec3 direction, float angleDegrees) {
     direction = glm::normalize(direction);
 
     // Create a rotation matrix
-    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angleDegrees), direction);
+    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angleDegrees), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Transform the original direction vector by the rotation matrix
+    // Transform the direction vector by the rotation matrix
     glm::vec4 rotatedVec4 = rotationMatrix * glm::vec4(direction, 0.0f);
 
     // Convert the resulting vec4 back to vec3

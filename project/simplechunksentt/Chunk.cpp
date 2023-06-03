@@ -9,14 +9,9 @@ Chunk::Chunk(Game* gref) {
 	this->x = 20000;
 	this->y = 20000;
 	this->z = 20000;
-	this->vboc = (GLuint)0;
-	this->vbov = (GLuint)0;
-	this->vbouv = (GLuint)0;
+	this->me = this->gref->registry.create();
 	this->dirty = true;
 	this->bufferDeleted = true;
-	glGenBuffers(1,&(this->vbov));
-	glGenBuffers(1,&(this->vboc));
-	glGenBuffers(1, &(this->vbouv));
 }
 
 void Chunk::rebuildMesh() {
@@ -780,7 +775,38 @@ void Chunk::rebuildMesh() {
 			}
 		}
 	}
-	this->dirty = true;
+	//this->dirty = true;
+	if (!this->gref->registry.all_of<MeshComponent>(this->me))
+	{
+		MeshComponent m;
+		m.length = vertices.size();
+		this->gref->wrap->bindGeometry(
+			m.vbov,
+			m.vboc,
+			m.vbouv,
+			&(vertices[0]),
+			&(colors[0]),
+			&(uv[0]),
+			vertices.size(),
+			colors.size(),
+			uv.size()
+		);
+		this->gref->registry.emplace<MeshComponent>(this->me, m);
+	}
+	else {
+		MeshComponent& m = this->gref->registry.get<MeshComponent>(this->me);
+		this->gref->wrap->bindGeometry(
+			m.vbov,
+			m.vboc,
+			m.vbouv,
+			&(vertices[0]),
+			&(colors[0]),
+			&(uv[0]),
+			vertices.size(),
+			colors.size(),
+			uv.size()
+		);
+	}
 }
 
 void Chunk::moveAndRebuildMesh(int newX, int newY, int newZ) {

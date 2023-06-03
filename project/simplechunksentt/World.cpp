@@ -55,7 +55,15 @@ std::vector<std::function<Model(float, float, float)>> desertObjs = {
 		float z
 	)
 	{
-		return Plant::getCactusModel(x,y,z);
+		return Plant::getPricklyPearCactusModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getSaguaroCactusModel(x,y,z);
 	}
 };
 std::vector<Biome> biomes =
@@ -76,7 +84,7 @@ std::vector<Biome> biomes =
 	Biome(
 		desertObjs,
 		[](float height) {
-			return 3;
+			return 4;
 		}
 	)
 };
@@ -128,9 +136,9 @@ int World::generateOneChunk(intTup coord) {
 			int localZ = realZ + z;
 
 			intTup tup(localX, localZ);
-			double noise = p.noise((long double)(worldSeed + localX) / 125.25, 30.253, (long double)(worldSeed + localZ) / 125.25)*25;
-			double bigNoise = p.noise((long double)(worldSeed + localX) / 200.25, 30.253, (long double)(worldSeed + localZ) / 200.25);
-			int biomeID = (int)std::abs(bigNoise * 10);
+			double noise = p.noise((long double)(worldSeed + localX) / 200.25, 30.253, (long double)(worldSeed + localZ) / 200.25)*25;
+			double bigNoise = p.noise((long double)(worldSeed + localX) / 300.25, 30.253, (long double)(worldSeed + localZ) / 300.25);
+			int biomeID = std::max(std::min((int)std::abs(((1 + bigNoise)/2.0f) * 10), (int)biomes.size()-1), 0);
 
 			Biome& biome = biomes[biomeID];
 				if (rando() < 0.0005 && noise > Game::instance->waterHeight)

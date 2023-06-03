@@ -43,9 +43,7 @@ public:
     bool bufferDeleted;
     Chunk(Game* gref);
     Game* gref;
-    GLuint vbov;
-    GLuint vboc;
-    GLuint vbouv;
+    entt::entity me;
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
     std::vector<GLfloat> uv;
@@ -105,6 +103,9 @@ public:
     entt::registry registry;
 
     Game(GLWrapper* wr);
+    intTup castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance);
+    void onRightClick();
+    void placeBlock(intTup spot, uint8_t blockID);
     void updateTasks(float delt);
     void addTask(std::function<void(Game* g)> func, float interval, uint8_t id);
     void removeTask(uint8_t id);
