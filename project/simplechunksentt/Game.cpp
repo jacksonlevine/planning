@@ -125,6 +125,12 @@ intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDi
 void Game::placeBlock(intTup spot, uint8_t blockID)
 {
 	intTup chunkSpot(spot.x / this->chunkWidth, spot.y / this->chunkWidth, spot.z / this->chunkWidth);
+	std::cout << "  x";
+	std::cout << chunkSpot.x;
+	std::cout << "  y";
+	std::cout << chunkSpot.y;
+	std::cout << "  z";
+	std::cout << chunkSpot.z;
 	this->world.data.insert_or_assign(spot, blockID);
 	if (this->world.hasBlockMarks.find(chunkSpot) == this->world.hasBlockMarks.end())
 	{
@@ -132,7 +138,10 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 	}
 	if (this->activeChunks.find(chunkSpot) == this->activeChunks.end())
 	{
-		this->neededChunks.insert(chunkSpot);
+
+		Chunk& grabbed = this->chunkPool[0];
+		grabbed.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
+		//this->neededChunks.insert(chunkSpot);
 	}
 	else {
 		this->activeChunks.at(chunkSpot).rebuildMesh();
@@ -142,10 +151,10 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 void Game::onRightClick() {
 	glm::vec3& pos = this->wrap->cameraPos;
 	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, wrap->cameraDirection, 7.0f) + intTup(0, 2, 0);
-	std::cout << "   x";
+	/*std::cout << "   x";
 	std::cout << result.x;
 	std::cout << "   y";
-	std::cout << result.y;
+	std::cout << result.y;*/
 	if (!(result == intTup(-69000, 69000, 0)))
 	{
 		placeBlock(result, 1);
@@ -174,7 +183,7 @@ void Game::removeTask(uint8_t id)
 
 
 Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		Chunk c(this);
 		this->chunkPool.push_back(c);
