@@ -780,9 +780,9 @@ void Chunk::rebuildMesh() {
 			&(vertices[0]),
 			&(colors[0]),
 			&(uv[0]),
-			vertices.size(),
-			colors.size(),
-			uv.size()
+			sizeof(GLfloat) * vertices.size(),
+			sizeof(GLfloat)* colors.size(),
+			sizeof(GLfloat)* uv.size()
 		);
 		this->gref->registry.emplace<MeshComponent>(this->me, m);
 	}
@@ -795,9 +795,9 @@ void Chunk::rebuildMesh() {
 			&(vertices[0]),
 			&(colors[0]),
 			&(uv[0]),
-			vertices.size(),
-			colors.size(),
-			uv.size()
+			sizeof(GLfloat)* vertices.size(),
+			sizeof(GLfloat)* colors.size(),
+			sizeof(GLfloat)* uv.size()
 		);
 	}
 }
