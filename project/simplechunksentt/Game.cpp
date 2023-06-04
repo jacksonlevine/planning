@@ -114,7 +114,7 @@ intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDi
 	if (this->world.heights.find(key) != this->world.heights.end()) {
 		if (this->world.heights.at(key).height >= currentY)
 		{
-			return intTup((int)currentX, (int)currentY, (int)currentZ);
+			return intTup((int)std::floor(currentX), (int)std::floor(currentY), (int)std::floor(currentZ));
 		}
 	}
 	}
@@ -124,23 +124,19 @@ intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDi
 
 void Game::placeBlock(intTup spot, uint8_t blockID)
 {
-	intTup chunkSpot(spot.x / this->chunkWidth, spot.y / this->chunkWidth, spot.z / this->chunkWidth);
-	std::cout << "  x";
-	std::cout << chunkSpot.x;
-	std::cout << "  y";
-	std::cout << chunkSpot.y;
-	std::cout << "  z";
-	std::cout << chunkSpot.z;
+	int chunkX = std::floor((spot.x  - (spot.x % CHUNK_WIDTH)) / CHUNK_WIDTH);
+	int chunkY = std::floor((spot.y - (spot.y % CHUNK_WIDTH)) / CHUNK_WIDTH);
+	int chunkZ = std::floor((spot.z - (spot.z % CHUNK_WIDTH)) / CHUNK_WIDTH);
+	intTup chunkSpot(chunkX, chunkY, chunkZ);
+
 	this->world.data.insert_or_assign(spot, blockID);
-	if (this->world.hasBlockMarks.find(chunkSpot) == this->world.hasBlockMarks.end())
-	{
-		this->world.hasBlockMarks.insert_or_assign(chunkSpot, 1);
-	}
+	this->world.hasBlockMarks.insert_or_assign(chunkSpot, 1);
+
 	if (this->activeChunks.find(chunkSpot) == this->activeChunks.end())
 	{
-
-		Chunk& grabbed = this->chunkPool[0];
-		grabbed.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
+		//Chunk& grabbed = this->chunkPool[0];
+		//grabbed.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
+		std::cout << "NEEDED!";
 		//this->neededChunks.insert(chunkSpot);
 	}
 	else {
@@ -150,7 +146,7 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 
 void Game::onRightClick() {
 	glm::vec3& pos = this->wrap->cameraPos;
-	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, wrap->cameraDirection, 7.0f) + intTup(0, 2, 0);
+	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, glm::normalize(wrap->cameraDirection), 7.0f);
 	/*std::cout << "   x";
 	std::cout << result.x;
 	std::cout << "   y";
@@ -292,7 +288,7 @@ void Game::surveyNeededChunks()
 	int chunkX = std::floor((x + (CHUNK_WIDTH - (x % CHUNK_WIDTH))) / CHUNK_WIDTH);
 	int chunkY = std::floor((y  - (y % CHUNK_WIDTH)) / CHUNK_WIDTH);
 	int chunkZ = std::floor((z + (CHUNK_WIDTH - (z % CHUNK_WIDTH))) / CHUNK_WIDTH);
-	int j = 0;
+	int j = chunkY-1;
 	
 
 		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
@@ -359,7 +355,7 @@ void Game::surveyNeededChunks()
 
 void Game::rebuildNextChunk()
 {
-	if (this->neededChunks.size() > 1)
+	if (this->neededChunks.size() > 0)
 	{
 		intTup neededSpot = *(this->neededChunks.begin());
 		this->neededChunks.erase(this->neededChunks.begin());
