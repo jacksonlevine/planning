@@ -288,7 +288,7 @@ void Game::surveyNeededChunks()
 	int chunkX = std::floor((x + (CHUNK_WIDTH - (x % CHUNK_WIDTH))) / CHUNK_WIDTH);
 	int chunkY = std::floor((y  - (y % CHUNK_WIDTH)) / CHUNK_WIDTH);
 	int chunkZ = std::floor((z + (CHUNK_WIDTH - (z % CHUNK_WIDTH))) / CHUNK_WIDTH);
-	int j = chunkY-1;
+	int j = 0;
 	
 
 		int dirxn = std::floor(xSkew > 0 ? 1 : std::round(std::abs(xSkew)));
