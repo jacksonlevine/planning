@@ -134,19 +134,19 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 	model.verts.insert(model.verts.end(), {
 			centerBottom.x-0.3f, centerBottom.y, centerBottom.z-0.3f,
 			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z - 0.3f,
-			centerBottom.x, centerBottom.y+height, centerBottom.z,
+			centerBottom.x, centerBottom.y+height - 3.0f, centerBottom.z,
 
 			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z - 0.3f,
 			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z + 0.3f,
-			centerBottom.x, centerBottom.y + height, centerBottom.z,
+			centerBottom.x, centerBottom.y + height - 3.0f, centerBottom.z,
 
 			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z + 0.3f,
 			centerBottom.x - 0.3f, centerBottom.y, centerBottom.z + 0.3f,
-			centerBottom.x, centerBottom.y + height, centerBottom.z,
+			centerBottom.x, centerBottom.y + height - 3.0f, centerBottom.z,
 
 			centerBottom.x - 0.3f, centerBottom.y, centerBottom.z + 0.3f,
 			centerBottom.x - 0.3f, centerBottom.y, centerBottom.z - 0.3f,
-			centerBottom.x, centerBottom.y + height, centerBottom.z,
+			centerBottom.x, centerBottom.y + height - 3.0f, centerBottom.z,
 		});
 
 	model.cols.insert(model.cols.end(), {

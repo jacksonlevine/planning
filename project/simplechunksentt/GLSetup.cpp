@@ -228,7 +228,7 @@ int GLWrapper::initializeGL() {
 
             // Calculate the distance between fragment and camera
 
-        "       vec3 fogColor = vec3(0.2, 0.3, 0.6);\n" // Adjust the fog color as desired
+        "       vec3 fogColor = vec3(0.2, 0.2, 0.7);\n" // Adjust the fog color as desired
 
         "float diss = pow(     gl_FragCoord.z , 2);\n"
         "if(underWater == 0) {\n"
