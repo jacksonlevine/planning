@@ -303,8 +303,6 @@ void Game::initialSurvey()
 
 void Game::surveyNeededChunks()
 {
-	std::cout << this->activeChunks.size();
-	std::cout << "  ";
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
