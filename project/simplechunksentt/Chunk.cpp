@@ -4,8 +4,7 @@
 
 perlin p2;
 
-Chunk::Chunk(Game* gref) {
-	this->gref = gref;
+Chunk::Chunk(Game* gref) : active(false), gref(gref){
 	this->x = 20000;
 	this->y = 20000;
 	this->z = 20000;
@@ -769,6 +768,10 @@ void Chunk::rebuildMesh() {
 		}
 	}
 	//this->dirty = true;
+	if (!this->active) {
+		this->gref->activeChunks.insert_or_assign(tup2, *this);
+		this->active = true;
+	}
 	if (!this->gref->registry.all_of<MeshComponent>(this->me))
 	{
 		MeshComponent m;
@@ -788,6 +791,7 @@ void Chunk::rebuildMesh() {
 	}
 	else {
 		MeshComponent& m = this->gref->registry.get<MeshComponent>(this->me);
+		m.length = vertices.size();
 		this->gref->wrap->bindGeometry(
 			m.vbov,
 			m.vboc,

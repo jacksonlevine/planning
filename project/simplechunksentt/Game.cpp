@@ -111,11 +111,16 @@ intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDi
 	
 
 			intTup key((int)currentX, (int)currentZ);
+			intTup key1((int)currentX, (int)currentY, (int)currentZ);
 	if (this->world.heights.find(key) != this->world.heights.end()) {
 		if (this->world.heights.at(key).height >= currentY)
 		{
-			return intTup((int)std::floor(currentX), (int)std::floor(currentY), (int)std::floor(currentZ));
+			return intTup((int)std::floor(currentX), (int)std::ceil(currentY), (int)std::floor(currentZ));
 		}
+	}
+	if (this->world.data.find(key1) != this->world.data.end())
+	{
+		return intTup((int)std::floor(currentX), (int)std::ceil(currentY), (int)std::floor(currentZ));
 	}
 	}
 
@@ -124,9 +129,9 @@ intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDi
 
 void Game::placeBlock(intTup spot, uint8_t blockID)
 {
-	int chunkX = std::floor((spot.x  - (spot.x % CHUNK_WIDTH)) / CHUNK_WIDTH);
-	int chunkY = std::floor((spot.y - (spot.y % CHUNK_WIDTH)) / CHUNK_WIDTH);
-	int chunkZ = std::floor((spot.z - (spot.z % CHUNK_WIDTH)) / CHUNK_WIDTH);
+	int chunkX = (int)std::round(spot.x  / CHUNK_WIDTH);
+	int chunkY = (int)std::round(spot.y  / CHUNK_WIDTH);
+	int chunkZ = (int)std::round(spot.z  / CHUNK_WIDTH);
 	intTup chunkSpot(chunkX, chunkY, chunkZ);
 
 	this->world.data.insert_or_assign(spot, blockID);
@@ -134,10 +139,27 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 
 	if (this->activeChunks.find(chunkSpot) == this->activeChunks.end())
 	{
-		//Chunk& grabbed = this->chunkPool[0];
-		//grabbed.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
-		std::cout << "NEEDED!";
-		//this->neededChunks.insert(chunkSpot);
+
+			if (chunkPool.size() > 0)
+			{
+				Chunk grabbedChunk = *(this->chunkPool.begin());
+				this->chunkPool.erase(this->chunkPool.begin());
+				intTup grabbedSpot(grabbedChunk.x, grabbedChunk.y, grabbedChunk.z);
+				if (grabbedChunk.active)
+				{
+					activeChunks.erase(grabbedSpot);
+					grabbedChunk.active = false;
+				}
+
+
+				//grabbedChunk.bufferDeleted = true;
+				grabbedChunk.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
+
+				//activeChunks.insert_or_assign(neededSpot, grabbedChunk);
+				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
+
+			}
+
 	}
 	else {
 		this->activeChunks.at(chunkSpot).rebuildMesh();
@@ -367,16 +389,17 @@ void Game::rebuildNextChunk()
 				Chunk grabbedChunk = *(this->chunkPool.begin());
 				this->chunkPool.erase(this->chunkPool.begin());
 				intTup grabbedSpot(grabbedChunk.x, grabbedChunk.y, grabbedChunk.z);
-				if (this->activeChunks.find(grabbedSpot) != this->activeChunks.end())
+				if (grabbedChunk.active)
 				{
 					activeChunks.erase(grabbedSpot);
+					grabbedChunk.active = false;
 				}
 
 			
 				//grabbedChunk.bufferDeleted = true;
 				grabbedChunk.moveAndRebuildMesh(neededSpot.x, neededSpot.y, neededSpot.z);
 
-				activeChunks.insert_or_assign(neededSpot, grabbedChunk);
+				//activeChunks.insert_or_assign(neededSpot, grabbedChunk);
 				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
 				
 			}

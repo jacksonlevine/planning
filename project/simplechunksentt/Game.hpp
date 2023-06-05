@@ -41,6 +41,7 @@ public:
     int z;
     bool dirty;
     bool bufferDeleted;
+    bool active;
     Chunk(Game* gref);
     Game* gref;
     entt::entity me;
