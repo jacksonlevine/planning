@@ -97,30 +97,38 @@ int Game::compareChunksInPool(const void* a, const void* b)
 	return 0;
 }
 
-intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance) {
+intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance, float stepBack) {
 	float distanceTraveled = 0;
 	float currentX = x;
 	float currentY = y;
 	float currentZ = z;
 
 	while (distanceTraveled < maxDistance) {
-		currentX += d.x * 0.1;
-		currentY += d.y * 0.1;
-		currentZ += d.z * 0.1;
-		distanceTraveled += 0.1;
+		currentX += d.x * 0.05;
+		currentY += d.y * 0.05;
+		currentZ += d.z * 0.05;
+		distanceTraveled += 0.05;
 	
-
-			intTup key((int)currentX, (int)currentZ);
-			intTup key1((int)currentX, (int)currentY, (int)currentZ);
+		int blockX = currentX >= 0 ? (int)std::floor(currentX) : (int)std::ceil(currentX) - 1;
+		int blockY = currentY >= 0 ? (int)std::floor(currentY) : (int)std::ceil(currentY) - 1;
+		int blockZ = currentZ >= 0 ? (int)std::floor(currentZ) : (int)std::ceil(currentZ) - 1;
+			intTup key(blockX, blockZ);
+			intTup key1(blockX, blockY, blockZ);
 	if (this->world.heights.find(key) != this->world.heights.end()) {
 		if (this->world.heights.at(key).height >= currentY)
 		{
-			return intTup((int)std::floor(currentX), (int)std::ceil(currentY), (int)std::floor(currentZ));
+			int blockX2 = currentX >= 0 ? (int)std::floor(currentX) : (int)std::ceil(currentX) - 1;
+			int blockY2 = currentY + stepBack >= 0 ? (int)std::floor(currentY + stepBack) : (int)std::ceil(currentY + stepBack) - 1;
+			int blockZ2 = currentZ >= 0 ? (int)std::floor(currentZ) : (int)std::ceil(currentZ) - 1;
+			return intTup(blockX2, blockY2, blockZ2);
 		}
 	}
 	if (this->world.data.find(key1) != this->world.data.end())
 	{
-		return intTup((int)std::floor(currentX), (int)std::ceil(currentY), (int)std::floor(currentZ));
+		int blockX2 = currentX - d.x * stepBack >= 0 ? (int)std::floor(currentX - d.x * stepBack) : (int)std::ceil(currentX - d.x * stepBack) - 1;
+		int blockY2 = currentY - d.y * stepBack >= 0 ? (int)std::floor(currentY - d.y * stepBack) : (int)std::ceil(currentY - d.y * stepBack) - 1;
+		int blockZ2 = currentZ - d.z * stepBack >= 0 ? (int)std::floor(currentZ - d.z * stepBack) : (int)std::ceil(currentZ - d.z * stepBack) - 1;
+		return intTup(blockX2, blockY2, blockZ2);
 	}
 	}
 
@@ -168,7 +176,7 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 
 void Game::onRightClick() {
 	glm::vec3& pos = this->wrap->cameraPos;
-	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, glm::normalize(wrap->cameraDirection), 7.0f);
+	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, glm::normalize(wrap->cameraDirection), 7.0f, 0.08f);
 	/*std::cout << "   x";
 	std::cout << result.x;
 	std::cout << "   y";

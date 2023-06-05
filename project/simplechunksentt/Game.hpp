@@ -104,7 +104,7 @@ public:
     entt::registry registry;
 
     Game(GLWrapper* wr);
-    intTup castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance);
+    intTup castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance, float stepBack);
     void onRightClick();
     void placeBlock(intTup spot, uint8_t blockID);
     void updateTasks(float delt);
