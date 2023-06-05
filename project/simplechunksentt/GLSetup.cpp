@@ -62,6 +62,7 @@ void GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
 }
+bool captured = false;
 
 void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -69,8 +70,17 @@ void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action
     {
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            instance->firstMouse = true;
+            if (!captured)
+            {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                instance->firstMouse = true;
+                captured = true;
+            }
+            else
+            {
+                Game::instance->onLeftClick();
+            }
+
         }
         if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
         {

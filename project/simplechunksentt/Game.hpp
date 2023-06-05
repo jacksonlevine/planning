@@ -106,7 +106,9 @@ public:
     Game(GLWrapper* wr);
     intTup castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDistance, float stepBack);
     void onRightClick();
+    void onLeftClick();
     void placeBlock(intTup spot, uint8_t blockID);
+    void breakBlock(intTup spot);
     void updateTasks(float delt);
     void addTask(std::function<void(Game* g)> func, float interval, uint8_t id);
     void removeTask(uint8_t id);

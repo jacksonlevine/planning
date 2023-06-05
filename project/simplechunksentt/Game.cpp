@@ -174,6 +174,48 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 	}
 }
 
+void Game::breakBlock(intTup spot)
+{
+	int chunkX = spot.x < 0 ? ((int)spot.x - CHUNK_WIDTH + 1) / CHUNK_WIDTH : (int)spot.x / CHUNK_WIDTH;
+	int chunkY = spot.y < 0 ? ((int)spot.y - CHUNK_WIDTH + 1) / CHUNK_WIDTH : (int)spot.y / CHUNK_WIDTH;
+	int chunkZ = spot.z < 0 ? ((int)spot.z - CHUNK_WIDTH + 1) / CHUNK_WIDTH : (int)spot.z / CHUNK_WIDTH;
+	intTup chunkSpot(chunkX, chunkY, chunkZ);
+	if (this->world.data.find(spot) != this->world.data.end())
+	{
+		this->world.data.erase(spot);
+
+		if (this->activeChunks.find(chunkSpot) == this->activeChunks.end())
+		{
+
+			if (chunkPool.size() > 0)
+			{
+				Chunk grabbedChunk = *(this->chunkPool.begin());
+				this->chunkPool.erase(this->chunkPool.begin());
+				intTup grabbedSpot(grabbedChunk.x, grabbedChunk.y, grabbedChunk.z);
+				if (grabbedChunk.active == true)
+				{
+					activeChunks.erase(grabbedSpot);
+					grabbedChunk.active = false;
+				}
+
+
+				//grabbedChunk.bufferDeleted = true;
+				grabbedChunk.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
+				//activeChunks.insert_or_assign(neededSpot, grabbedChunk);
+				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
+
+			}
+
+
+		}
+		else {
+			this->activeChunks.at(chunkSpot).rebuildMesh();
+		}
+	}
+		
+	
+}
+
 void Game::onRightClick() {
 	glm::vec3& pos = this->wrap->cameraPos;
 	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, glm::normalize(wrap->cameraDirection), 7.0f, 0.08f);
@@ -184,6 +226,16 @@ void Game::onRightClick() {
 	if (!(result == intTup(-69000, 69000, 0)))
 	{
 		placeBlock(result, 1);
+	}
+}
+
+void Game::onLeftClick() {
+	glm::vec3& pos = this->wrap->cameraPos;
+	intTup result = this->castRayBlocking(pos.x, pos.y, pos.z, glm::normalize(wrap->cameraDirection), 7.0f, 0.00f);
+
+	if (!(result == intTup(-69000, 69000, 0)))
+	{
+		breakBlock(result);
 	}
 }
 
