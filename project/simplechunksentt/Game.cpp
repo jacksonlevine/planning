@@ -129,9 +129,9 @@ intTup Game::castRayBlocking(float x, float y, float z, glm::vec3 d, float maxDi
 
 void Game::placeBlock(intTup spot, uint8_t blockID)
 {
-	int chunkX = (int)std::round(spot.x  / CHUNK_WIDTH);
-	int chunkY = (int)std::round(spot.y  / CHUNK_WIDTH);
-	int chunkZ = (int)std::round(spot.z  / CHUNK_WIDTH);
+	int chunkX = spot.x < 0 ? ((int)spot.x - CHUNK_WIDTH + 1) / CHUNK_WIDTH : (int)spot.x / CHUNK_WIDTH;
+	int chunkY = spot.y < 0 ? ((int)spot.y - CHUNK_WIDTH + 1) / CHUNK_WIDTH : (int)spot.y / CHUNK_WIDTH;
+	int chunkZ = spot.z < 0 ? ((int)spot.z - CHUNK_WIDTH + 1) / CHUNK_WIDTH : (int)spot.z / CHUNK_WIDTH;
 	intTup chunkSpot(chunkX, chunkY, chunkZ);
 
 	this->world.data.insert_or_assign(spot, blockID);
@@ -145,7 +145,7 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 				Chunk grabbedChunk = *(this->chunkPool.begin());
 				this->chunkPool.erase(this->chunkPool.begin());
 				intTup grabbedSpot(grabbedChunk.x, grabbedChunk.y, grabbedChunk.z);
-				if (grabbedChunk.active)
+				if (grabbedChunk.active == true)
 				{
 					activeChunks.erase(grabbedSpot);
 					grabbedChunk.active = false;
@@ -154,11 +154,11 @@ void Game::placeBlock(intTup spot, uint8_t blockID)
 
 				//grabbedChunk.bufferDeleted = true;
 				grabbedChunk.moveAndRebuildMesh(chunkSpot.x, chunkSpot.y, chunkSpot.z);
-
 				//activeChunks.insert_or_assign(neededSpot, grabbedChunk);
 				this->chunkPool.insert(this->chunkPool.end(), grabbedChunk);
 
 			}
+
 
 	}
 	else {
@@ -295,6 +295,8 @@ void Game::initialSurvey()
 
 void Game::surveyNeededChunks()
 {
+	std::cout << this->activeChunks.size();
+	std::cout << "  ";
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 

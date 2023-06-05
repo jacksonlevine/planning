@@ -400,13 +400,13 @@ void Chunk::rebuildMesh() {
 	else
 	*/
 	{
-		for (int y = 0; y < width; y++)
+		for (int y2 = 0; y2 < width; y2++)
 		{
-			for (int z = 0; z < width; z++)
+			for (int z2 = 0; z2 < width; z2++)
 			{
-				for (int x = 0; x < width; x++)
+				for (int x2 = 0; x2 < width; x2++)
 				{
-					intTup tup((this->x * this->gref->chunkWidth) + x, (this->y * this->gref->chunkWidth) + y, (this->z * this->gref->chunkWidth) + z);
+					intTup tup((this->x * CHUNK_WIDTH) +x2 , (this->y * CHUNK_WIDTH) + y2, (this->z * CHUNK_WIDTH) + z2);
 
 					if (this->gref->world.data.find(tup) != this->gref->world.data.end())
 					{
@@ -780,12 +780,12 @@ void Chunk::rebuildMesh() {
 			m.vbov,
 			m.vboc,
 			m.vbouv,
-			&(vertices[0]),
-			&(colors[0]),
-			&(uv[0]),
-			sizeof(GLfloat) * vertices.size(),
-			sizeof(GLfloat)* colors.size(),
-			sizeof(GLfloat)* uv.size()
+			&(this->vertices[0]),
+			&(this->colors[0]),
+			&(this->uv[0]),
+			this->vertices.size() * sizeof(GLfloat),
+			this->colors.size() * sizeof(GLfloat),
+			this->uv.size() * sizeof(GLfloat)
 		);
 		this->gref->registry.emplace<MeshComponent>(this->me, m);
 	}
@@ -796,12 +796,12 @@ void Chunk::rebuildMesh() {
 			m.vbov,
 			m.vboc,
 			m.vbouv,
-			&(vertices[0]),
-			&(colors[0]),
-			&(uv[0]),
-			sizeof(GLfloat)* vertices.size(),
-			sizeof(GLfloat)* colors.size(),
-			sizeof(GLfloat)* uv.size()
+			&(this->vertices[0]),
+			&(this->colors[0]),
+			&(this->uv[0]),
+			this->vertices.size() * sizeof(GLfloat),
+			this->colors.size() * sizeof(GLfloat),
+			this->uv.size() * sizeof(GLfloat)
 		);
 	}
 }
