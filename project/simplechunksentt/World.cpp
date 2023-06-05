@@ -73,19 +73,22 @@ std::vector<Biome> biomes =
 		[](float height) {
 			return (height < -1.0) ? 3 : (height > -2 && height < 9) ? 0
 				: (height > 9 && height < 24) ? 1 : 0;
-		}
+		},
+		1
 	),
 	Biome(
 		mountainObjs,
 		[](float height) {
-			return 1;
-		}
+			return 5;
+		},
+		10
 	),
 	Biome(
 		desertObjs,
 		[](float height) {
 			return 4;
-		}
+		},
+		1
 	)
 };
 
@@ -141,7 +144,7 @@ int World::generateOneChunk(intTup coord) {
 			int biomeID = std::max(std::min((int)std::abs(((bigNoise*6))), (int)biomes.size()-1), 0);
 
 			Biome& biome = biomes[biomeID];
-				if (rando() < 0.0005 && noise > Game::instance->waterHeight)
+				if (rando() < (0.0005 * biome.objectFrequency) && noise > Game::instance->waterHeight)
 				{
 					Model m = nextModel(tup.x, noise, tup.z, biome);
 					this->models.insert_or_assign(tup, m);

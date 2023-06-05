@@ -8,8 +8,8 @@ Model Rock::getRockModel(float x, float y, float z)
 	float frown = rando()/2.0;
 
 	float bottomTier = 1.8 + rando()/2.0;
-	float secondTierRecess = std::min(rando(), bottomTier-0.2f);
-	float topPointMag = rando();
+	float secondTierRecess = std::min(rando(), bottomTier-1.0f);
+	float topPointMag = 1.0 + rando()* 2;
 
 	float height = 1.5 + (1.5 * rando()) + (bottomTier * rando());
 

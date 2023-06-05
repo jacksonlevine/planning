@@ -326,6 +326,8 @@ int main()
 
 
 
+
+
     /*TEXTURE BIT*/
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -365,7 +367,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     float velocity = 0.0f;
     float jumpTimer = 0.0f;
-    game.waterHeight = -5.0f;
+    game.waterHeight = -4.5f;
     auto meshesView = game.registry.view<MeshComponent>();
     while (!glfwWindowShouldClose(wrap.window))
     {
