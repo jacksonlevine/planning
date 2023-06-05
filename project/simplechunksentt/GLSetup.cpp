@@ -107,6 +107,7 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
         {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             instance->firstMouse = true;
+            captured = false;
         }
     }
 }
