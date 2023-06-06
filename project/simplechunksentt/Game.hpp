@@ -99,7 +99,9 @@ public:
     std::vector<ModelShower> activeShowers;
 
     std::vector<SimpleChunk> simpleChunkPool;
+    std::vector<ZeroChunk> zeroChunkPool;
     std::unordered_map<intTup, SimpleChunk, intTupHash> activeSimpChunks;
+    std::unordered_map<intTup, ZeroChunk, intTupHash> activeZeroChunks;
 
     entt::registry registry;
 

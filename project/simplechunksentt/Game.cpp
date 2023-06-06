@@ -276,6 +276,11 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 		SimpleChunk s(this);
 		this->simpleChunkPool.push_back(s);
 	}
+	for (int i = 0; i < 2000; i++)
+	{
+		ZeroChunk s(this);
+		this->zeroChunkPool.push_back(s);
+	}
 	instance = this;
 }
 
@@ -294,36 +299,73 @@ void Game::initialSurvey()
 	int j = 0;
 
 
-	for (int i = chunkX - 20; i < chunkX + 20; i++)
+	for (int i = chunkX - 40; i < chunkX + 40; i++)
 	{
 
-		for (int k = chunkZ - 20; k < chunkZ + 20; k++)
+		for (int k = chunkZ - 40; k < chunkZ + 40; k++)
 		{
 			intTup tup(i, j, k);
-
+			int distance = (int)glm::distance(wrap->cameraPos / (float)CHUNK_WIDTH, glm::vec3(i, j, k));
 			//Generate
-			if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
-			{
-				this->world.generateOneChunk(tup);
-			}
-			if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end())
-			{
-				if (simpleChunkPool.size() > 5) {
-					SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
-					this->simpleChunkPool.erase(this->simpleChunkPool.begin());
 
-					if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
-					{
-						this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
+			if (distance > 13)
+			{
+				if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
+				{
+					this->world.generateOneChunk(tup);
+				}
+				if (this->activeZeroChunks.find(tup) == this->activeZeroChunks.end())
+				{
+					if (zeroChunkPool.size() > 5) {
+						ZeroChunk grabbedZero = *(this->zeroChunkPool.begin());
+
+						if (this->activeZeroChunks.find(intTup(grabbedZero.x, grabbedZero.z)) != this->activeZeroChunks.end())
+						{
+							this->activeZeroChunks.erase(intTup(grabbedZero.x, grabbedZero.z));
+						}
+
+						grabbedZero.active = false;
+						this->zeroChunkPool.erase(this->zeroChunkPool.begin());
+
+						grabbedZero.moveAndRebuildMesh(tup.x, tup.z);
+
+						this->zeroChunkPool.push_back(grabbedZero);
 					}
-
-					grabbedSimp.active = false;
-
-					grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
-
-					this->simpleChunkPool.push_back(grabbedSimp);
 				}
 			}
+			else
+			{
+				if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
+				{
+					this->world.generateOneChunk(tup);
+				}
+				if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end() || this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
+				{
+					if (this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
+					{
+						ZeroChunk& zer = this->activeZeroChunks.at(tup);
+						this->registry.remove<MeshComponent>(zer.me);
+						this->activeZeroChunks.erase(tup);
+						zer.active = false;
+					}
+					if (simpleChunkPool.size() > 5) {
+						SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+
+						if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
+						{
+							this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
+						}
+
+						grabbedSimp.active = false;
+						this->simpleChunkPool.erase(this->simpleChunkPool.begin());
+
+						grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
+
+						this->simpleChunkPool.push_back(grabbedSimp);
+					}
+				}
+			}
+
 
 			if (this->activeChunks.find(tup) == this->activeChunks.end())
 			{
@@ -358,8 +400,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z) * 13.0f;
-	int xSkew = (dir.x) * 13.0f;
+	int zSkew = (dir.z) * 48.0f;
+	int xSkew = (dir.x) * 48.0f;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
@@ -382,30 +424,67 @@ void Game::surveyNeededChunks()
 			for (int k = chunkZ - dirzn - 1; k < chunkZ + dirzp + 1; k++)
 			{
 				intTup tup(i, j, k);
-
+				int distance = (int)glm::distance(wrap->cameraPos / (float)CHUNK_WIDTH, glm::vec3(i, j, k));
 				//Generate
-				if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
-				{
-					this->world.generateOneChunk(tup);
-				}
-				if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end())
-				{
-					if (simpleChunkPool.size() > 5) {
-						SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
 
-						if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
-						{
-							this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
+				if (distance > 13)
+				{
+					if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
+					{
+						this->world.generateOneChunk(tup);
+					}
+					if (this->activeZeroChunks.find(tup) == this->activeZeroChunks.end())
+					{
+						if (zeroChunkPool.size() > 5) {
+							ZeroChunk grabbedZero = *(this->zeroChunkPool.begin());
+
+							if (this->activeZeroChunks.find(intTup(grabbedZero.x, grabbedZero.z)) != this->activeZeroChunks.end())
+							{
+								this->activeZeroChunks.erase(intTup(grabbedZero.x, grabbedZero.z));
+							}
+
+							grabbedZero.active = false;
+							this->zeroChunkPool.erase(this->zeroChunkPool.begin());
+
+							grabbedZero.moveAndRebuildMesh(tup.x, tup.z);
+
+							this->zeroChunkPool.push_back(grabbedZero);
 						}
-
-						grabbedSimp.active = false;
-						this->simpleChunkPool.erase(this->simpleChunkPool.begin());
-
-						grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
-
-						this->simpleChunkPool.push_back(grabbedSimp);
 					}
 				}
+				else
+				{
+					if (this->world.hasSimpMarks.find(tup) == this->world.hasSimpMarks.end())
+					{
+						this->world.generateOneChunk(tup);
+					}
+					if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end() || this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
+					{
+						if (this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
+						{
+							ZeroChunk& zer = this->activeZeroChunks.at(tup);
+							this->registry.remove<MeshComponent>(zer.me);
+							this->activeZeroChunks.erase(tup);
+							zer.active = false;
+						}
+						if (simpleChunkPool.size() > 5) {
+							SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+
+							if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
+							{
+								this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
+							}
+
+							grabbedSimp.active = false;
+							this->simpleChunkPool.erase(this->simpleChunkPool.begin());
+
+							grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
+
+							this->simpleChunkPool.push_back(grabbedSimp);
+						}
+					}
+				}
+				
 
 				if (this->activeChunks.find(tup) == this->activeChunks.end())
 				{

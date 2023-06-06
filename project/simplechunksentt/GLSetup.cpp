@@ -232,7 +232,7 @@ int GLWrapper::initializeGL() {
 
         "float diss = pow(     gl_FragCoord.z , 2);\n"
         "if(underWater == 0) {\n"
-        "if(gl_FragCoord.z < 0.9965f) { diss = 0; } else { diss = (diss-0.9965f)*1000; }  \n"
+        "if(gl_FragCoord.z < 0.9985f) { diss = 0; } else { diss = (diss-0.9985f)*1000; }  \n"
         "} else { diss = (diss-0.6)*4; } \n"
         "    vec3 finalColor = mix(vertexColor, fogColor, max(diss/4.0, 0));\n"
         "    FragColor = mix(vec4(finalColor, 1.0) * texColor, vec4(fogColor, 1.0), max(diss/4.0, 0));\n"
