@@ -24,10 +24,10 @@ GLWrapper::GLWrapper()
     this->vao = 0;
     instance = this;
 }
-
+bool captured = false;
 void GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    if(instance)
+    if(instance && captured)
     {
         if (instance->firstMouse)
         {
@@ -62,7 +62,7 @@ void GLWrapper::mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
 }
-bool captured = false;
+
 
 void GLWrapper::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
