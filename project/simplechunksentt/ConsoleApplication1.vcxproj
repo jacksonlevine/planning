@@ -150,6 +150,7 @@
     <ClCompile Include="ZeroChunk.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Audio.hpp" />
     <ClInclude Include="Biomes.hpp" />
     <ClInclude Include="BlockTypes.hpp" />
     <ClInclude Include="Game.hpp" />

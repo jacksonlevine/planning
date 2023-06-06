@@ -104,6 +104,9 @@
     <ClInclude Include="Biomes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Audio.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="texture.png">

@@ -115,7 +115,7 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
 void GLWrapper::setFOV(int newFOV)
 {
 
-    projection = glm::perspective(glm::radians((float)newFOV), (float)this->wi / (float)this->he, 0.1f, 500.0f);
+    projection = glm::perspective(glm::radians((float)newFOV), (float)this->wi / (float)this->he, 0.1f, 1000.0f);
 }
 
 int GLWrapper::initializeGL() {

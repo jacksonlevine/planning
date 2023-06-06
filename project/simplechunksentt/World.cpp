@@ -139,10 +139,13 @@ int World::generateOneChunk(intTup coord) {
 			int localZ = realZ + z;
 
 			intTup tup(localX, localZ);
-			double noise = p.noise((long double)(worldSeed + localX) / 200.25, 30.253, (long double)(worldSeed + localZ) / 200.25)*25;
+			double noise = p.noise((long double)(worldSeed + localX) / 150.25, 30.253, (long double)(worldSeed + localZ) / 150.25)*25;
+			double noise2 = p.noise((long double)(worldSeed + localX) / 800.25, 30.253, (long double)(worldSeed + localZ) / 800.25) * 60;
+			noise += noise2;
 			double bigNoise = p.noise((long double)(worldSeed + localX) / 13000.25, 30.253, (long double)(worldSeed + localZ) / 13000.25);
 			int biomeID = std::max(std::min((int)std::abs(((bigNoise*6))), (int)biomes.size()-1), 0);
 
+			
 			Biome& biome = biomes[biomeID];
 				if (rando() < (0.0005 * biome.objectFrequency) && noise > Game::instance->waterHeight)
 				{
