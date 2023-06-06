@@ -276,7 +276,7 @@ Game::Game(GLWrapper* wr) : wrap(wr), chunkWidth(CHUNK_WIDTH) {
 		SimpleChunk s(this);
 		this->simpleChunkPool.push_back(s);
 	}
-	for (int i = 0; i < 5000; i++)
+	for (int i = 0; i < 10000; i++)
 	{
 		ZeroChunk s(this);
 		this->zeroChunkPool.push_back(s);
