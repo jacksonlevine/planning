@@ -13,17 +13,129 @@
 #include "BlockTypes.hpp"
 #include "entt/entt.hpp"
 #include "Scene.hpp"
+#include "Hud.hpp"
 
 
-void drawHeadsUpDisplay()
+unsigned int texture;
+
+void drawHeadsUpDisplay(HudView& hudView)
 {
     glDisable(GL_DEPTH_TEST);
 
     static GLuint hud_vao = 0;
     static GLuint hud_shader = 0;
 
+    if (hud_vao == 0)
+    {
+        glGenVertexArrays(1, &hud_vao);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the minification filter to nearest neighbor
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        const GLchar* vs_src =
+            "#version 450 core\n"
+            "layout (location = 0) in vec3 position;\n"
+            "layout (location = 1) in vec2 uv;\n"
+            "out vec2 TexCoord;\n"
+            "void main()\n"
+            "{\n"
+            "    gl_Position = vec4(position, 1.0);\n"
+            "    TexCoord = uv;\n"
+            "}\n";
 
 
+        const GLchar* fs_src =
+            "#version 450 core\n"
+            "in vec2 TexCoord;\n"
+            "out vec4 FragColor;\n"
+            "uniform sampler2D ourTexture;\n"
+            "void main()\n"
+            "{\n"
+            "vec4 texColor = texture(ourTexture, TexCoord);\n"
+            "if(texColor.a < 0.1){\n"
+            "discard;}\n"
+
+            "    FragColor = texColor;\n"
+            "}\n";
+
+        GLuint vs_id, fs_id;
+        vs_id = glCreateShader(GL_VERTEX_SHADER);
+        fs_id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(vs_id, 1, &vs_src, NULL);
+        glShaderSource(fs_id, 1, &fs_src, NULL);
+        glCompileShader(vs_id);
+
+        GLint success;
+        GLchar infoLog[512];
+        glGetShaderiv(vs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(vs_id, 512, NULL, infoLog);
+            std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
+        }
+
+        glCompileShader(fs_id);
+
+
+        glGetShaderiv(fs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(fs_id, 512, NULL, infoLog);
+            std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
+        }
+
+        hud_shader = glCreateProgram();
+        glAttachShader(hud_shader, vs_id);
+        glAttachShader(hud_shader, fs_id);
+        glLinkProgram(hud_shader);
+        glDetachShader(hud_shader, fs_id);
+        glDetachShader(hud_shader, vs_id);
+        glDeleteShader(fs_id);
+        glDeleteShader(vs_id);
+    }
+    if (hudView.dirty)
+    {
+        hudView.updateAmalgam();
+        // Generate a vertex buffer object (VBO) for the position data
+
+
+        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbov);
+        glBufferData(GL_ARRAY_BUFFER, hudView.amalgam.verts.size(), &(hudView.amalgam.verts[0]), GL_STATIC_DRAW);
+        // Set up the vertex attribute pointers for the position buffer object
+        GLint pos_attrib = glGetAttribLocation(hud_shader, "position");
+        glEnableVertexAttribArray(pos_attrib);
+        glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Generate a vertex buffer object (VBO) for the uv data
+        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbouv);
+        glBufferData(GL_ARRAY_BUFFER, hudView.amalgam.uvs.size(), &(hudView.amalgam.uvs[0]), GL_STATIC_DRAW);
+
+        // Set up the vertex attribute pointers for the uv buffer object
+        GLint uv_attrib = glGetAttribLocation(hud_shader, "uv");
+        glEnableVertexAttribArray(uv_attrib);
+        glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+    else
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbov);
+        GLint pos_attrib = glGetAttribLocation(hud_shader, "position");
+        glEnableVertexAttribArray(pos_attrib);
+        glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Generate a vertex buffer object (VBO) for the uv data
+        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbouv);
+        // Set up the vertex attribute pointers for the uv buffer object
+        GLint uv_attrib = glGetAttribLocation(hud_shader, "uv");
+        glEnableVertexAttribArray(uv_attrib);
+        glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+    glUseProgram(hud_shader);
+    glBindVertexArray(hud_vao);
+    glDrawArrays(GL_TRIANGLES, 0, hudView.amalgam.verts.size());
+    
+    glBindVertexArray(0);
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -346,7 +458,7 @@ int main()
 
 
     /*TEXTURE BIT*/
-    unsigned int texture;
+
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
