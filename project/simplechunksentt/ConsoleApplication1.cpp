@@ -134,9 +134,7 @@ void drawHeadsUpDisplay(HudView& hudView)
     glUseProgram(hud_shader);
     glBindVertexArray(hud_vao);
     glDrawArrays(GL_TRIANGLES, 0, hudView.amalgam.verts.size());
-    
     glBindVertexArray(0);
-
     glEnable(GL_DEPTH_TEST);
 }
 
