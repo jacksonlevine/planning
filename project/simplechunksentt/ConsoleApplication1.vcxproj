@@ -137,6 +137,8 @@
     <ClCompile Include="ConsoleApplication1.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GLSetup.cpp" />
+    <ClCompile Include="Hud.cpp" />
+    <ClCompile Include="Hud.hpp" />
     <ClCompile Include="Maths.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Perlin.cpp" />

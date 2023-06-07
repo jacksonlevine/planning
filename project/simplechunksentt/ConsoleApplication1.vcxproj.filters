@@ -69,6 +69,12 @@
     <ClCompile Include="ZeroChunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Hud.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSetup.hpp">
