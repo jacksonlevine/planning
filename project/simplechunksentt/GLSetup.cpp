@@ -115,7 +115,7 @@ void GLWrapper::keyCallback(GLFWwindow* window, int key, int scancode, int actio
 void GLWrapper::setFOV(int newFOV)
 {
 
-    projection = glm::perspective(glm::radians((float)newFOV), (float)this->wi / (float)this->he, 0.1f, 1000.0f);
+    projection = glm::perspective(glm::radians((float)newFOV), (float)this->wi / (float)this->he, 0.1f, 1500.0f);
 }
 
 int GLWrapper::initializeGL() {
@@ -126,8 +126,8 @@ int GLWrapper::initializeGL() {
         return -1;
     }
 
-    this->wi = 1280;
-    this->he = 720;
+    this->wi = 1900;
+    this->he = 1080;
     
 
     // Set up GLFW window hints
@@ -232,7 +232,7 @@ int GLWrapper::initializeGL() {
 
         "float diss = pow(     gl_FragCoord.z , 2);\n"
         "if(underWater == 0) {\n"
-        "if(gl_FragCoord.z < 0.9985f) { diss = 0; } else { diss = (diss-0.9985f)*1000; }  \n"
+        "if(gl_FragCoord.z < 0.9978f) { diss = 0; } else { diss = (diss-0.9978f)*1000; }  \n"
         "} else { diss = (diss-0.6)*4; } \n"
         "    vec3 finalColor = mix(vertexColor, fogColor, max(diss/4.0, 0));\n"
         "    FragColor = mix(vec4(finalColor, 1.0) * texColor, vec4(fogColor, 1.0), max(diss/4.0, 0));\n"

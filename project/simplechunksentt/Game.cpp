@@ -288,14 +288,13 @@ void Game::initialSurvey()
 {
 
 	int x = this->wrap->cameraPos.x;
-
 	int y = this->wrap->cameraPos.y;
-
 	int z = this->wrap->cameraPos.z;
 
 	int chunkX = std::floor((x + (CHUNK_WIDTH - (x % CHUNK_WIDTH))) / CHUNK_WIDTH);
 	int chunkY = std::floor((y - (y % CHUNK_WIDTH)) / CHUNK_WIDTH);
 	int chunkZ = std::floor((z + (CHUNK_WIDTH - (z % CHUNK_WIDTH))) / CHUNK_WIDTH);
+
 	int j = 0;
 
 
@@ -400,8 +399,8 @@ void Game::surveyNeededChunks()
 	glm::vec3 dir = this->wrap->cameraDirection;
 	dir.y = 0;
 
-	int zSkew = (dir.z) * 48.0f;
-	int xSkew = (dir.x) * 48.0f;
+	int zSkew = (dir.z) * 52.0f;
+	int xSkew = (dir.x) * 52.0f;
 	//std::cout << "surveying";
 	int x = this->wrap->cameraPos.x;
 
@@ -433,8 +432,15 @@ void Game::surveyNeededChunks()
 					{
 						this->world.generateOneChunk(tup);
 					}
-					if (this->activeZeroChunks.find(tup) == this->activeZeroChunks.end())
+					if (this->activeZeroChunks.find(tup) == this->activeZeroChunks.end() || this->activeSimpChunks.find(tup) != this->activeSimpChunks.end())
 					{
+						if (this->activeSimpChunks.find(tup) != this->activeSimpChunks.end())
+						{
+							SimpleChunk& simp = this->activeSimpChunks.at(tup);
+							this->registry.remove<MeshComponent>(simp.me);
+							this->activeSimpChunks.erase(tup);
+							simp.active = false;
+						}
 						if (zeroChunkPool.size() > 5) {
 							ZeroChunk grabbedZero = *(this->zeroChunkPool.begin());
 

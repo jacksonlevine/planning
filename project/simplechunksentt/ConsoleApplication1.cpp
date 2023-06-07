@@ -13,6 +13,23 @@
 #include "BlockTypes.hpp"
 #include "entt/entt.hpp"
 #include "Scene.hpp"
+
+
+void drawHeadsUpDisplay()
+{
+    glDisable(GL_DEPTH_TEST);
+
+    static GLuint hud_vao = 0;
+    static GLuint hud_shader = 0;
+
+
+
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+
+
 void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
     float bot_r, float bot_g, float bot_b, float bot_a, float cameraPitch)
 {
@@ -32,7 +49,7 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
             "void main()\n"
             " {\n"
             " uint idx = gl_VertexID;\n"
-
+            
             " gl_Position = vec4(idx & 1, (idx >> 1), 0.0, 0.5) * 4.0 - 1.0;\n"
             "v_uv = vec2(gl_Position.xy * 0.5 + 0.5+(cpitch/100));\n"
             "}";
