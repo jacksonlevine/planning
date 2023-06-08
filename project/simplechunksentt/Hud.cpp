@@ -1,6 +1,6 @@
 #include "Hud.hpp"
 
-HudView::HudView() : dirty(false) {
+HudView::HudView() : dirty(true) {
 
 }
 
@@ -14,4 +14,30 @@ void HudView::updateAmalgam()
 		this->amalgam.uvs.insert(this->amalgam.uvs.end(), rect.uvs.begin(), rect.uvs.end());
 	}
 	this->dirty = false;
+}
+
+
+Button::Button(float x, float y)
+{
+	float z = 0.5;
+	float width = 20.0;
+	float height = 10.0;
+	this->verts.insert(this->verts.end(), {
+			x, y, z,
+			x + width, y, z,
+			x + width, y + height, z,
+
+			x + width, y + height, z,
+			x, y + height, z,
+			x, y, z
+		});
+	this->uvs.insert(this->uvs.end(), {
+			0.0f            , 1.0f - (1.0f / 16.0f),
+			1.0f / 8.0f,            1.0f - (1.0f / 16.0f),
+			1.0f / 8.0f,             1.0f,
+
+			1.0f / 8.0f,           1.0f,
+			0.0f,                  1.0f,
+			0.0f,             1.0f - (1.0f / 16.0f)
+		});
 }

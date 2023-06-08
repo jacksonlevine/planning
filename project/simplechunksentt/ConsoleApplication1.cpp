@@ -17,7 +17,15 @@
 
 
 unsigned int texture;
+HudView hud;
 
+void setupHud()
+{
+    hud.rects.push_back(
+        Button(0.0f, 0.0f)
+    );
+    hud.updateAmalgam();
+}
 void drawHeadsUpDisplay(HudView& hudView)
 {
     glDisable(GL_DEPTH_TEST);
@@ -25,14 +33,15 @@ void drawHeadsUpDisplay(HudView& hudView)
     static GLuint hud_vao = 0;
     static GLuint hud_shader = 0;
 
+    static GLuint hud_vbov = 0;
+    static GLuint hud_vbouv = 0;
     if (hud_vao == 0)
     {
         glGenVertexArrays(1, &hud_vao);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the minification filter to nearest neighbor
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindVertexArray(hud_vao);
+        glGenBuffers(1, &hud_vbov);
+        glGenBuffers(1, &hud_vbouv);
+
 
         const GLchar* vs_src =
             "#version 450 core\n"
@@ -78,7 +87,6 @@ void drawHeadsUpDisplay(HudView& hudView)
 
         glCompileShader(fs_id);
 
-
         glGetShaderiv(fs_id, GL_COMPILE_STATUS, &success);
         if (!success)
         {
@@ -95,22 +103,29 @@ void drawHeadsUpDisplay(HudView& hudView)
         glDeleteShader(fs_id);
         glDeleteShader(vs_id);
     }
+    glBindVertexArray(hud_vao);
+    glUseProgram(hud_shader);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the minification filter to nearest neighbor
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
     if (hudView.dirty)
     {
         hudView.updateAmalgam();
         // Generate a vertex buffer object (VBO) for the position data
 
-
-        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbov);
-        glBufferData(GL_ARRAY_BUFFER, hudView.amalgam.verts.size(), &(hudView.amalgam.verts[0]), GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, hud_vbov);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * hudView.amalgam.verts.size(), &(hudView.amalgam.verts[0]), GL_STATIC_DRAW);
         // Set up the vertex attribute pointers for the position buffer object
         GLint pos_attrib = glGetAttribLocation(hud_shader, "position");
         glEnableVertexAttribArray(pos_attrib);
         glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         // Generate a vertex buffer object (VBO) for the uv data
-        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbouv);
-        glBufferData(GL_ARRAY_BUFFER, hudView.amalgam.uvs.size(), &(hudView.amalgam.uvs[0]), GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, hud_vbouv);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * hudView.amalgam.uvs.size(), &(hudView.amalgam.uvs[0]), GL_STATIC_DRAW);
 
         // Set up the vertex attribute pointers for the uv buffer object
         GLint uv_attrib = glGetAttribLocation(hud_shader, "uv");
@@ -119,21 +134,24 @@ void drawHeadsUpDisplay(HudView& hudView)
     }
     else
     {
-        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbov);
+        std::cout << hud_vbov;
+        std::cout << "   ";
+        std::cout << hud_vbouv;
+        std::cout << "    ";
+        glBindBuffer(GL_ARRAY_BUFFER, hud_vbov);
         GLint pos_attrib = glGetAttribLocation(hud_shader, "position");
         glEnableVertexAttribArray(pos_attrib);
         glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         // Generate a vertex buffer object (VBO) for the uv data
-        glBindBuffer(GL_ARRAY_BUFFER, hudView.vbouv);
+        glBindBuffer(GL_ARRAY_BUFFER, hud_vbouv);
         // Set up the vertex attribute pointers for the uv buffer object
         GLint uv_attrib = glGetAttribLocation(hud_shader, "uv");
         glEnableVertexAttribArray(uv_attrib);
         glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     }
-    glUseProgram(hud_shader);
-    glBindVertexArray(hud_vao);
-    glDrawArrays(GL_TRIANGLES, 0, hudView.amalgam.verts.size());
+  
+    //glDrawArrays(GL_TRIANGLES, 0, hudView.amalgam.verts.size());
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }
@@ -437,6 +455,7 @@ void waterTile(
 
 int main()
 {
+    setupHud();
     GLWrapper wrap;
     wrap.initializeGL();
     wrap.setupVAO();
@@ -512,7 +531,7 @@ int main()
             0.0f, 0.0f, 0.3f, 1.0f, wrap.cameraPitch);
 
          //glDepthMask(GL_FALSE);
-
+        drawHeadsUpDisplay(hud);
 
         //glDepthMask(GL_TRUE);
         //END SKY BIT
@@ -569,7 +588,7 @@ int main()
         waterTile(
             0.0f, 0.0f, 1.0f, 1.0f, game.waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
 
-       
+        
 
 
 

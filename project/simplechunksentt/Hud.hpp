@@ -7,12 +7,15 @@ public:
 	std::vector<GLfloat> uvs;
 };
 
+class Button : public HudRect {
+public:
+	Button(float x, float y);
+};
+
 class HudView
 {
 public:
 	HudRect amalgam;
-	GLuint vbov;
-	GLuint vbouv;
 	bool dirty;
 	std::vector<HudRect> rects;
 	HudView();
