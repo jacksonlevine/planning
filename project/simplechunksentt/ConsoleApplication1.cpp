@@ -22,7 +22,7 @@ HudView hud;
 void setupHud()
 {
     hud.rects.push_back(
-        Button(0.0f, 0.0f)
+        Button(-.5f, -.5f)
     );
     hud.updateAmalgam();
 }
@@ -116,6 +116,7 @@ void drawHeadsUpDisplay(HudView& hudView)
         hudView.updateAmalgam();
         // Generate a vertex buffer object (VBO) for the position data
 
+    }
         glBindBuffer(GL_ARRAY_BUFFER, hud_vbov);
         glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * hudView.amalgam.verts.size(), &(hudView.amalgam.verts[0]), GL_STATIC_DRAW);
         // Set up the vertex attribute pointers for the position buffer object
@@ -131,27 +132,10 @@ void drawHeadsUpDisplay(HudView& hudView)
         GLint uv_attrib = glGetAttribLocation(hud_shader, "uv");
         glEnableVertexAttribArray(uv_attrib);
         glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    }
-    else
-    {
-        std::cout << hud_vbov;
-        std::cout << "   ";
-        std::cout << hud_vbouv;
-        std::cout << "    ";
-        glBindBuffer(GL_ARRAY_BUFFER, hud_vbov);
-        GLint pos_attrib = glGetAttribLocation(hud_shader, "position");
-        glEnableVertexAttribArray(pos_attrib);
-        glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-        // Generate a vertex buffer object (VBO) for the uv data
-        glBindBuffer(GL_ARRAY_BUFFER, hud_vbouv);
-        // Set up the vertex attribute pointers for the uv buffer object
-        GLint uv_attrib = glGetAttribLocation(hud_shader, "uv");
-        glEnableVertexAttribArray(uv_attrib);
-        glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    }
+ 
   
-    //glDrawArrays(GL_TRIANGLES, 0, hudView.amalgam.verts.size());
+    glDrawArrays(GL_TRIANGLES, 0, hudView.amalgam.verts.size());
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }
@@ -531,7 +515,7 @@ int main()
             0.0f, 0.0f, 0.3f, 1.0f, wrap.cameraPitch);
 
          //glDepthMask(GL_FALSE);
-        drawHeadsUpDisplay(hud);
+        
 
         //glDepthMask(GL_TRUE);
         //END SKY BIT
@@ -591,7 +575,7 @@ int main()
         
 
 
-
+        drawHeadsUpDisplay(hud);
 
 
        // glDepthMask(GL_FALSE);

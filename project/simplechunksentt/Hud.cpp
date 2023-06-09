@@ -20,8 +20,8 @@ void HudView::updateAmalgam()
 Button::Button(float x, float y)
 {
 	float z = 0.5;
-	float width = 20.0;
-	float height = 10.0;
+	float width = 0.25;
+	float height = 0.25;
 	this->verts.insert(this->verts.end(), {
 			x, y, z,
 			x + width, y, z,
@@ -32,12 +32,12 @@ Button::Button(float x, float y)
 			x, y, z
 		});
 	this->uvs.insert(this->uvs.end(), {
-			0.0f            , 1.0f - (1.0f / 16.0f),
-			1.0f / 8.0f,            1.0f - (1.0f / 16.0f),
-			1.0f / 8.0f,             1.0f,
+			0.0f            , (1.0f / 16.0f),
+			1.0f / 8.0f,           (1.0f / 16.0f),
+			1.0f / 8.0f,             0.0f,
 
-			1.0f / 8.0f,           1.0f,
-			0.0f,                  1.0f,
-			0.0f,             1.0f - (1.0f / 16.0f)
+			1.0f / 8.0f,           0.0f,
+			0.0f,                  0.0f,
+			0.0f,             (1.0f / 16.0f)
 		});
 }
