@@ -22,7 +22,7 @@ HudView hud;
 void setupHud()
 {
     hud.rects.push_back(
-        Button(-.75f, -.75f)
+        Button(.65f, -.9f)
     );
     hud.updateAmalgam();
 }
