@@ -27,6 +27,14 @@ std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	)
 	{
 		return Rock::getRockModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Rock::getSmallRockModel(x,y,z);
 	}
 };
 std::vector<std::function<Model(float, float, float)>> mountainObjs = {
@@ -76,7 +84,7 @@ std::vector<Biome> biomes =
 		},
 		1
 	),
-	Biome(
+	/*Biome(
 		mountainObjs,
 		[](float height) {
 			return 5;
@@ -89,7 +97,7 @@ std::vector<Biome> biomes =
 			return 4;
 		},
 		1
-	)
+	)*/
 };
 
 
@@ -120,7 +128,12 @@ void World::generate() {
 		}
 	}
 }
-
+intTup loadPen[] = {
+	intTup(0,0),
+	intTup(1,0),
+	intTup(0,1),
+	intTup(1,1)
+};
 int World::generateOneChunk(intTup coord) {
 	
 	int realX = coord.x * CHUNK_WIDTH;
@@ -131,35 +144,41 @@ int World::generateOneChunk(intTup coord) {
 
 	this->hasSimpMarks.insert_or_assign(coord, 1);
 
-	for (int x = -1; x < CHUNK_WIDTH+1; x++)
+	for (int x = -1; x < CHUNK_WIDTH+1; x+=2)
 	{
-		for (int z = -1; z < CHUNK_WIDTH+1; z++)
+		for (int z = -1; z < CHUNK_WIDTH+1; z+=2)
 		{
-			int localX = realX + x;
-			int localZ = realZ + z;
+			intTup t(realX + x, realZ + z);
+			double n = 0;
+			double bigNoise = p.noise((long double)(worldSeed + t.x) / 13000.25, 30.253, (long double)(worldSeed + t.z) / 13000.25);
+			int biomeID = std::max(std::min((int)std::abs(((bigNoise * 6))), (int)biomes.size() - 1), 0);
 
-			intTup tup(localX, localZ);
-			double noise = p.noise((long double)(worldSeed + localX) / 150.25, 30.253, (long double)(worldSeed + localZ) / 150.25)*25;
-			double noise2 = p.noise((long double)(worldSeed + localX) / 800.25, 30.253, (long double)(worldSeed + localZ) / 800.25) * 60;
-			noise += noise2;
-			double bigNoise = p.noise((long double)(worldSeed + localX) / 13000.25, 30.253, (long double)(worldSeed + localZ) / 13000.25);
-			int biomeID = std::max(std::min((int)std::abs(((bigNoise*6))), (int)biomes.size()-1), 0);
 
-			
 			Biome& biome = biomes[biomeID];
-				if (rando() < (0.0005 * biome.objectFrequency) && noise > Game::instance->waterHeight)
-				{
-					Model m = nextModel(tup.x, noise, tup.z, biome);
-					this->models.insert_or_assign(tup, m);
-				}
+			for (intTup& lp : loadPen)
+			{
+				int localX = realX + x + lp.x;
+				int localZ = realZ + z + lp.z;
+
+				intTup tup(localX, localZ);
+				double noise = p.noise((long double)(worldSeed + localX) / 150.25, 30.253, (long double)(worldSeed + localZ) / 150.25) * 25;
+
+				double noise2 = p.noise((long double)(worldSeed + localX) / 800.25, 30.253, (long double)(worldSeed + localZ) / 800.25) * 60;
+				noise += noise2;
+				n = noise;
+				
 				HeightTile h;
 				h.height = (float)noise;
 				h.blockID = biome.blockIdFunction((float)noise);
 
 				this->heights.insert_or_assign(tup, h);
-				
+			}
 
-			
+			if (rando() < (0.001 * biome.objectFrequency) && n > Game::instance->waterHeight)
+			{
+				Model m = nextModel(t.x, n, t.z, biome);
+				this->models.insert_or_assign(t, m);
+			}
 		}
 	}
 	return blockCount;
