@@ -1,6 +1,12 @@
 #include "Tree.hpp"
 #include "Maths.hpp"
 #include "BlockTypes.hpp"
+Model Rock::getSmallRockModel(float x, float y, float z) {
+	Model model;
+
+	return model;
+}
+
 Model Rock::getRockModel(float x, float y, float z)
 {
 	Model model;
