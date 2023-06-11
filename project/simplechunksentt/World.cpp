@@ -90,7 +90,7 @@ std::vector<Biome> biomes =
 			return (height < -1.0) ? 3 : (height > -2 && height < 9) ? 0
 				: (height > 9 && height < 24) ? 1 : 0;
 		},
-		5
+		10
 	),
 	/*Biome(
 		mountainObjs,
