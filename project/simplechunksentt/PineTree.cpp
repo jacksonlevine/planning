@@ -5,7 +5,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 {
 	Model model;
 
-	float height = 7.0f + (rando() * 5.0f);
+	float height = 5.0f + (rando() * 32.0f);
 
 	glm::vec3 centerBottom(x + 0.5, y-1.0, z + 0.5);
 
@@ -75,8 +75,11 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 
 
 
-	float leavesStart = height * 0.35;
-	float inter = 1.0 + (rando()/8);
+	float leavesStart = height * 0.2;
+	float inter = 3.0 + (rando()/8);
+
+
+
 	for (float i = leavesStart; i < height; i+= inter)
 	{
 		
@@ -84,7 +87,7 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 		{
 			float factor = (height - (i));
 			model.verts.insert(model.verts.end(), {
-					(leafCircle[v]*factor)+centerBottom.x, i+ leafCircle[v+1], (leafCircle[v+2]*factor)+centerBottom.z
+					(leafCircle[v]*factor)+centerBottom.x, i+ leafCircle[v+1]*5.0f + y, (leafCircle[v+2]*factor)+centerBottom.z
 				});
 			model.cols.insert(model.cols.end(), {
 					1.0, 1.0, 1.0
@@ -132,21 +135,21 @@ Model Tree::getPineTreeModel(float x, float y, float z)
 
 	TextureFace logFace(10, 0);
 	model.verts.insert(model.verts.end(), {
-			centerBottom.x-0.3f, centerBottom.y, centerBottom.z-0.3f,
-			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z - 0.3f,
-			centerBottom.x, centerBottom.y+height - 3.0f, centerBottom.z,
+			centerBottom.x-1.0f, centerBottom.y, centerBottom.z-1.0f,
+			centerBottom.x + 1.0f, centerBottom.y, centerBottom.z - 1.0f,
+			centerBottom.x, centerBottom.y+height , centerBottom.z,
 
-			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z - 0.3f,
-			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z + 0.3f,
-			centerBottom.x, centerBottom.y + height - 3.0f, centerBottom.z,
+			centerBottom.x + 1.0f, centerBottom.y, centerBottom.z - 1.0f,
+			centerBottom.x + 1.0f, centerBottom.y, centerBottom.z + 1.0f,
+			centerBottom.x, centerBottom.y + height , centerBottom.z,
 
-			centerBottom.x + 0.3f, centerBottom.y, centerBottom.z + 0.3f,
-			centerBottom.x - 0.3f, centerBottom.y, centerBottom.z + 0.3f,
-			centerBottom.x, centerBottom.y + height - 3.0f, centerBottom.z,
+			centerBottom.x + 1.0f, centerBottom.y, centerBottom.z + 1.0f,
+			centerBottom.x - 1.0f, centerBottom.y, centerBottom.z + 1.0f,
+			centerBottom.x, centerBottom.y + height , centerBottom.z,
 
-			centerBottom.x - 0.3f, centerBottom.y, centerBottom.z + 0.3f,
-			centerBottom.x - 0.3f, centerBottom.y, centerBottom.z - 0.3f,
-			centerBottom.x, centerBottom.y + height - 3.0f, centerBottom.z,
+			centerBottom.x - 1.0f, centerBottom.y, centerBottom.z + 1.0f,
+			centerBottom.x - 1.0f, centerBottom.y, centerBottom.z - 1.0f,
+			centerBottom.x, centerBottom.y + height, centerBottom.z,
 		});
 
 	model.cols.insert(model.cols.end(), {

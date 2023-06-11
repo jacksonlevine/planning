@@ -1,6 +1,6 @@
 #pragma once
 #include "Model.hpp"
-
+#include "BlockTypes.hpp"
 
 
 	class Tree {
@@ -25,4 +25,9 @@
 		static Model getDeadTallGrassModel(float x, float y, float z);
 		static Model getDeadShortGrassModel(float x, float y, float z);
 		static Model getBlackberryBushModel(float x, float y, float z);
+	};
+
+	class General {
+	public:
+		static Model getCrossModel(float x, float y, float z, TextureFace face);
 	};

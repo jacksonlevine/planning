@@ -137,7 +137,9 @@
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="General.cpp" />
     <ClCompile Include="GLSetup.cpp" />
+    <ClCompile Include="Grass.cpp" />
     <ClCompile Include="Hud.cpp" />
     <ClCompile Include="Hud.hpp" />
     <ClCompile Include="Maths.cpp" />

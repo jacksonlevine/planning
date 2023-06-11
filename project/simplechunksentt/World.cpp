@@ -35,6 +35,14 @@ std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	)
 	{
 		return Rock::getSmallRockModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getShortGrassModel(x,y,z);
 	}
 };
 std::vector<std::function<Model(float, float, float)>> mountainObjs = {
@@ -82,14 +90,14 @@ std::vector<Biome> biomes =
 			return (height < -1.0) ? 3 : (height > -2 && height < 9) ? 0
 				: (height > 9 && height < 24) ? 1 : 0;
 		},
-		1
+		5
 	),
 	/*Biome(
 		mountainObjs,
 		[](float height) {
 			return 5;
 		},
-		10
+		2
 	),
 	Biome(
 		desertObjs,
