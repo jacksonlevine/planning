@@ -43,6 +43,14 @@ std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	)
 	{
 		return Plant::getShortGrassModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getDeadShortGrassModel(x,y,z);
 	}
 };
 std::vector<std::function<Model(float, float, float)>> mountainObjs = {
@@ -80,6 +88,14 @@ std::vector<std::function<Model(float, float, float)>> desertObjs = {
 	)
 	{
 		return Plant::getSaguaroCactusModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getDeadShortGrassModel(x,y,z);
 	}
 };
 std::vector<Biome> biomes =
@@ -136,6 +152,13 @@ void World::generate() {
 		}
 	}
 }
+double World::getTerrainNoise(int localX, int localZ)
+{
+	double noise = p.noise((long double)(worldSeed + localX) / 150.25, 30.253, (long double)(worldSeed + localZ) / 150.25) * 25;
+
+	double noise2 = p.noise((long double)(worldSeed + localX) / 800.25, 30.253, (long double)(worldSeed + localZ) / 800.25) * 60;
+	return noise + noise2;
+}
 intTup loadPen[] = {
 	intTup(0,0),
 	intTup(1,0),
@@ -169,10 +192,7 @@ int World::generateOneChunk(intTup coord) {
 				int localZ = realZ + z + lp.z;
 
 				intTup tup(localX, localZ);
-				double noise = p.noise((long double)(worldSeed + localX) / 150.25, 30.253, (long double)(worldSeed + localZ) / 150.25) * 25;
-
-				double noise2 = p.noise((long double)(worldSeed + localX) / 800.25, 30.253, (long double)(worldSeed + localZ) / 800.25) * 60;
-				noise += noise2;
+				double noise = World::getTerrainNoise(localX, localZ);
 				n = noise;
 				
 				HeightTile h;

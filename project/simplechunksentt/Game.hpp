@@ -71,6 +71,7 @@ public:
 
     static long worldSeed;
 
+    static double getTerrainNoise(int x, int z);
     void generate();
     int generateOneChunk(intTup pos);
 };

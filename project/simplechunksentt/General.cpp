@@ -9,10 +9,10 @@ Model General::getCrossModel(float x, float y, float z, TextureFace face)
 	glm::vec3 backLeft(x, y, z + 1);
 	glm::vec3 backRight(x + 1, y, z + 1);
 
-	float flHeight = Game::instance->world.heights.at(intTup((int)frontLeft.x, (int)frontLeft.z)).height;
-	float frHeight = Game::instance->world.heights.at(intTup((int)frontLeft.x + 1, (int)frontLeft.z)).height;
-	float blHeight = Game::instance->world.heights.at(intTup((int)frontLeft.x, (int)frontLeft.z + 1)).height;
-	float brHeight = Game::instance->world.heights.at(intTup((int)frontLeft.x + 1, (int)frontLeft.z + 1)).height;
+	float flHeight = World::getTerrainNoise((int)frontLeft.x, (int)frontLeft.z);
+	float frHeight = World::getTerrainNoise((int)frontLeft.x + 1, (int)frontLeft.z);
+	float blHeight = World::getTerrainNoise((int)frontLeft.x, (int)frontLeft.z + 1);
+	float brHeight = World::getTerrainNoise((int)frontLeft.x + 1, (int)frontLeft.z + 1);
 
 	frontLeft.y = flHeight;
 	frontRight.y = frHeight;
@@ -37,7 +37,6 @@ Model General::getCrossModel(float x, float y, float z, TextureFace face)
 			backLeft.x, backLeft.y + height, backLeft.z,
 			frontRight.x, frontRight.y + height, frontRight.z,
 			frontRight.x, frontRight.y, frontRight.z,
-
 		});
 
 	model.cols.insert(model.cols.end(), {
