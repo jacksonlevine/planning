@@ -112,6 +112,14 @@ std::vector<std::function<Model(float, float, float)>> desertObjs = {
 	)
 	{
 		return Plant::getDeadShortGrassModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getDeadTallGrassModel(x,y,z);
 	}
 };
 std::vector<Biome> biomes =
@@ -124,7 +132,7 @@ std::vector<Biome> biomes =
 		},
 		10
 	),
-	/*Biome(
+	Biome(
 		mountainObjs,
 		[](float height) {
 			return 5;
@@ -137,7 +145,7 @@ std::vector<Biome> biomes =
 			return 4;
 		},
 		1
-	)*/
+	)
 };
 
 
