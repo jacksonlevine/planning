@@ -51,6 +51,22 @@ std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	)
 	{
 		return Plant::getDeadShortGrassModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getTallGrassModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getDeadTallGrassModel(x,y,z);
 	}
 };
 std::vector<std::function<Model(float, float, float)>> mountainObjs = {

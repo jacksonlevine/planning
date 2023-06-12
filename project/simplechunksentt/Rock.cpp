@@ -2,7 +2,7 @@
 #include "Maths.hpp"
 #include "BlockTypes.hpp"
 Model Rock::getSmallRockModel(float x, float y, float z) {
-	return General::getCrossModel(x, y, z, TextureFace(7, 2));
+	return General::getCrossModel(x, y, z, TextureFace(7, 2), 0);
 }
 
 // BIG BOULDER MODEL
