@@ -230,6 +230,11 @@ int World::generateOneChunk(intTup coord) {
 			{
 				Model m = nextModel(t.x, n, t.z, biome);
 				this->models.insert_or_assign(t, m);
+			} else
+			if (n < Game::instance->waterHeight && rando() < (0.001 * biome.objectFrequency) && Game::instance->waterHeight-n < 5)
+			{
+				Model m = Plant::getCatTailsModel(t.x, n, t.z);
+				this->models.insert_or_assign(t, m);
 			}
 		}
 	}

@@ -81,6 +81,9 @@
     <ClCompile Include="General.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CatTails.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSetup.hpp">

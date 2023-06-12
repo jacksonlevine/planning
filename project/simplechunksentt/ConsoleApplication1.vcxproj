@@ -134,6 +134,7 @@
     <ClCompile Include="Biomes.cpp" />
     <ClCompile Include="BlockTypes.cpp" />
     <ClCompile Include="Cactus.cpp" />
+    <ClCompile Include="CatTails.cpp" />
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
     <ClCompile Include="Game.cpp" />

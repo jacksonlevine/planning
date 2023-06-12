@@ -29,6 +29,6 @@
 
 	class General {
 	public:
-		static Model getCrossModel(float x, float y, float z, TextureFace face, int yOffset);
-		static Model getTallCrossModel(float x, float y, float z, TextureFace bottom, TextureFace top);
+		static Model getCrossModel(float x, float y, float z, TextureFace face, int yOffset, bool flat);
+		static Model getTallCrossModel(float x, float y, float z, TextureFace bottom, TextureFace top, int yOffset, bool flat);
 	};

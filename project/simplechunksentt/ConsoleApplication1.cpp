@@ -445,6 +445,7 @@ int main()
     wrap.setupVAO();
 
     Game game(&wrap);
+    game.waterHeight = -4.5f;
     game.world.generate();
     std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
@@ -497,7 +498,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     float velocity = 0.0f;
     float jumpTimer = 0.0f;
-    game.waterHeight = -4.5f;
+
     auto meshesView = game.registry.view<MeshComponent>();
     while (!glfwWindowShouldClose(wrap.window))
     {
