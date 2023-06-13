@@ -39,8 +39,6 @@ Model Plant::getCatTailsModel(float x, float y, float z)
 			model.verts.insert(model.verts.end(), tuft.verts.begin(), tuft.verts.end());
 			model.cols.insert(model.cols.end(), tuft.cols.begin(), tuft.cols.end());
 			model.uvs.insert(model.uvs.end(), tuft.uvs.begin(), tuft.uvs.end());
-
-
 		}
 		else
 		{
