@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Biomes.cpp" />
     <ClCompile Include="BlockTypes.cpp" />
+    <ClCompile Include="Bush.cpp" />
     <ClCompile Include="Cactus.cpp" />
     <ClCompile Include="CatTails.cpp" />
     <ClCompile Include="Chunk.cpp" />
