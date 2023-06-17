@@ -86,6 +86,7 @@ std::vector<std::function<Model(float, float, float)>> mountainObjs = {
 	{
 		return Tree::getPineTreeModel(x,y,z);
 	}
+		
 };
 
 std::vector<std::function<Model(float, float, float)>> desertObjs = {
