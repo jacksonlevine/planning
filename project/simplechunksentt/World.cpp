@@ -67,6 +67,14 @@ std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	)
 	{
 		return Plant::getDeadTallGrassModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getBlackberryBushModel(x,y,z);
 	}
 };
 std::vector<std::function<Model(float, float, float)>> mountainObjs = {
@@ -85,7 +93,16 @@ std::vector<std::function<Model(float, float, float)>> mountainObjs = {
 	)
 	{
 		return Tree::getPineTreeModel(x,y,z);
+	},
+	[](
+		float x,
+		float y,
+		float z
+	)
+	{
+		return Plant::getBlackberryBushModel(x,y,z);
 	}
+
 		
 };
 
