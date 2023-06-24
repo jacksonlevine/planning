@@ -1,52 +1,81 @@
-#include <boost/asio.hpp>
-#include <boost/beast.hpp>
+
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <cstdlib>
+#include <functional>
 #include <iostream>
+#include <string>
+#include <thread>
 
-#define JONNA_PORT 3285
+namespace beast = boost::beast;
+namespace http = beast::http;
+namespace websocket = beast::websocket;
+namespace net = boost::asio;
+using tcp = boost::asio::ip::tcp;
 
-auto handle_connection = [](boost::asio::ip::tcp::socket sock) {
-    std::array<char, 1024> buffer; 
-
-    sock.async_read_some(boost::asio::buffer(buffer), [&](boost::system::error_code ec, std::size_t bytes_transferred) {
-        if (!ec)
-        {
-            std::cout << "Received data: " << std::string(buffer.data(), bytes_transferred) << std::endl;
-        }
-        else
-        {
-            std::cout << "Error code: " << ec.what() << std::endl;
-        }
-        });
-
-};
-
-void start_accepting(boost::asio::ip::tcp::acceptor& acceptor)
+void do_session(tcp::socket& socket)
 {
-    acceptor.async_accept([&](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-        if (!ec)
-        {
-            handle_connection(std::move(socket));
-        }
+    try
+    {
+        websocket::stream<tcp::socket> ws{ std::move(socket) };
 
-        start_accepting(acceptor);
-        });
+        ws.set_option(websocket::stream_base::decorator(
+            [](websocket::response_type& res)
+            {
+                res.set(http::field::server,
+                std::string(BOOST_BEAST_VERSION_STRING) +
+                " websocket-server-sync");
+            }));
+
+        // Accept the websocket handshake
+        ws.accept();
+
+        for (;;)
+        {
+            beast::flat_buffer buffer;
+
+            ws.read(buffer);
+
+            // Echo the message back
+            ws.text(ws.got_text());
+            ws.write(buffer.data());
+            std::cout << beast::make_printable(buffer.data());
+        }
+    }
+    catch (beast::system_error const& se)
+    {
+        if (se.code() != websocket::error::closed)
+            std::cerr << "Error: " << se.code().message() << std::endl;
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
-
-int main()
+int main(int argc, char* argv[])
 {
-	boost::asio::io_context io_context;
-	boost::asio::ip::tcp::acceptor acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(),JONNA_PORT));
+    try
+    {
+        auto const address = net::ip::make_address("127.0.0.1");
+        auto const port = static_cast<unsigned short>(32851);
 
-    acceptor.async_accept([&](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-        if (!ec)
+        net::io_context ioc{ 1 };
+
+        tcp::acceptor acceptor{ ioc, {address, port} };
+        for (;;)
         {
-            handle_connection(std::move(socket));
+            tcp::socket socket{ ioc };
+            acceptor.accept(socket);
+            std::thread{ std::bind(
+                &do_session,
+                std::move(socket)) }.detach();
         }
-        start_accepting(acceptor);
-        });
-
-    io_context.run();
-
-	return 0;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 }
