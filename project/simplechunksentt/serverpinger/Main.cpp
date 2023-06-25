@@ -6,20 +6,28 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <nlohmann/json.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace websocket = beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
+using json = nlohmann::json;
 
 int main(int argc, char** argv)
 {
     try
     {
-        auto const host = "127.0.0.1";
+        auto const host = "192.168.1.131";
         auto const port = "32851";
-        auto const text = "I'm here";
+
+
+        json data;
+        data["name"] = "J-man's Server";
+        data["pop"] = std::to_string(20);
+
+        auto const text = data.dump();
 
         net::io_context ioc;
 

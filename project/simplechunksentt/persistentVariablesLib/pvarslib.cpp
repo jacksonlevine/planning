@@ -1,43 +1,94 @@
 #include <iostream>
 #include <sqlite3.h>
+#include "pvarslib.hpp"
 
-int main() {
+std::string PVarsContext::tableName;
+
+Result::Result() : type(ERROR), _thing(std::nullopt) {
+    
+}
+
+std::string Result::value() {
+    if (_thing.has_value())
+    {
+        return _thing.value();
+    }
+    else {
+        return std::string("noexist");
+    }
+}
+
+void Result::setValue(std::string val)
+{
+    _thing.emplace(val);
+}
+
+Result getDbVariable(const char* key)
+{
+    Result result;
+
     // Open a connection to the database file
     sqlite3* db;
     int rc = sqlite3_open("data.db", &db);
 
     if (rc != SQLITE_OK) {
         std::cerr << "Cannot open database: " << sqlite3_errmsg(db) << std::endl;
-        return rc;
+        return result;
+    }
+
+    std::string selectValueQuery = "SELECT value FROM " + PVarsContext::tableName + " WHERE name='" + std::string(key) + "';";
+
+    sqlite3_stmt* stmt;
+    rc = sqlite3_prepare_v2(db, selectValueQuery.c_str(), -1, &stmt, nullptr);
+    if (rc == SQLITE_OK) {
+        rc = sqlite3_step(stmt);
+        if (rc == SQLITE_ROW) {
+            const unsigned char* value = sqlite3_column_text(stmt, 0);
+
+
+            result.type = RESULT;
+            result.setValue(std::string(reinterpret_cast<const char*>(value)));
+
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return result;
+}
+
+bool setDbVariable(const char* variable1, const char* value1) {
+    // Open a connection to the database file
+    sqlite3* db;
+    int rc = sqlite3_open("data.db", &db);
+
+
+    if (rc != SQLITE_OK) {
+        std::cerr << "Cannot open database: " << sqlite3_errmsg(db) << std::endl;
+        return false;
     }
 
     // Create a table to store variables
-    const char* createTableQuery = "CREATE TABLE IF NOT EXISTS variables (name TEXT PRIMARY KEY, value TEXT);";
-    rc = sqlite3_exec(db, createTableQuery, 0, 0, 0);
+    std::string createTableQuery = "CREATE TABLE IF NOT EXISTS " + PVarsContext::tableName + " (name TEXT PRIMARY KEY, value TEXT);";
+    rc = sqlite3_exec(db, createTableQuery.c_str(), 0, 0, 0);
 
     if (rc != SQLITE_OK) {
         std::cerr << "Cannot create table: " << sqlite3_errmsg(db) << std::endl;
         sqlite3_close(db);
-        return rc;
+        return false;
     }
 
     // Store variables in the database
-    const char* insertQuery = "INSERT OR REPLACE INTO variables (name, value) VALUES (?, ?);";
-
-    // Example variables
-    const char* variable1 = "foo";
-    const char* value1 = "bar";
-    const char* variable2 = "hello";
-    const char* value2 = "world";
+    std::string insertQuery = "INSERT OR REPLACE INTO " + PVarsContext::tableName + " (name, value) VALUES (?, ?);";
 
     // Prepare the insert statement
     sqlite3_stmt* stmt;
-    rc = sqlite3_prepare_v2(db, insertQuery, -1, &stmt, 0);
+    rc = sqlite3_prepare_v2(db, insertQuery.c_str(), -1, &stmt, 0);
 
     if (rc != SQLITE_OK) {
         std::cerr << "Cannot prepare statement: " << sqlite3_errmsg(db) << std::endl;
         sqlite3_close(db);
-        return rc;
+        return false;
     }
 
     // Bind variables and execute the statement
@@ -45,13 +96,9 @@ int main() {
     sqlite3_bind_text(stmt, 2, value1, -1, SQLITE_STATIC);
     sqlite3_step(stmt);
 
-    sqlite3_bind_text(stmt, 1, variable2, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, value2, -1, SQLITE_STATIC);
-    sqlite3_step(stmt);
-
     // Finalize the statement and close the database
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 
-    return 0;
+    return true;
 }

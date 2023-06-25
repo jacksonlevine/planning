@@ -7,12 +7,14 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <nlohmann/json.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace websocket = beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
+using json = nlohmann::json;
 
 void do_session(tcp::socket& socket)
 {
@@ -58,7 +60,7 @@ int main(int argc, char* argv[])
 {
     try
     {
-        auto const address = net::ip::make_address("127.0.0.1");
+        auto const address = net::ip::make_address("192.168.1.131");
         auto const port = static_cast<unsigned short>(32851);
 
         net::io_context ioc{ 1 };
