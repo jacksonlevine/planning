@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <nlohmann/json.hpp>
+#include <boost/asio.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -58,9 +59,30 @@ void do_session(tcp::socket& socket)
 
 int main(int argc, char* argv[])
 {
+    std::string host;
+    try {
+        boost::asio::io_context io_context;
+        boost::asio::ip::tcp::resolver resolver(io_context);
+        boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
+
+        boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
+        boost::asio::ip::tcp::resolver::iterator end; // end marker
+
+        while (iter != end) {
+            boost::asio::ip::tcp::endpoint endpoint = *iter++;
+            if (endpoint.protocol() == boost::asio::ip::tcp::v4()) {
+                std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
+                host = endpoint.address().to_string();
+            }
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+
     try
     {
-        auto const address = net::ip::make_address("192.168.1.131");
+        auto const address = net::ip::make_address(host);
         auto const port = static_cast<unsigned short>(32851);
 
         net::io_context ioc{ 1 };
