@@ -30,7 +30,7 @@ int main(int argc, char** argv)
         while (iter != end) {
             boost::asio::ip::tcp::endpoint endpoint = *iter++;
             if (endpoint.protocol() == boost::asio::ip::tcp::v4()) {
-                std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
+                //std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
                 host = endpoint.address().to_string();
             }
         }
@@ -49,7 +49,9 @@ int main(int argc, char** argv)
         data["pop"] = std::to_string(20);
         data["ip"] = host;
 
-        auto const text = data.dump();
+        const char* commandType = "serverUp|";
+
+        std::string text = commandType + data.dump();
 
         net::io_context ioc;
 

@@ -17,6 +17,19 @@ namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
+std::pair<std::string, std::string> splitString(const std::string& str) {
+    size_t index = str.find('|'); // Find the index of the '|' character
+
+    if (index != std::string::npos) { // If '|' is found
+        std::string before = str.substr(0, index); // Extract the string before '|'
+        std::string after = str.substr(index + 1); // Extract the string after '|'
+        return std::make_pair(before, after);
+    }
+    else {
+        return std::make_pair("", ""); // Return empty strings if '|' is not found
+    }
+}
+
 void do_session(tcp::socket& socket)
 {
     try
@@ -41,9 +54,20 @@ void do_session(tcp::socket& socket)
             ws.read(buffer);
 
             // Echo the message back
-            ws.text(ws.got_text());
-            ws.write(buffer.data());
-            std::cout << beast::make_printable(buffer.data());
+            //ws.text(ws.got_text());
+            //ws.write(buffer.data());
+
+            
+            std::string buff = beast::buffers_to_string(buffer.data());
+            std::pair<std::string, std::string> result = splitString(buff);
+
+            std::string command = result.first;
+            std::string jsonno = result.second;
+            std::cout << "Command: ";
+            std::cout << command << std::endl;
+
+            std::cout << "JaySanno: ";
+            std::cout << jsonno << std::endl;
         }
     }
     catch (beast::system_error const& se)
@@ -71,7 +95,7 @@ int main(int argc, char* argv[])
         while (iter != end) {
             boost::asio::ip::tcp::endpoint endpoint = *iter++;
             if (endpoint.protocol() == boost::asio::ip::tcp::v4()) {
-                std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
+               // std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
                 host = endpoint.address().to_string();
             }
         }
