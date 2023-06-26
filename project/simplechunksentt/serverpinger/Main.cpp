@@ -215,6 +215,8 @@ int main(int argc, char** argv)
         std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }*/
+
+    //THIS IS  A LIE, ITS NOT STARTING A SERVER YET
     std::string successStatement("Server now running at " + MyIP + ":" + std::to_string(MyPort));
     std::cout << successStatement;
     
