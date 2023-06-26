@@ -9,6 +9,7 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <boost/asio.hpp>
+#include "../persistentVariablesLib/pvarslib.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -16,6 +17,8 @@ namespace websocket = beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
+
+std::atomic<bool> isAccessingDatabase(false);
 
 std::pair<std::string, std::string> splitString(const std::string& str) {
     size_t index = str.find('|'); // Find the index of the '|' character
@@ -83,6 +86,9 @@ void do_session(tcp::socket& socket)
 
 int main(int argc, char* argv[])
 {
+    PVarsContext::tableName = "masterServerList";
+
+
     std::string host;
     try {
         boost::asio::io_context io_context;
@@ -107,7 +113,7 @@ int main(int argc, char* argv[])
     try
     {
         auto const address = net::ip::make_address(host);
-        auto const port = static_cast<unsigned short>(32851);
+        auto const port = static_cast<unsigned short>(32852);
 
         net::io_context ioc{ 1 };
 
