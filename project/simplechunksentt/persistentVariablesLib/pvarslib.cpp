@@ -4,7 +4,7 @@
 
 std::string PVarsContext::tableName;
 
-Result::Result() : type(ERROR), _thing(std::nullopt) {
+Result::Result() : type(PVARSERROR), _thing(std::nullopt) {
     
 }
 
@@ -46,7 +46,7 @@ Result getDbVariable(const char* key)
             const unsigned char* value = sqlite3_column_text(stmt, 0);
 
 
-            result.type = RESULT;
+            result.type = PVARSRESULT;
             result.setValue(std::string(reinterpret_cast<const char*>(value)));
 
         }

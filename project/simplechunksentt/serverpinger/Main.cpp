@@ -24,6 +24,14 @@ unsigned short MyPort = 32851;
 
 std::string Masterhost = "192.168.1.131";   //THIS WILL NEED TO BE THE PUBLIC IP AND PORT FORWARDED 
 
+std::time_t getTime()
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::chrono::system_clock::duration duration = now.time_since_epoch();
+    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    std::time_t time = seconds.count();
+    return time;
+}
 
 std::string getMyPublicIP(net::io_context& io_context)
 {
@@ -47,7 +55,7 @@ std::string getMyPublicIP(net::io_context& io_context)
         request.set(http::field::host, "icanhazip.com");
         request.set(http::field::user_agent, "Boost Beast");
 
-        // Send the HTTP request
+        // Send the HTTP request l
         http::write(socket, request);
 
         // Read the HTTP response
@@ -78,6 +86,7 @@ std::string makeMessageForMasterServer(const char* name, int population, const c
     data["pop"] = std::to_string(population);
     data["ip"] = ip;
     data["port"] = MyPort;
+    data["time"] = std::to_string(getTime());
 
     std::string commandType = cmdType + "|";
 

@@ -10,6 +10,7 @@
 #include <nlohmann/json.hpp>
 #include <boost/asio.hpp>
 #include "../persistentVariablesLib/pvarslib.hpp"
+#include <chrono>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -19,6 +20,8 @@ using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
 std::atomic<bool> isAccessingDatabase(false);
+
+
 
 std::pair<std::string, std::string> splitString(const std::string& str) {
     size_t index = str.find('|'); // Find the index of the '|' character
@@ -69,8 +72,43 @@ void do_session(tcp::socket& socket)
             std::cout << "Command: ";
             std::cout << command << std::endl;
 
-            std::cout << "JaySanno: ";
+            std::cout << "JSON: ";
             std::cout << jsonno << std::endl;
+
+            json j = json::parse(jsonno);
+
+
+            if (command == "serverUp")
+            {
+
+                std::string serverName = j["name"];
+
+
+
+                while (isAccessingDatabase.load() != false)
+                {
+                    //Wait until database is not being accessed by another thread
+                }
+                isAccessingDatabase.store(true);
+
+                //DO YOUR ACCESSING getdbvariable and setdbvariable HERE
+
+                std::string sinfo = getDbVariable(serverName.c_str()).value();
+                if (sinfo != "noexist")
+                {
+                    json existingInfo = json::parse(sinfo);
+                    if (existingInfo["ip"] != j["ip"] || existingInfo["port"] != j["port"])  //If its the same name but different IP
+                    {
+                        serverName += "1";
+                    }
+                }
+
+                setDbVariable(serverName.c_str(), jsonno.c_str());
+
+                isAccessingDatabase.store(false);
+            }
+
+
         }
     }
     catch (beast::system_error const& se)

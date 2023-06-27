@@ -3,8 +3,8 @@
 #include <string>
 enum ResultType
 {
-	ERROR,
-	RESULT
+	PVARSERROR,
+	PVARSRESULT
 };
 class Result
 {
