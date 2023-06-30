@@ -63,6 +63,7 @@ void do_session(tcp::socket& socket)
             //ws.text(ws.got_text());
             //ws.write(buffer.data());
 
+            ws.write(net::buffer("Master server: Got your public server. Thanks!"));
             
             std::string buff = beast::buffers_to_string(buffer.data());
             std::pair<std::string, std::string> result = splitString(buff);

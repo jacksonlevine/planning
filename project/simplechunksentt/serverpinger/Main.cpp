@@ -16,6 +16,12 @@ namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
+const std::string ANSI_RESET = "\033[0m";
+const std::string ANSI_RED = "\033[31m";
+const std::string ANSI_GREEN = "\033[32m";
+const std::string ANSI_YELLOW = "\033[33m";
+const std::string ANSI_BLUE = "\033[34m";
+
 
 std::string MyName;
 int MyPopulation = 0;
@@ -129,7 +135,7 @@ void contactMasterServer(std::string host)
 
         ws.close(websocket::close_code::normal);
 
-        std::cout << beast::make_printable(buffer.data()) << std::endl;
+        std::cout << ANSI_BLUE << beast::make_printable(buffer.data()) << ANSI_RESET << std::endl;
     }
     catch (std::exception const& e)
     {
@@ -227,7 +233,7 @@ int main(int argc, char** argv)
 
     //THIS IS  A LIE, ITS NOT STARTING A SERVER YET
     std::string successStatement("Server now running at " + MyIP + ":" + std::to_string(MyPort));
-    std::cout << successStatement;
+    std::cout << ANSI_RED << successStatement << ANSI_RESET << std::endl;
     
     return EXIT_SUCCESS;
 }
