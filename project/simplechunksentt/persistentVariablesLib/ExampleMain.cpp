@@ -7,23 +7,14 @@
 
 int main()
 {
-    try {
-        boost::asio::io_context io_context;
-        boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
+    
+    PVarsContext::tableName = "jlvariables";
 
-        boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
-        boost::asio::ip::tcp::resolver::iterator end; // end marker
+    ListResult all = getDbTable(PVarsContext::tableName);
 
-        while (iter != end) {
-            boost::asio::ip::tcp::endpoint endpoint = *iter++;
-            if (endpoint.protocol() == boost::asio::ip::tcp::v4()) {
-                std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
-            }
-        }
-    }
-    catch (std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
+    for (std::string entry : all.values())
+    {
+        std::cout << entry << std::endl;
     }
 
     return 0;

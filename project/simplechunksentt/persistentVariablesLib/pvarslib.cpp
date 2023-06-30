@@ -4,8 +4,23 @@
 
 std::string PVarsContext::tableName;
 
+ListResult::ListResult() : type(PVARSERROR), _things(std::nullopt) {
+
+}
+
 Result::Result() : type(PVARSERROR), _thing(std::nullopt) {
     
+}
+
+std::vector<std::string> ListResult::values() {
+    if (_things.has_value())
+    {
+        return _things.value();
+    }
+    else {
+        std::vector<std::string> empty;
+        return empty;
+    }
 }
 
 std::string Result::value() {
@@ -18,9 +33,59 @@ std::string Result::value() {
     }
 }
 
+void ListResult::setValues(std::vector<std::string> val)
+{
+    _things.emplace(val);
+}
+
 void Result::setValue(std::string val)
 {
     _thing.emplace(val);
+}
+
+ListResult getDbTable(std::string tableName)
+{
+    ListResult result;
+
+    sqlite3* db;
+    int rc = sqlite3_open("data.db", &db);
+
+    if (rc != SQLITE_OK) {
+        std::cerr << "Cannot open database:" << sqlite3_errmsg(db) << std::endl;
+        sqlite3_close(db);
+        return result;
+    }
+
+    std::string query = "SELECT value FROM " + tableName + ";";
+    char* errorMsg = nullptr;
+    char** queryResult;
+    int rows, columns;
+
+    rc = sqlite3_get_table(db, query.c_str(), &queryResult, &rows, &columns, &errorMsg);
+
+    std::vector<std::string> results;
+
+    if (rc != SQLITE_OK) {
+        std::cerr << "SQL error: " << errorMsg << std::endl;
+        sqlite3_free(errorMsg);
+    }
+    else {
+        for (int i = 1; i <= rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                results.push_back(queryResult[(i * columns) + j]);
+            }
+        }
+
+        sqlite3_free_table(queryResult);
+
+        result.setValues(results);
+        result.type = PVARSRESULT;
+    }
+    sqlite3_close(db);
+    return result;
+
 }
 
 Result getDbVariable(const char* key)
