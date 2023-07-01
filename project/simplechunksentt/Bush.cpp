@@ -29,6 +29,7 @@ Model Plant::getBlackberryBushModel(float x, float y, float z)
 	glm::vec3 leanForward(0, 1, 0.5);
 	glm::vec3 leanLeft(-0.5, 1, 0);
 	glm::vec3 leanRight(0.5, 1, 0);
+
 	//LEFT SIDE CORNERS 
 	model.verts.insert(model.verts.end(), {
 		    //front left, lean forward corner

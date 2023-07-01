@@ -14,10 +14,227 @@
 #include "entt/entt.hpp"
 #include "Scene.hpp"
 #include "Hud.hpp"
+#include <stdlib.h>
+#include <algorithm>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <freetype-gl/freetype-gl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <freetype-gl/text-buffer.h>
 
+
+// FreeType-GL objects
+texture_atlas_t* atlas;
+texture_font_t* font;
 
 unsigned int texture;
 HudView hud;
+
+// Initialize FreeType-GL and create a font face
+void initializeFreeType()
+{
+    // Initialize FreeType library
+    FT_Library ft;
+    FT_Init_FreeType(&ft);
+
+    // Load the font face
+    FT_Face face;
+    FT_New_Face(ft, "./Cabal.ttf", 0, &face);
+
+    // Set the font size (example: 24)
+    FT_Set_Pixel_Sizes(face, 0, 24);
+
+    // Create a FreeType-GL texture atlas
+    atlas = texture_atlas_new(512, 512, 1);
+
+    // Create a FreeType-GL font
+    font = texture_font_new_from_file(atlas, 24, "./Cabal.ttf");
+
+}
+
+
+// Render the text using FreeType-GL and OpenGL
+void drawText(const char* text, float x, float y)
+{
+    glDisable(GL_DEPTH_TEST);
+
+    // Set up OpenGL for 2D rendering
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, GLWrapper::instance->wi, 0, GLWrapper::instance->he, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+
+    // Set the text position
+    float pen_x = x;
+    float pen_y = y;
+    // Bind the texture atlas
+    glBindTexture(GL_TEXTURE_2D, atlas->id);
+    // Iterate over each character in the text
+    const char* c = text;
+    while (*c != '\0')
+    {
+        // Get the glyph for the character
+        texture_glyph_t* glyph = texture_font_get_glyph(font, c);
+
+        // Render the glyph quad
+        if (glyph != NULL)
+        {
+            float x0 = pen_x + glyph->offset_x;
+            float y0 = pen_y + glyph->offset_y;
+            float x1 = x0 + glyph->width;
+            float y1 = y0 - glyph->height;
+
+            GLfloat vertices[4][2] = {
+                {x0, y0},
+                {x0, y1},
+                {x1, y1},
+                {x1, y0}
+            };
+
+            GLfloat texcoords[4][2] = {
+                {glyph->s0, glyph->t0},
+                {glyph->s0, glyph->t1},
+                {glyph->s1, glyph->t1},
+                {glyph->s1, glyph->t0}
+            };
+
+
+            glVertexPointer(2, GL_FLOAT, 0, vertices);
+            glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+            glDrawArrays(GL_QUADS, 0, 4);
+        }
+
+        // Move the pen position to the right for the next character
+        pen_x += glyph->advance_x;
+
+        // Move to the next character
+        ++c;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glEnable(GL_DEPTH_TEST);
+
+}
+
+void drawText2(const char* text, float x, float y)
+{
+    glDisable(GL_DEPTH_TEST);
+
+    static GLuint text_vao = 0;
+    static GLuint text_shader = 0;
+
+    static GLuint text_vbov = 0;
+    static GLuint text_vbouv = 0;
+    if (text_vao == 0)
+    {
+        glGenVertexArrays(1, &text_vao);
+        glBindVertexArray(text_vao);
+        glGenBuffers(1, &text_vbov);
+        glGenBuffers(1, &text_vbouv);
+
+
+        const GLchar* vs_src =
+            "#version 450 core\n"
+            "layout (location = 0) in vec3 position;\n"
+            "layout (location = 1) in vec2 uv;\n"
+            "out vec2 TexCoord;\n"
+            "void main()\n"
+            "{\n"
+            "    gl_Position = vec4(position, 1.0);\n"
+            "    TexCoord = uv;\n"
+            "}\n";
+
+
+        const GLchar* fs_src =
+            "#version 450 core\n"
+            "in vec2 TexCoord;\n"
+            "out vec4 FragColor;\n"
+            "uniform sampler2D ourTexture;\n"
+            "void main()\n"
+            "{\n"
+            "vec4 texColor = texture(ourTexture, TexCoord);\n"
+            "if(texColor.a < 0.1){\n"
+            "discard;}\n"
+
+            "    FragColor = texColor;\n"
+            "}\n";
+
+        GLuint vs_id, fs_id;
+        vs_id = glCreateShader(GL_VERTEX_SHADER);
+        fs_id = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(vs_id, 1, &vs_src, NULL);
+        glShaderSource(fs_id, 1, &fs_src, NULL);
+        glCompileShader(vs_id);
+
+        GLint success;
+        GLchar infoLog[512];
+        glGetShaderiv(vs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(vs_id, 512, NULL, infoLog);
+            std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
+        }
+
+        glCompileShader(fs_id);
+
+        glGetShaderiv(fs_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(fs_id, 512, NULL, infoLog);
+            std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
+        }
+
+        text_shader = glCreateProgram();
+        glAttachShader(text_shader, vs_id);
+        glAttachShader(text_shader, fs_id);
+        glLinkProgram(text_shader);
+        glDetachShader(text_shader, fs_id);
+        glDetachShader(text_shader, vs_id);
+        glDeleteShader(fs_id);
+        glDeleteShader(vs_id);
+    }
+    glBindVertexArray(text_vao);
+    glUseProgram(text_shader);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the minification filter to nearest neighbor
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    if (textView.dirty)
+    {
+        textView.updateAmalgam();
+        // Generate a vertex buffer object (VBO) for the position data
+
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, text_vbov);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * textView.amalgam.verts.size(), &(textView.amalgam.verts[0]), GL_STATIC_DRAW);
+    // Set up the vertex attribute pointers for the position buffer object
+    GLint pos_attrib = glGetAttribLocation(text_shader, "position");
+    glEnableVertexAttribArray(pos_attrib);
+    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Generate a vertex buffer object (VBO) for the uv data
+    glBindBuffer(GL_ARRAY_BUFFER, text_vbouv);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * textView.amalgam.uvs.size(), &(textView.amalgam.uvs[0]), GL_STATIC_DRAW);
+
+    // Set up the vertex attribute pointers for the uv buffer object
+    GLint uv_attrib = glGetAttribLocation(text_shader, "uv");
+    glEnableVertexAttribArray(uv_attrib);
+    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+
+    glDrawArrays(GL_TRIANGLES, 0, textView.amalgam.verts.size());
+    glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
+}
+
+
 
 void setupHud()
 {
@@ -437,8 +654,11 @@ void waterTile(
     glDepthMask(GL_TRUE);
 }
 
+
 int main()
 {
+    initializeFreeType();
+
     setupHud();
     GLWrapper wrap;
     wrap.initializeGL();
@@ -543,7 +763,7 @@ int main()
         if (uwFeet == 1)
         {
 
-            buoyancy = std::min(std::abs(wrap.cameraPos.y - game.waterHeight), 0.5f);
+            buoyancy = std::min<float>(std::abs(wrap.cameraPos.y - game.waterHeight), 0.5f);
         }
         int queueFOV = 0;
         if (uwV == 1)
@@ -573,13 +793,12 @@ int main()
         waterTile(
             0.0f, 0.0f, 1.0f, 1.0f, game.waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
 
-        
+
+        drawText("HelloAAAAAAAAAAAAAAAA\0", 0.5f, 0.5f);
 
 
         drawHeadsUpDisplay(hud);
 
-
-       // glDepthMask(GL_FALSE);
 
 
 
@@ -665,7 +884,7 @@ int main()
                 else if (uwFeet == 1) {
                     velocity += (deltaTime*0.05);
                 }
-                velocity = std::min(velocity, 0.25f);
+                velocity = std::min<float>(velocity, 0.25f);
                
                 if ((wrap.cameraPos.y - 2) - velocity >= height)
                 {
