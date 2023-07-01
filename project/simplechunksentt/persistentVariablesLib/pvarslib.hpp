@@ -38,3 +38,4 @@ public:
 bool setDbVariable(const char* variable1, const char* value1);
 Result getDbVariable(const char* key);
 ListResult getDbTable(std::string tableName);
+bool deleteDbVariable(const std::string key);

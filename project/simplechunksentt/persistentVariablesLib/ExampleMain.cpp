@@ -10,12 +10,6 @@ int main()
     
     PVarsContext::tableName = "jlvariables";
 
-    ListResult all = getDbTable(PVarsContext::tableName);
-
-    for (std::string entry : all.values())
-    {
-        std::cout << entry << std::endl;
-    }
-
+    deleteDbVariable("Hoopy");
     return 0;
 }

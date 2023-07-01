@@ -2,7 +2,7 @@
 #include <sqlite3.h>
 #include "pvarslib.hpp"
 
-std::string PVarsContext::tableName;
+std::string PVarsContext::tableName = "jlvariables";
 
 ListResult::ListResult() : type(PVARSERROR), _things(std::nullopt) {
 
@@ -165,5 +165,38 @@ bool setDbVariable(const char* variable1, const char* value1) {
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 
+    return true;
+}
+
+bool deleteDbVariable(const std::string key) {
+    sqlite3* db;
+    int rc = sqlite3_open("data.db", &db);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Failed to open database: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    std::string sql = "DELETE FROM " + PVarsContext::tableName + " WHERE name = ?";
+    sqlite3_stmt* stmt;
+    rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    rc = sqlite3_bind_text(stmt, 1, key.c_str(), -1, SQLITE_STATIC);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Failed to bind parameter: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        std::cerr << "Failed to execute statement: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
     return true;
 }
