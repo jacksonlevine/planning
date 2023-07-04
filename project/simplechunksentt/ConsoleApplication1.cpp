@@ -16,197 +16,14 @@
 #include "Hud.hpp"
 #include <stdlib.h>
 #include <algorithm>
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include <freetype-gl/freetype-gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <freetype-gl/text-buffer.h>
-#include <SFML/Graphics.hpp>
-
-// FreeType-GL objects
-texture_atlas_t* atlas;
-texture_font_t* font;
-
 unsigned int texture;
 HudView hud;
 
-// Initialize FreeType-GL and create a font face
-void initializeFreeType()
-{
-    // Initialize FreeType library
-    FT_Library ft;
-    if (FT_Init_FreeType(&ft) != 0) {
-        std::cerr << "Failed to initialize FreeType library" << std::endl;
-    }
 
-    // Load the font face
-    FT_Face face;
-    if (FT_New_Face(ft, "./Cabal.ttf", 0, &face) != 0) {
-        std::cerr << "Failed to load font face" << std::endl;
-        FT_Done_FreeType(ft);
-    }
 
-    // Set the font size (example: 24)
-    if (FT_Set_Pixel_Sizes(face, 0, 24) != 0) {
-        std::cerr << "Failed to set font size" << std::endl;
-        FT_Done_Face(face);
-        FT_Done_FreeType(ft);
-    }
-
-    // Create a FreeType-GL texture atlas
-    atlas = texture_atlas_new(512, 512, 3);
-    if (!atlas) {
-        std::cerr << "Failed to create texture atlas" << std::endl;
-        FT_Done_Face(face);
-        FT_Done_FreeType(ft);
-    }
-
-    // Create a FreeType-GL font
-    font = texture_font_new_from_file(atlas, 24, "./Cabal.ttf");
-    if (!font) {
-        std::cerr << "Failed to create font" << std::endl;
-        texture_atlas_delete(atlas);
-        FT_Done_Face(face);
-        FT_Done_FreeType(ft);
-    }
-}
-
-void drawText2(const char* text, float x, float y)
-{
-    glDisable(GL_DEPTH_TEST);
-    static GLuint text_vao = 0;
-    static GLuint text_shader = 0;
-    static GLuint text_vbov = 0;
-    static GLuint text_vbouv = 0;
-    if (text_vao == 0)
-    {
-        glGenVertexArrays(1, &text_vao);
-        glBindVertexArray(text_vao);
-        glGenBuffers(1, &text_vbov);
-        glGenBuffers(1, &text_vbouv);
-        const GLchar* vs_src =
-            "#version 450 core\n"
-            "layout (location = 0) in vec3 position;\n"
-            "layout (location = 1) in vec2 uv;\n"
-            "out vec2 TexCoord;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position, 1.0);\n"
-            "    TexCoord = uv;\n"
-            "}\n";
-        const GLchar* fs_src =
-            "#version 450 core\n"
-            "in vec2 TexCoord;\n"
-            "out vec4 FragColor;\n"
-            "uniform sampler2D ourTexture;\n"
-            "void main()\n"
-            "{\n"
-            "vec4 texColor = texture(ourTexture, TexCoord);\n"
-            "if(texColor.a < 0.1){\n"
-            "discard;}\n"
-            "    FragColor = texColor;\n"
-            "}\n";
-
-        GLuint vs_id, fs_id;
-        vs_id = glCreateShader(GL_VERTEX_SHADER);
-        fs_id = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(vs_id, 1, &vs_src, NULL);
-        glShaderSource(fs_id, 1, &fs_src, NULL);
-        glCompileShader(vs_id);
-
-        GLint success;
-        GLchar infoLog[512];
-        glGetShaderiv(vs_id, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            glGetShaderInfoLog(vs_id, 512, NULL, infoLog);
-            std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
-        }
-
-        glCompileShader(fs_id);
-
-        glGetShaderiv(fs_id, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            glGetShaderInfoLog(fs_id, 512, NULL, infoLog);
-            std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
-        }
-
-        text_shader = glCreateProgram();
-        glAttachShader(text_shader, vs_id);
-        glAttachShader(text_shader, fs_id);
-        glLinkProgram(text_shader);
-        glDetachShader(text_shader, fs_id);
-        glDetachShader(text_shader, vs_id);
-        glDeleteShader(fs_id);
-        glDeleteShader(vs_id);
-    }
-    glBindVertexArray(text_vao);
-    glUseProgram(text_shader);
-    glBindTexture(GL_TEXTURE_2D, atlas->id);
-    std::vector<GLfloat> verts;
-    std::vector<GLfloat> uvs;
-    // Set the text position
-    float pen_x = x;
-    float pen_y = y;
-
-    // Iterate over each character in the text
-    const char* c = text;
-    while (*c != '\0')
-    {
-        // Get the glyph for the character
-        texture_glyph_t* glyph = texture_font_get_glyph(font, c);
-
-        // Render the glyph quad
-        if (glyph != NULL)
-        {
-            float x0 = pen_x + glyph->offset_x;
-            float y0 = pen_y + glyph->offset_y;
-            float x1 = x0 + glyph->width;
-            float y1 = y0 - glyph->height;
-            verts.insert(verts.end(), {
-                    x0, y1, 0.3f,
-                x1, y1,0.3f,
-                x1, y0,0.3f,
-                x1, y0,0.3f,
-                x0, y0,0.3f,
-                x0, y1, 0.3f,
-            });
-            uvs.insert(uvs.end(), {
-                glyph->s0, glyph->t1,
-                glyph->s1, glyph->t1,
-                glyph->s1, glyph->t0,
-                glyph->s1, glyph->t0,
-                glyph->s0, glyph->t0,
-                glyph->s0, glyph->t1
-            });
-
-        }
-        // Move the pen position to the right for the next character
-        pen_x += glyph->advance_x;
-        // Move to the next character
-        ++c;
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, text_vbov);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verts.size(), &(verts[0]), GL_STATIC_DRAW);
-    // Set up the vertex attribute pointers for the position buffer object
-    GLint pos_attrib = glGetAttribLocation(text_shader, "position");
-    glEnableVertexAttribArray(pos_attrib);
-    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    // Generate a vertex buffer object (VBO) for the uv data
-    glBindBuffer(GL_ARRAY_BUFFER, text_vbouv);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uvs.size(), &(uvs[0]), GL_STATIC_DRAW);
-    // Set up the vertex attribute pointers for the uv buffer object
-    GLint uv_attrib = glGetAttribLocation(text_shader, "uv");
-    glEnableVertexAttribArray(uv_attrib);
-    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, verts.size());
-    glBindVertexArray(0);
-    glEnable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_2D, texture);
-}
 
 
 
@@ -631,8 +448,6 @@ void waterTile(
 
 int main()
 {
-    initializeFreeType();
-
     setupHud();
     GLWrapper wrap;
     wrap.initializeGL();
@@ -648,9 +463,6 @@ int main()
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
-
-
-
 
 
     /*TEXTURE BIT*/
@@ -771,9 +583,6 @@ int main()
 
 
         drawHeadsUpDisplay(hud);
-
-        std::string st("Abcdefghijklmnopqrstuvwxyz1234567890");
-        drawText2(st.c_str(), 0.5f, -0.5f);
 
 
         float currentFrame = glfwGetTime();
