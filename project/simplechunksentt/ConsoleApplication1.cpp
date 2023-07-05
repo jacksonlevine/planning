@@ -443,8 +443,20 @@ void waterTile(
     glDepthMask(GL_TRUE);
 }
 
+
+std::string lastText;
+std::vector<GLfloat> tverts;
+std::vector<GLfloat> tuvs;
 void drawText(const char* text, float x, float y)
 {
+    bool newText = false;
+    if (lastText != text)
+    {
+        lastText = std::string(text);
+        newText = true;
+    }
+
+
     glDisable(GL_DEPTH_TEST);
     static GLuint text_vao = 0;
     static GLuint text_shader = 0;
@@ -515,8 +527,7 @@ void drawText(const char* text, float x, float y)
     }
     glBindVertexArray(text_vao);
     glUseProgram(text_shader);
-    std::vector<GLfloat> verts;
-    std::vector<GLfloat> uvs;
+
     // Set the text position
     float pen_x = x;
     float pen_y = y;
@@ -524,20 +535,21 @@ void drawText(const char* text, float x, float y)
     GlyphFace glyph;
 
     float gWidth = 0.05f;
-
-    // Iterate over each character in the text
-    const char* c = text;
-    while (*c != '\0')
+    if (newText == true)
     {
-        glyph.setCharCode((int)*c);
+        // Iterate over each character in the text
+        const char* c = text;
+        while (*c != '\0')
+        {
+            glyph.setCharCode((int)*c);
 
-        
-                float x0 = pen_x;
-                float y0 = pen_y;
-                float x1 = x0 + gWidth/2;
-                float y1 = y0 - gWidth;
 
-            verts.insert(verts.end(), {
+            float x0 = pen_x;
+            float y0 = pen_y;
+            float x1 = x0 + gWidth / 2;
+            float y1 = y0 - gWidth;
+
+            tverts.insert(tverts.end(), {
                     x0, y1, 0.3f,
                 x1, y1,0.3f,
                 x1, y0,0.3f,
@@ -545,7 +557,7 @@ void drawText(const char* text, float x, float y)
                 x0, y0,0.3f,
                 x0, y1, 0.3f,
                 });
-            uvs.insert(uvs.end(), {
+            tuvs.insert(tuvs.end(), {
                 glyph.bl.x, glyph.bl.y,
                 glyph.br.x, glyph.br.y,
                 glyph.tr.x, glyph.tr.y,
@@ -555,25 +567,37 @@ void drawText(const char* text, float x, float y)
                 glyph.bl.x, glyph.bl.y,
                 });
 
-        // Move the pen position to the right for the next character
-        pen_x += gWidth/2.5;
-        // Move to the next character
-        ++c;
+            // Move the pen position to the right for the next character
+            pen_x += gWidth / 2.5;
+            // Move to the next character
+            ++c;
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbov);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * tverts.size(), &(tverts[0]), GL_STATIC_DRAW);
+        // Set up the vertex attribute pointers for the position buffer object
+        GLint pos_attrib = glGetAttribLocation(text_shader, "position");
+        glEnableVertexAttribArray(pos_attrib);
+        glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        // Generate a vertex buffer object (VBO) for the uv data
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbouv);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * tuvs.size(), &(tuvs[0]), GL_STATIC_DRAW);
+        // Set up the vertex attribute pointers for the uv buffer object
+        GLint uv_attrib = glGetAttribLocation(text_shader, "uv");
+        glEnableVertexAttribArray(uv_attrib);
+        glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     }
-    glBindBuffer(GL_ARRAY_BUFFER, text_vbov);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verts.size(), &(verts[0]), GL_STATIC_DRAW);
-    // Set up the vertex attribute pointers for the position buffer object
-    GLint pos_attrib = glGetAttribLocation(text_shader, "position");
-    glEnableVertexAttribArray(pos_attrib);
-    glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    // Generate a vertex buffer object (VBO) for the uv data
-    glBindBuffer(GL_ARRAY_BUFFER, text_vbouv);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * uvs.size(), &(uvs[0]), GL_STATIC_DRAW);
-    // Set up the vertex attribute pointers for the uv buffer object
-    GLint uv_attrib = glGetAttribLocation(text_shader, "uv");
-    glEnableVertexAttribArray(uv_attrib);
-    glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, verts.size());
+    else {
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbov);
+        GLint pos_attrib = glGetAttribLocation(text_shader, "position");
+        glEnableVertexAttribArray(pos_attrib);
+        glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbouv);
+        GLint uv_attrib = glGetAttribLocation(text_shader, "uv");
+        glEnableVertexAttribArray(uv_attrib);
+        glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+    glDrawArrays(GL_TRIANGLES, 0, tverts.size());
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }
@@ -715,7 +739,7 @@ int main()
 
 
         drawHeadsUpDisplay(hud);
-        drawText("Helloooooooo123!!!", 0.0f, -0.5f);
+        drawText("This 12000 + 340 = 12340 () #$% EEE ", 0.0f, -0.5f);
 
 
         float currentFrame = glfwGetTime();
