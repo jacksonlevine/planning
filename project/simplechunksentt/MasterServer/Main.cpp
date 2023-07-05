@@ -93,7 +93,6 @@ void do_session(tcp::socket& socket)
             //ws.text(ws.got_text());
             //ws.write(buffer.data());
 
-            ws.write(net::buffer("Master server: Got your public server. Thanks!"));
             
             std::string buff = beast::buffers_to_string(buffer.data());
             std::pair<std::string, std::string> result = splitString(buff);
@@ -106,12 +105,12 @@ void do_session(tcp::socket& socket)
             std::cout << "JSON: ";
             std::cout << jsonno << std::endl;
 
-            json j = json::parse(jsonno);
+            
 
 
             if (command == "serverUp")
             {
-
+                json j = json::parse(jsonno);
                 std::string serverName = j["name"];
 
 
@@ -137,6 +136,8 @@ void do_session(tcp::socket& socket)
                 setDbVariable(serverName.c_str(), jsonno.c_str());
 
                 isAccessingDatabase.store(false);
+
+                ws.write(net::buffer("Master server: Got your public server. Thanks!"));
             }
             if (command == "getAll")
             {

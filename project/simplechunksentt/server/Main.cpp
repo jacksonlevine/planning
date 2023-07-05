@@ -205,32 +205,7 @@ int main(int argc, char** argv)
         std::cout << "Contacting the master server to list your public server..." << std::endl;
         contactMasterServer(Masterhost);
     }
-
-
-
-  /*      try
-    {
-        auto const address = net::ip::make_address(host);
-        auto const port = static_cast<unsigned short>(32851);
-
-        net::io_context ioc{ 1 };
-
-        tcp::acceptor acceptor{ ioc, {address, port} };
-        for (;;)
-        {
-            tcp::socket socket{ ioc };
-            acceptor.accept(socket);
-            std::thread{ std::bind(
-                &do_session,
-                std::move(socket)) }.detach();
-        }
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }*/
-
+ 
     //THIS IS  A LIE, ITS NOT STARTING A SERVER YET
     std::string successStatement("Server now running at " + MyIP + ":" + std::to_string(MyPort));
     std::cout << ANSI_RED << successStatement << ANSI_RESET << std::endl;

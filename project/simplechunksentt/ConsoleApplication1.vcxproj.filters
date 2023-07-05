@@ -90,6 +90,9 @@
     <ClCompile Include="GlyphFace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Comm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSetup.hpp">
@@ -129,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GlyphFace.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Comm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,6 +20,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "GlyphFace.hpp"
+#include "Comm.hpp"
 
 unsigned int texture;
 HudView hud;
@@ -603,6 +604,7 @@ void drawText(const char* text, float x, float y)
 }
 int main()
 {
+    getPublicListings(std::string("192.168.1.131"));
     setupHud();
     GLWrapper wrap;
     wrap.initializeGL();
