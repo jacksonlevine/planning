@@ -141,6 +141,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="General.cpp" />
     <ClCompile Include="GLSetup.cpp" />
+    <ClCompile Include="GlyphFace.cpp" />
     <ClCompile Include="Grass.cpp" />
     <ClCompile Include="Hud.cpp" />
     <ClCompile Include="Hud.hpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="BlockTypes.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GLSetup.hpp" />
+    <ClInclude Include="GlyphFace.hpp" />
     <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Perlin.h" />

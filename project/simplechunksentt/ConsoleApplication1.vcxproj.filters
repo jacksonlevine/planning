@@ -87,6 +87,9 @@
     <ClCompile Include="Bush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GlyphFace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSetup.hpp">
@@ -123,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Audio.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GlyphFace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
