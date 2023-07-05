@@ -1,16 +1,13 @@
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
+#include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <cstdlib>
-#include <functional>
 #include <iostream>
 #include <string>
-#include <thread>
 #include <nlohmann/json.hpp>
 #include <boost/asio.hpp>
-#include "../persistentVariablesLib/pvarslib.hpp"
-#include <chrono>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -19,103 +16,126 @@ namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
-std::atomic<bool> isAccessingDatabase(false);
+const std::string ANSI_RESET = "\033[0m";
+const std::string ANSI_RED = "\033[31m";
+const std::string ANSI_GREEN = "\033[32m";
+const std::string ANSI_YELLOW = "\033[33m";
+const std::string ANSI_BLUE = "\033[34m";
 
 
+std::string MyName;
+int MyPopulation = 0;
+std::string MyIP;
+unsigned short MyPort = 32851;
 
-std::pair<std::string, std::string> splitString(const std::string& str) {
-    size_t index = str.find('|'); // Find the index of the '|' character
+std::string Masterhost = "192.168.1.131";   //THIS WILL NEED TO BE THE PUBLIC IP AND PORT FORWARDED 
 
-    if (index != std::string::npos) { // If '|' is found
-        std::string before = str.substr(0, index); // Extract the string before '|'
-        std::string after = str.substr(index + 1); // Extract the string after '|'
-        return std::make_pair(before, after);
+std::time_t getTime()
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::chrono::system_clock::duration duration = now.time_since_epoch();
+    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    std::time_t time = seconds.count();
+    return time;
+}
+
+std::string getMyPublicIP(net::io_context& io_context)
+{
+    try {
+        // Create an io_context
+       net::io_context io_context;
+
+        // Create a TCP resolver and query
+        net::ip::tcp::resolver resolver(io_context);
+        net::ip::tcp::resolver::query query("icanhazip.com", "80");
+
+        // Resolve the query and get the endpoint iterator
+        net::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+
+        // Create a TCP socket and connect to the endpoint
+        net::ip::tcp::socket socket(io_context);
+        net::connect(socket, endpoint_iterator);
+
+        // Create an HTTP request
+        http::request<http::empty_body> request(http::verb::get, "/", 11);
+        request.set(http::field::host, "icanhazip.com");
+        request.set(http::field::user_agent, "Boost Beast");
+
+        // Send the HTTP request l
+        http::write(socket, request);
+
+        // Read the HTTP response
+        beast::flat_buffer buffer;
+        http::response<http::string_body> response;
+        http::read(socket, buffer, response);
+
+        // Get the response body as a string
+        std::string responseBody = response.body();
+
+
+        // Close the socket
+        socket.shutdown(net::ip::tcp::socket::shutdown_both);
+        socket.close();
+        return responseBody;
     }
-    else {
-        return std::make_pair("", ""); // Return empty strings if '|' is not found
+    catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return std::string("Error");
     }
 }
 
-void do_session(tcp::socket& socket)
+
+std::string makeMessageForMasterServer(const char* name, int population, const char* ip, std::string cmdType)
+{
+    json data;
+    data["name"] = name;
+    data["pop"] = std::to_string(population);
+    data["ip"] = ip;
+    data["port"] = MyPort;
+    data["time"] = std::to_string(getTime());
+
+    std::string commandType = cmdType + "|";
+
+    std::string text = commandType + data.dump();
+    return text;
+}
+
+void contactMasterServer(std::string host)
 {
     try
     {
-        websocket::stream<tcp::socket> ws{ std::move(socket) };
+        auto const Masterport = "32852";
+
+        std::string text = makeMessageForMasterServer(MyName.c_str(), MyPopulation, MyIP.c_str(), std::string("serverUp"));
+
+        net::io_context ioc;
+
+        tcp::resolver resolver{ ioc };
+        websocket::stream<tcp::socket> ws{ ioc };
+
+        auto const results = resolver.resolve(host.c_str(), Masterport);
+
+        net::connect(ws.next_layer(), results.begin(), results.end());
 
         ws.set_option(websocket::stream_base::decorator(
-            [](websocket::response_type& res)
+            [](websocket::request_type& req)
             {
-                res.set(http::field::server,
+                req.set(http::field::user_agent,
                 std::string(BOOST_BEAST_VERSION_STRING) +
-                " websocket-server-sync");
+                " websocket-client-coro");
             }));
 
-        // Accept the websocket handshake
-        ws.accept();
+        ws.handshake(host, "/");
 
-        for (;;)
-        {
-            beast::flat_buffer buffer;
+        ws.write(net::buffer(std::string(text)));
 
-            ws.read(buffer);
+        beast::flat_buffer buffer;
 
-            // Echo the message back
-            //ws.text(ws.got_text());
-            //ws.write(buffer.data());
+        ws.read(buffer);
 
-            ws.write(net::buffer("Master server: Got your public server. Thanks!"));
-            
-            std::string buff = beast::buffers_to_string(buffer.data());
-            std::pair<std::string, std::string> result = splitString(buff);
+        ws.close(websocket::close_code::normal);
 
-            std::string command = result.first;
-            std::string jsonno = result.second;
-            std::cout << "Command: ";
-            std::cout << command << std::endl;
-
-            std::cout << "JSON: ";
-            std::cout << jsonno << std::endl;
-
-            json j = json::parse(jsonno);
-
-
-            if (command == "serverUp")
-            {
-
-                std::string serverName = j["name"];
-
-
-
-                while (isAccessingDatabase.load() != false)
-                {
-                    //Wait until database is not being accessed by another thread
-                }
-                isAccessingDatabase.store(true);
-
-                //DO YOUR ACCESSING getdbvariable and setdbvariable HERE
-
-                std::string sinfo = getDbVariable(serverName.c_str()).value();
-                if (sinfo != "noexist")
-                {
-                    json existingInfo = json::parse(sinfo);
-                    if (existingInfo["ip"] != j["ip"] || existingInfo["port"] != j["port"])  //If its the same name but different IP
-                    {
-                        serverName += "1";
-                    }
-                }
-
-                setDbVariable(serverName.c_str(), jsonno.c_str());
-
-                isAccessingDatabase.store(false);
-            }
-
-
-        }
-    }
-    catch (beast::system_error const& se)
-    {
-        if (se.code() != websocket::error::closed)
-            std::cerr << "Error: " << se.code().message() << std::endl;
+        std::cout << ANSI_BLUE << beast::make_printable(buffer.data()) << ANSI_RESET << std::endl;
     }
     catch (std::exception const& e)
     {
@@ -123,14 +143,40 @@ void do_session(tcp::socket& socket)
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-    PVarsContext::tableName = "masterServerList";
+
+    std::cout << "Use default port? (Y / N)" << std::endl;
+    std::string defportyorn;
+    std::getline(std::cin, defportyorn);
+
+    if (defportyorn.front() != 'y' && defportyorn.front() != 'Y')
+    {
+        std::cout << "Please enter an available port:" << std::endl;
+        std::string portin;
+        std::getline(std::cin, portin);
+
+        unsigned short custPort = std::stoi(portin);
+        MyPort = custPort;
+
+    }
+
+    std::cout << "Make this server public? (List it on the public server list) (Y / N)" << std::endl;
+    std::string pubyorn;
+    std::getline(std::cin, pubyorn);
+
+
+
 
 
     std::string host;
     try {
         boost::asio::io_context io_context;
+        MyIP =  getMyPublicIP(io_context);
+        while (!MyIP.empty() && MyIP.back() == '\n')
+        {
+            MyIP.pop_back();
+        }
         boost::asio::ip::tcp::resolver resolver(io_context);
         boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
 
@@ -140,7 +186,7 @@ int main(int argc, char* argv[])
         while (iter != end) {
             boost::asio::ip::tcp::endpoint endpoint = *iter++;
             if (endpoint.protocol() == boost::asio::ip::tcp::v4()) {
-               // std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
+                //std::cout << "IPv4 Address: " << endpoint.address().to_string() << std::endl;
                 host = endpoint.address().to_string();
             }
         }
@@ -149,10 +195,23 @@ int main(int argc, char* argv[])
         std::cerr << "Exception: " << e.what() << std::endl;
     }
 
-    try
+    if (pubyorn.front() == 'y' || pubyorn.front() == 'Y')
+    {
+
+
+        std::cout << "What name do you want your server to be listed as? (e.g. Bartholomew's Building Server)" << std::endl;
+        std::getline(std::cin, MyName);
+
+        std::cout << "Contacting the master server to list your public server..." << std::endl;
+        contactMasterServer(Masterhost);
+    }
+
+
+
+  /*      try
     {
         auto const address = net::ip::make_address(host);
-        auto const port = static_cast<unsigned short>(32852);
+        auto const port = static_cast<unsigned short>(32851);
 
         net::io_context ioc{ 1 };
 
@@ -170,5 +229,11 @@ int main(int argc, char* argv[])
     {
         std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
-    }
+    }*/
+
+    //THIS IS  A LIE, ITS NOT STARTING A SERVER YET
+    std::string successStatement("Server now running at " + MyIP + ":" + std::to_string(MyPort));
+    std::cout << ANSI_RED << successStatement << ANSI_RESET << std::endl;
+    
+    return EXIT_SUCCESS;
 }
