@@ -310,7 +310,7 @@ void do_session(tcp::socket& socket)
                 }
 
                 //and send update info in response
-                ws.write(getJsonifiedListOfUpdatedPlayers(pName.c_str()));
+                ws.write(net::buffer(getJsonifiedListOfUpdatedPlayers(pName.c_str())));
 
 
 
@@ -332,9 +332,37 @@ void do_session(tcp::socket& socket)
                 /*LOCK MUTEX*/ std::lock_guard<std::mutex> LOCK_PLAYER_LIST(PLAYER_LIST_MUTEX);
 
                 //and send update info in response
-                ws.write(getJsonifiedListOfUpdatedPlayers(pName.c_str()));
+                ws.write(net::buffer(getJsonifiedListOfUpdatedPlayers(pName.c_str())));
             }
+            if (command == "amI")  //They want to know if they were here before and load in prev pos if so
+            {
+                /*
+                * THE RECEIVED JSON PAYLOAD WILL BE:
+                *
+                * name: string
+                *
+                *
+                *
+                */
+                json j = json::parse(jsonno);
+                std::string pName = j["name"];
 
+                auto it = std::find_if(THE_PLAYER_LIST.begin(), THE_PLAYER_LIST.end(),
+                    [&](const Player& p) { return p.name == pName; });
+                if (it == THE_PLAYER_LIST.end()) //if theyre not there say no
+                {
+                    ws.write(net::buffer("no"));
+
+                }
+                else {                           // or else respond with payload
+                    json resp;
+                    resp["x"] = it->pos.x;
+                    resp["y"] = it->pos.y;
+                    resp["z"] = it->pos.z;
+                    ws.write(net::buffer(resp.dump()));
+                }
+
+            }
         }
     }
     catch (beast::system_error const& se)
