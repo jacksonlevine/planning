@@ -8,6 +8,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <boost/asio.hpp>
+#include <glm/glm.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -29,6 +30,41 @@ std::string MyIP;
 unsigned short MyPort = 32851;
 
 std::string Masterhost = "192.168.1.131";   //THIS WILL NEED TO BE THE PUBLIC IP AND PORT FORWARDED 
+
+
+
+
+
+
+
+
+/// <summary>
+/// The Player struct to store an individual players state
+/// </summary>
+class Player
+{
+public:
+    std::string name;
+    glm::vec3 pos;
+    std::vector<std::string> seenBy;
+};
+
+/// <summary>
+/// THE PLAYER LIST
+/// List of all players currently connected to the server. Lock PLAYER_LIST_MUTEX if you want to do an operation on this.
+/// </summary>
+std::vector<Player> THE_PLAYER_LIST;
+
+/// <summary>
+/// LOCK THIS MUTEX before operating on THE_PLAYER_LIST
+/// </summary>
+std::mutex PLAYER_LIST_MUTEX;
+
+
+
+
+
+
 
 std::time_t getTime()
 {
@@ -61,7 +97,7 @@ std::string getMyPublicIP(net::io_context& io_context)
         request.set(http::field::host, "icanhazip.com");
         request.set(http::field::user_agent, "Boost Beast");
 
-        // Send the HTTP request l
+        // Send the HTTP request 
         http::write(socket, request);
 
         // Read the HTTP response
@@ -143,6 +179,208 @@ void contactMasterServer(std::string host)
     }
 }
 
+
+std::pair<std::string, std::string> splitString(const std::string& str) {
+    size_t index = str.find('|'); // Find the index of the '|' character
+
+    if (index != std::string::npos) { // If '|' is found
+        std::string before = str.substr(0, index); // Extract the string before '|'
+        std::string after = str.substr(index + 1); // Extract the string after '|'
+        return std::make_pair(before, after);
+    }
+    else {
+        return std::make_pair("", ""); // Return empty strings if '|' is not found
+    }
+}
+/// <summary>
+/// ALWAYS LOCK THE PLAYER_LIST_MUTEX BEFORE CALLING THIS
+/// </summary>
+std::string getJsonifiedListOfUpdatedPlayers(const char* pName)
+{
+    json resp; //effectively a list of player structs filtered to only what you havent seen yet
+    int index = 0;
+    for (Player& i : THE_PLAYER_LIST)
+    {
+        if (std::find(i.seenBy.begin(), i.seenBy.end(), pName) == i.seenBy.end()) //if they havent seen this one
+        {
+            json j;
+
+            std::vector<std::string> seenByListButWithYou;
+            seenByListButWithYou.insert(seenByListButWithYou.end(), i.seenBy.begin(), i.seenBy.end());
+            seenByListButWithYou.push_back(pName); //Youve seen it now, according to here!
+
+            j["name"] = i.name;
+            j["x"] = i.pos.x;
+            j["y"] = i.pos.y;
+            j["z"] = i.pos.z;
+            j["seenBy"] = seenByListButWithYou;
+
+            resp[std::to_string(index)] = j.dump();
+            index++;
+        }
+
+
+    }
+    return resp.dump();
+}
+
+
+void do_session(tcp::socket& socket)
+{
+    try
+    {
+        websocket::stream<tcp::socket> ws{ std::move(socket) };
+
+        ws.set_option(websocket::stream_base::decorator(
+            [](websocket::response_type& res)
+            {
+                res.set(http::field::server,
+                std::string(BOOST_BEAST_VERSION_STRING) +
+                " websocket-server-sync");
+            }));
+
+        // Accept the websocket handshake
+        ws.accept();
+
+        for (;;)
+        {
+            beast::flat_buffer buffer;
+
+            ws.read(buffer); // WAIT FOR MESSAGE
+
+
+            std::string buff = beast::buffers_to_string(buffer.data());
+            std::pair<std::string, std::string> result = splitString(buff);
+
+            std::string command = result.first;
+            std::string jsonno = result.second;
+            std::cout << "Command: ";
+            std::cout << command << std::endl;
+
+            std::cout << "JSON: ";
+            std::cout << jsonno << std::endl;
+
+
+
+
+            if (command == "pUp")
+            {
+                /*
+                * THE RECEIVED JSON PAYLOAD WILL BE:
+                * 
+                * name: string
+                * x: float
+                * y: float
+                * z: float
+                * 
+                * 
+                */
+
+
+
+                json j = json::parse(jsonno);
+                std::string pName = j["name"];
+
+                /*LOCK MUTEX*/ std::lock_guard<std::mutex> LOCK_PLAYER_LIST(PLAYER_LIST_MUTEX);
+
+                auto it = std::find_if(THE_PLAYER_LIST.begin(), THE_PLAYER_LIST.end(),
+                    [&](const Player& p) { return p.name == pName; });
+
+                if (it == THE_PLAYER_LIST.end())  //If theyre not in the list already
+                {
+                    Player newPlayer;
+                    newPlayer.name = pName;
+                    newPlayer.pos = glm::vec3(
+                        j["x"].get<float>(), 
+                        j["y"].get<float>(), 
+                        j["z"].get<float>()
+                    );
+                    newPlayer.seenBy.push_back(pName);//and its only seen by them (its new)
+
+                    THE_PLAYER_LIST.push_back(newPlayer);  //Make a new player struct and add it to the list
+                }
+                else {                            //If theyre in the list already (update their fields)
+                    it->pos = glm::vec3(
+                        j["x"].get<float>(),
+                        j["y"].get<float>(),
+                        j["z"].get<float>()
+                    );
+                    it->seenBy.clear();           //Wipe the seenBy and add only them
+                    it->seenBy.push_back(pName);  //This is only seen by them
+                }
+
+                //and send update info in response
+                ws.write(getJsonifiedListOfUpdatedPlayers(pName.c_str()));
+
+
+
+            }
+            if (command == "getUp")  //They just want updates and have no updates to give
+            {
+                /*
+                * THE RECEIVED JSON PAYLOAD WILL BE:
+                *
+                * name: string
+                * 
+                *
+                *
+                */
+
+                json j = json::parse(jsonno);
+                std::string pName = j["name"];
+
+                /*LOCK MUTEX*/ std::lock_guard<std::mutex> LOCK_PLAYER_LIST(PLAYER_LIST_MUTEX);
+
+                //and send update info in response
+                ws.write(getJsonifiedListOfUpdatedPlayers(pName.c_str()));
+            }
+
+        }
+    }
+    catch (beast::system_error const& se)
+    {
+        if (se.code() != websocket::error::closed)
+            std::cerr << "Error: " << se.code().message() << std::endl;
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
+
+
+
+
+
+
+
+
+void startServerLoop(std::string host)
+{
+    try
+    {
+        auto const address = net::ip::make_address(host);
+        auto const port = static_cast<unsigned short>(32852);
+
+        net::io_context ioc{ 1 };
+
+        tcp::acceptor acceptor{ ioc, {address, port} };
+        for (;;)
+        {
+            tcp::socket socket{ ioc };
+            acceptor.accept(socket);
+            std::thread{ std::bind(
+                &do_session,
+                std::move(socket)) }.detach();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
 int main(int argc, char** argv)
 {
 
@@ -204,9 +442,27 @@ int main(int argc, char** argv)
 
         std::cout << "Contacting the master server to list your public server..." << std::endl;
         contactMasterServer(Masterhost);
-    }
+    
+        //  DONE CONTACTING MASTER SERVER,      ENTERING MAIN SERVER LOOP. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
-    //THIS IS  A LIE, ITS NOT STARTING A SERVER YET
+
     std::string successStatement("Server now running at " + MyIP + ":" + std::to_string(MyPort));
     std::cout << ANSI_RED << successStatement << ANSI_RESET << std::endl;
     
