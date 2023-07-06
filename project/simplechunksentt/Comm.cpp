@@ -127,7 +127,6 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                 payload["z"] = std::to_string(GLWrapper::instance->cameraPos.z);
             }
 
-
             payload["name"] = name;
             std::string text = std::string(*command) + std::string("|") + payload.dump();
 
