@@ -291,9 +291,9 @@ void do_session(tcp::socket& socket)
                     Player newPlayer;
                     newPlayer.name = pName;
                     newPlayer.pos = glm::vec3(
-                        j["x"].get<float>(), 
-                        j["y"].get<float>(), 
-                        j["z"].get<float>()
+                        std::stof(j["x"].get<std::string>()), 
+                        std::stof(j["y"].get<std::string>()),
+                        std::stof(j["z"].get<std::string>())
                     );
                     newPlayer.seenBy.push_back(pName);//and its only seen by them (its new)
 
@@ -301,9 +301,9 @@ void do_session(tcp::socket& socket)
                 }
                 else {                            //If theyre in the list already (update their fields)
                     it->pos = glm::vec3(
-                        j["x"].get<float>(),
-                        j["y"].get<float>(),
-                        j["z"].get<float>()
+                        std::stof(j["x"].get<std::string>()),
+                        std::stof(j["y"].get<std::string>()),
+                        std::stof(j["z"].get<std::string>())
                     );
                     it->seenBy.clear();           //Wipe the seenBy and add only them
                     it->seenBy.push_back(pName);  //This is only seen by them
@@ -389,7 +389,7 @@ void startServerLoop(std::string host)
     try
     {
         auto const address = net::ip::make_address(host);
-        auto const port = static_cast<unsigned short>(32852);
+        auto const port = static_cast<unsigned short>(MyPort);
 
         net::io_context ioc{ 1 };
 

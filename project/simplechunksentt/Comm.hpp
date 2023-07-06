@@ -21,6 +21,9 @@ public:
 
 
 #include "Game.hpp"
+
+//static std::mutex COMMAND_QUEUE_MUTEX;
+
 void getPublicListings(std::string masterServerIp);
 
 void startTalkingToServer(std::string host, std::string port, std::string name);

@@ -630,8 +630,6 @@ int main()
     std::string port = "32851";
     std::string name = nameRes.value();
 
-    std::thread serverThread(startTalkingToServer, host, port, name);
-    serverThread.detach();
 
     setupHud();
     GLWrapper wrap;
@@ -643,17 +641,26 @@ int main()
     game.world.generate();
 
 
+
+    std::thread serverThread(startTalkingToServer, host, port, name);
+    serverThread.detach();
+
     auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     auto chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
     auto sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
-    auto updateTheServerTask = [](Game* g) { addServerCommandsToQueue(g); };
+    auto updateTheServerTask = [](Game* g) { 
+
+        ///*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
+        addServerCommandsToQueue(g);
+    };
 
 
 
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
-    game.addTask(updateTheServerTask, 1.0f, 4);
+    game.addTask(updateTheServerTask, 2.0f, 4);
+
 
     /*TEXTURE BIT*/
 

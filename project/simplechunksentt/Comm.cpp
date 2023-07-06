@@ -63,13 +63,15 @@ glm::vec3 prevPos;
 
 void addServerCommandsToQueue(Game* g)
 {
+    //std::cout << "Adding commands!";
+    //std::cout << Game::instance->serverCommandQueue.size() << std::endl;
     if (prevPos != GLWrapper::instance->cameraPos)
     {
         prevPos = GLWrapper::instance->cameraPos;
-        g->serverCommandQueue.push_back("pUp");
+        g->instance->serverCommandQueue.push_back("pUp");
     }
     else {
-        g->serverCommandQueue.push_back("getUp");
+        g->instance->serverCommandQueue.push_back("getUp");
     }
 }
 
@@ -102,13 +104,18 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
         //The infinite loop
 
         for (;;) {
-            while (Game::instance->serverCommandQueue.size() == 0)
-            {
-                //Wait until there is a command in the queue
+            bool queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
+            while (queueEmpty) {
+                std::cout << "THE QUEUE SIZE IS";
+                std::cout << Game::instance->serverCommandQueue.size() << std::endl;
+                // Wait until the condition becomes false
+                queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
             }
+            ///*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
+            std::cout << "The command entered" << std::endl;
+            std::cout << Game::instance->serverCommandQueue.size();
             //The command entered
             auto command = Game::instance->serverCommandQueue.begin();
-
 
             json payload;
 
@@ -137,7 +144,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
                 for (auto& player : response.items())
                 {
-                    json thisPlayer = json::parse(player.value());
+                    json thisPlayer = json::parse(player.value().get<std::string>());
                     //this is one player on the list that needs updating
                     auto it = std::find_if(Game::instance->otherPlayersIfMultiplayer.begin(), Game::instance->otherPlayersIfMultiplayer.end(), [&](const Player& p) {
                         return p.name == thisPlayer["name"];
@@ -193,7 +200,6 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                             );
                         }
                     }
-            
             Game::instance->serverCommandQueue.erase(command); //command done, take it from queue & do next one/wait for another
         }
         //End infinite loop
