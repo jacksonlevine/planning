@@ -145,6 +145,9 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                 for (auto& player : response.items())
                 {
                     json thisPlayer = json::parse(player.value().get<std::string>());
+
+                    std::cout << thisPlayer.dump() << std::endl;
+
                     //this is one player on the list that needs updating
                     auto it = std::find_if(Game::instance->otherPlayersIfMultiplayer.begin(), Game::instance->otherPlayersIfMultiplayer.end(), [&](const Player& p) {
                         return p.name == thisPlayer["name"];
