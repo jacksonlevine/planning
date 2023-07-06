@@ -9,6 +9,7 @@
 #include <nlohmann/json.hpp>
 #include <boost/asio.hpp>
 #include <glm/glm.hpp>
+#include <boost/bind.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -121,6 +122,7 @@ std::string getMyPublicIP(net::io_context& io_context)
 }
 
 
+
 std::string makeMessageForMasterServer(const char* name, int population, const char* ip, std::string cmdType)
 {
     json data;
@@ -178,6 +180,21 @@ void contactMasterServer(std::string host)
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
+
+void tick(const boost::system::error_code&, boost::asio::deadline_timer* t)
+{
+    // This is your function that should be executed every 30 minutes.
+    std::cout << "Tick!" << std::endl;
+    contactMasterServer(Masterhost);
+
+    // Reschedule the timer for 30 minutes in the future.
+    t->expires_at(t->expires_at() + boost::posix_time::minutes(1));
+
+    // Post the timer event back onto the IO service.
+    t->async_wait(boost::bind(tick, boost::asio::placeholders::error, t));
+}
+
+
 
 
 std::pair<std::string, std::string> splitString(const std::string& str) {
@@ -460,7 +477,9 @@ int main(int argc, char** argv)
     catch (std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
     }
+    net::io_service io;
 
+    boost::asio::io_service::work work(io);
     if (pubyorn.front() == 'y' || pubyorn.front() == 'Y')
     {
 
@@ -472,8 +491,12 @@ int main(int argc, char** argv)
         contactMasterServer(Masterhost);
 
 
+        boost::asio::deadline_timer t(io, boost::posix_time::minutes(1));
+        t.async_wait(boost::bind(tick, boost::asio::placeholders::error, &t));
 
-        
+        std::thread thread([&io] { io.run(); });
+        // Detach the thread if you don't need to join it later.
+        thread.detach();
 
     }
 

@@ -44,7 +44,7 @@ std::pair<std::string, std::string> splitString(const std::string& str) {
         return std::make_pair("", ""); // Return empty strings if '|' is not found
     }
 }
-bool isEntryOlderThan30Minutes(const std::string& entryTime) {
+bool isEntryOlderThan1Minutes(const std::string& entryTime) {
     // Convert the entryTime string to a long long int
     long long int entryTimeValue = std::stoll(entryTime);
 
@@ -57,8 +57,8 @@ bool isEntryOlderThan30Minutes(const std::string& entryTime) {
     // Calculate the time difference in minutes
     double minutesPassed = std::difftime(currentTime, entryTimeT) / 60.0;
 
-    // Check if the entry is older than 30 minutes
-    if (minutesPassed > 30.0) {
+    // Check if the entry is older than 1 minutes
+    if (minutesPassed > 1.0) {
         return true;
     }
     else {
@@ -160,7 +160,7 @@ void do_session(tcp::socket& socket)
                         
                         json entry = json::parse(s);
 
-                        if (isEntryOlderThan30Minutes(entry["time"]))
+                        if (isEntryOlderThan1Minutes(entry["time"]))
                         {
                             
                             deleteDbVariable(entry["name"]);

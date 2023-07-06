@@ -225,6 +225,7 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
         glDeleteShader(vs_id);
     }
 
+    glBindVertexArray(background_vao);
     glUseProgram(background_shader);
     GLuint top_color_loc = glGetUniformLocation(background_shader, "top_color");
     GLuint bot_color_loc = glGetUniformLocation(background_shader, "bot_color");
@@ -234,7 +235,6 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
 
     glUniform1f(cpitch_loc, cameraPitch);
 
-    glBindVertexArray(background_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
 
@@ -415,6 +415,7 @@ void waterTile(
         glDeleteShader(vs_id);
     }
 
+    glBindVertexArray(water_vao);
     glUseProgram(water_shader);
     GLuint time_loc = glGetUniformLocation(water_shader, "time");
     GLuint base_color_loc = glGetUniformLocation(water_shader, "base_color");
@@ -439,7 +440,6 @@ void waterTile(
 
     glUniform1f(wheight_loc, wheight);
 
-    glBindVertexArray(water_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
     //glEnable(GL_DEPTH_TEST);

@@ -126,8 +126,11 @@ int GLWrapper::initializeGL() {
         return -1;
     }
 
-    this->wi = 1900;
-    this->he = 1000;
+    //this->wi = 1900;
+    //this->he = 1000;
+
+    this->wi = 960;
+    this->he = 720;
     
 
     // Set up GLFW window hints
