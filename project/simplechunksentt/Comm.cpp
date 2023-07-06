@@ -104,6 +104,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
         //The infinite loop
 
         for (;;) {
+            std::cout << Game::instance->otherPlayersIfMultiplayer.size() << std::endl;
             bool queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
 
             while (queueEmpty) {
