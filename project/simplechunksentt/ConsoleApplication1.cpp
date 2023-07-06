@@ -73,8 +73,8 @@ void drawHeadsUpDisplay(HudView& hudView)
             "void main()\n"
             "{\n"
             "vec4 texColor = texture(ourTexture, TexCoord);\n"
-            "if(texColor.a < 0.1){\n"
-            "discard;}\n"
+            //"if(texColor.a < 0.1){\n"
+            //"discard;}\n"
 
             "    FragColor = texColor;\n"
             "}\n";
@@ -490,8 +490,8 @@ void drawText(const char* text, float x, float y)
             "void main()\n"
             "{\n"
             "vec4 texColor = texture(ourTexture, TexCoord);\n"
-            "if(texColor.a < 0.1){\n"
-            "discard;}\n"
+            //"if(texColor.a < 0.1){\n"
+            //"discard;}\n"
             "    FragColor = texColor;\n"
             "}\n";
 
