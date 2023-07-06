@@ -9,7 +9,7 @@ struct intTup;
 
 #include "entt/entt.hpp"
 #include "SimpleChunk.hpp"
-
+#include "Comm.hpp"
 #define CHUNK_WIDTH 20
 
 struct intTup {
@@ -103,6 +103,9 @@ public:
     std::vector<ZeroChunk> zeroChunkPool;
     std::unordered_map<intTup, SimpleChunk, intTupHash> activeSimpChunks;
     std::unordered_map<intTup, ZeroChunk, intTupHash> activeZeroChunks;
+
+    std::vector<std::string> serverCommandQueue;
+    std::vector<Player> otherPlayersIfMultiplayer;
 
     entt::registry registry;
 

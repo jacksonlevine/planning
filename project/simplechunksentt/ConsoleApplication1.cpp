@@ -21,7 +21,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "GlyphFace.hpp"
 #include "Comm.hpp"
-
+#include "./persistentVariablesLib/pvarslib.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 unsigned int texture;
 HudView hud;
 
@@ -604,7 +607,32 @@ void drawText(const char* text, float x, float y)
 }
 int main()
 {
+    // Create a random UUID generator.
+    boost::uuids::random_generator generator;
+
+    PVarsContext::tableName = "mimosdonoinfo";
+
+    Result r = getDbVariable("name");
+    if (r.type == PVARSERROR)
+    {
+        std::string defName("Player");
+        std::string yourName = defName + boost::uuids::to_string(generator());
+        setDbVariable("name", yourName.c_str());
+    }
+    Result nameRes = getDbVariable("name");
+    assert(nameRes.type != PVARSERROR);
+
+
     getPublicListings(std::string("192.168.1.131"));
+
+
+    std::string host = "192.168.1.131";
+    std::string port = "32851";
+    std::string name = nameRes.value();
+
+    std::thread serverThread(startTalkingToServer, host, port, name);
+    serverThread.detach();
+
     setupHud();
     GLWrapper wrap;
     wrap.initializeGL();
@@ -613,14 +641,19 @@ int main()
     Game game(&wrap);
     game.waterHeight = -4.5f;
     game.world.generate();
-    std::function<void(Game* g)> surveyTask = [](Game* g) { g->surveyNeededChunks(); };
-    std::function<void(Game* g)> chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
-    std::function<void(Game* g)> sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
+
+
+    auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
+    auto chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
+    auto sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
+    auto updateTheServerTask = [](Game* g) { addServerCommandsToQueue(g); };
+
+
 
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
-
+    game.addTask(updateTheServerTask, 1.0f, 4);
 
     /*TEXTURE BIT*/
 

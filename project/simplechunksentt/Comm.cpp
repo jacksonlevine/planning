@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Comm.hpp"
-
+#include "../simplechunksentt/persistentVariablesLib/pvarslib.hpp"
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace websocket = beast::websocket;
@@ -57,3 +57,156 @@ void getPublicListings(std::string masterServerIp)
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
+
+glm::vec3 prevPos;
+
+
+void addServerCommandsToQueue(Game* g)
+{
+    if (prevPos != GLWrapper::instance->cameraPos)
+    {
+        prevPos = GLWrapper::instance->cameraPos;
+        g->serverCommandQueue.push_back("pUp");
+    }
+    else {
+        g->serverCommandQueue.push_back("getUp");
+    }
+}
+
+
+
+void startTalkingToServer(std::string host, std::string port, std::string name)
+{
+    try
+    {
+
+        net::io_context ioc;
+
+        tcp::resolver resolver{ ioc };
+        websocket::stream<tcp::socket> ws{ ioc };
+
+        auto const results = resolver.resolve(host.c_str(), port);
+
+        net::connect(ws.next_layer(), results.begin(), results.end());
+
+        ws.set_option(websocket::stream_base::decorator(
+            [](websocket::request_type& req)
+            {
+                req.set(http::field::user_agent,
+                std::string(BOOST_BEAST_VERSION_STRING) +
+                " websocket-client-coro");
+            }));
+
+        ws.handshake(host, "/");
+
+        //The infinite loop
+
+        for (;;) {
+            while (Game::instance->serverCommandQueue.size() == 0)
+            {
+                //Wait until there is a command in the queue
+            }
+            //The command entered
+            auto command = Game::instance->serverCommandQueue.begin();
+
+
+            json payload;
+
+            if (*command == "pUp")
+            {
+                payload["x"] = std::to_string(GLWrapper::instance->cameraPos.x);
+                payload["y"] = std::to_string(GLWrapper::instance->cameraPos.y);
+                payload["z"] = std::to_string(GLWrapper::instance->cameraPos.z);
+            }
+
+
+            payload["name"] = name;
+            std::string text = std::string(*command) + std::string("|") + payload.dump();
+
+            ws.write(net::buffer(std::string(text)));
+
+            beast::flat_buffer buffer;
+
+            ws.read(buffer);
+
+            std::string s = beast::buffers_to_string(buffer.data());
+
+            json response = json::parse(s);
+
+            auto receivePlayers = [&]() {
+
+                for (auto& player : response.items())
+                {
+                    json thisPlayer = json::parse(player.value());
+                    //this is one player on the list that needs updating
+                    auto it = std::find_if(Game::instance->otherPlayersIfMultiplayer.begin(), Game::instance->otherPlayersIfMultiplayer.end(), [&](const Player& p) {
+                        return p.name == thisPlayer["name"];
+                        });
+                    if (it == Game::instance->otherPlayersIfMultiplayer.end()) //first time we heard about this player
+                    {
+                        Player p;
+                        p.name = thisPlayer["name"];
+                        p.pos = glm::vec3(
+                            thisPlayer["x"].get<float>(),
+                            thisPlayer["y"].get<float>(),
+                            thisPlayer["z"].get<float>()
+                        );
+                        p.prevPos = p.pos;
+                        Game::instance->otherPlayersIfMultiplayer.push_back(p);
+                    }
+                    else {                                                      //existing player updating
+                        it->prevPos = it->pos;
+                        it->pos = glm::vec3(
+                            thisPlayer["x"].get<float>(),
+                            thisPlayer["y"].get<float>(),
+                            thisPlayer["z"].get<float>()
+                        );
+                    }
+                }
+
+            };
+            
+            if (*command == "pUp")
+            {
+                receivePlayers();
+                
+
+            }
+            else
+                if (*command == "getUp")
+                {
+                    receivePlayers();
+                }
+                else
+                    if (*command == "amI")
+                    {
+                        if (*s.begin() == 'n')
+                        {
+                            //youre joining first time, no worries!
+                        }
+                        else {
+                            //the response has where you should be
+                            GLWrapper::instance->cameraPos = glm::vec3(
+                                response["x"].get<float>(),
+                                response["y"].get<float>(),
+                                response["z"].get<float>()
+                            );
+                        }
+                    }
+            
+            Game::instance->serverCommandQueue.erase(command); //command done, take it from queue & do next one/wait for another
+        }
+        //End infinite loop
+
+
+
+
+
+        ws.close(websocket::close_code::normal);
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+

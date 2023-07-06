@@ -120,7 +120,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
@@ -149,6 +149,7 @@
     <ClCompile Include="Maths.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Perlin.cpp" />
+    <ClCompile Include="persistentVariablesLib\pvarslib.cpp" />
     <ClCompile Include="PineTree.cpp" />
     <ClCompile Include="Rock.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Perlin.h" />
+    <ClInclude Include="persistentVariablesLib\pvarslib.hpp" />
     <ClInclude Include="Scene.hpp" />
     <ClInclude Include="SimpleChunk.hpp" />
     <ClInclude Include="stb_image.h" />

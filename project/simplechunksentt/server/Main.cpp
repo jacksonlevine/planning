@@ -470,29 +470,16 @@ int main(int argc, char** argv)
 
         std::cout << "Contacting the master server to list your public server..." << std::endl;
         contactMasterServer(Masterhost);
-    
-        //  DONE CONTACTING MASTER SERVER,      ENTERING MAIN SERVER LOOP. 
 
 
 
+        
 
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
+    }
 
     std::string successStatement("Server now running at " + MyIP + ":" + std::to_string(MyPort));
     std::cout << ANSI_RED << successStatement << ANSI_RESET << std::endl;
-    
+    startServerLoop(host);
+
     return EXIT_SUCCESS;
 }
