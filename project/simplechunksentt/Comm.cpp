@@ -75,7 +75,7 @@ void addServerCommandsToQueue(Game* g)
     }
 }
 
-
+volatile int thisTest = 0;
 
 void startTalkingToServer(std::string host, std::string port, std::string name)
 {
@@ -105,15 +105,15 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
         for (;;) {
             bool queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
+
             while (queueEmpty) {
-                std::cout << "THE QUEUE SIZE IS";
-                std::cout << Game::instance->serverCommandQueue.size() << std::endl;
+                thisTest = rand();
                 // Wait until the condition becomes false
+
                 queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
             }
             ///*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
-            std::cout << "The command entered" << std::endl;
-            std::cout << Game::instance->serverCommandQueue.size();
+
             //The command entered
             auto command = Game::instance->serverCommandQueue.begin();
 
