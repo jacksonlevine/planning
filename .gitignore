@@ -428,3 +428,4 @@ FodyWeavers.xsd
 *.sln.iml
 *.db
 project/simplechunksentt/MasterServer/data.db
+*.db
