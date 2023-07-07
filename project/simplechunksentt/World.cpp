@@ -9,6 +9,7 @@
 perlin p;
 
 long World::worldSeed = 0;
+bool World::generateSeed = true;
 int modelNum = 0;
 
 std::vector<std::function<Model(float, float, float)>> forestObjs = {
@@ -181,8 +182,12 @@ Model nextModel(float x, float y, float z, Biome& biome)
 }
 
 void World::generate() {
-	srand(time(NULL));
-	worldSeed = 10000 + rand()*10000 + rand()*100000;
+	if (World::generateSeed)
+	{
+		srand(time(NULL));
+		worldSeed = 10000 + rand() * 10000 + rand() * 100000;
+	}
+
 	for (int x = -5; x < 5; x++)
 	{
 		for (int z = -5; z < 5; z++)
@@ -227,6 +232,9 @@ int World::generateOneChunk(intTup coord) {
 			int biomeID = std::max(std::min((int)std::abs(((bigNoise * 6))), (int)biomes.size() - 1), 0);
 
 
+			double objectBigNoise = p.noise((long double)(worldSeed + t.x) / 5.025, 129.253, (long double)(worldSeed + t.z) / 5.025);
+			double objectNoise = p.noise((long double)(worldSeed + t.x) / 0.225, 60.253, (long double)(worldSeed + t.z) / .225)*5 - objectBigNoise;
+
 			Biome& biome = biomes[biomeID];
 			for (intTup& lp : loadPen)
 			{
@@ -244,12 +252,12 @@ int World::generateOneChunk(intTup coord) {
 				this->heights.insert_or_assign(tup, h);
 			}
 
-			if (rando() < (0.001 * biome.objectFrequency) && n > Game::instance->waterHeight)
+			if (std::abs(objectNoise) < (0.003 * biome.objectFrequency) && n > Game::instance->waterHeight)
 			{
 				Model m = nextModel(t.x, n, t.z, biome);
 				this->models.insert_or_assign(t, m);
 			} else
-			if (n < Game::instance->waterHeight && rando() < (0.001 * biome.objectFrequency) && Game::instance->waterHeight-n < 5)
+			if (n < Game::instance->waterHeight && std::abs( objectNoise) < (0.003 * biome.objectFrequency) && Game::instance->waterHeight-n < 5)
 			{
 				Model m = Plant::getCatTailsModel(t.x, n, t.z);
 				this->models.insert_or_assign(t, m);

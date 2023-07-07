@@ -70,6 +70,7 @@ public:
     std::unordered_map<intTup, HeightTile, intTupHash> heights;
 
     static long worldSeed;
+    static bool generateSeed;
 
     static double getTerrainNoise(int x, int z);
     void generate();

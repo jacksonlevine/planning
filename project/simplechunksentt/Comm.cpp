@@ -79,6 +79,10 @@ volatile int thisTest = 0;
 
 void startTalkingToServer(std::string host, std::string port, std::string name)
 {
+
+
+
+
     try
     {
 
@@ -101,8 +105,20 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
         ws.handshake(host, "/");
 
-        //The infinite loop
+        auto serverFetch = [&](const char* cmd) {
+            ws.write(net::buffer(std::string(cmd) + "|{}"));
+            beast::flat_buffer buffer;
+            ws.read(buffer);
+            std::string s = beast::buffers_to_string(buffer.data());
+            return s;
+        };
 
+        
+        std::string fetchedSeed = serverFetch("getSeed");
+        World::generateSeed = false;
+        World::worldSeed = std::stol(fetchedSeed);
+
+        //The infinite loop
         for (;;) {
             //std::cout << Game::instance->otherPlayersIfMultiplayer.size() << std::endl;
             bool queueEmpty = (Game::instance->serverCommandQueue.size() == 0);

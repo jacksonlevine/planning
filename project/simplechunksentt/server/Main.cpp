@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include <glm/glm.hpp>
 #include <boost/bind.hpp>
-
+#include "../persistentVariablesLib/pvarslib.hpp"
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace websocket = beast::websocket;
@@ -34,8 +34,9 @@ std::string Masterhost = "192.168.1.131";   //THIS WILL NEED TO BE THE PUBLIC IP
 
 
 
+//THA SEED, store this in db
 
-
+long worldSeed = 0;
 
 
 
@@ -380,6 +381,10 @@ void do_session(tcp::socket& socket)
                 }
 
             }
+            if (command == "getSeed")
+            {
+                ws.write(net::buffer(std::to_string(worldSeed)));
+            }
         }
     }
     catch (beast::system_error const& se)
@@ -428,8 +433,26 @@ void startServerLoop(std::string host)
 
 int main(int argc, char** argv)
 {
+    PVarsContext::tableName = "serverWorld";
+    //LOAD THE SEED OR MAKE SEED
+    Result prevSeed = getDbVariable("seed");
+    if (prevSeed.type == PVARSERROR)
+    {
+        std::cout << "No world save detected. Generating new seed..." << std::endl;
+        srand(time(NULL));
+        worldSeed = 10000 + rand() * 10000 + rand() * 100000;
+        setDbVariable("seed", std::to_string(worldSeed).c_str());
+    }
+    else {
+        worldSeed = std::stol(prevSeed.value()); 
+    }
 
-    std::cout << "Use default port? (Y / N)" << std::endl;
+
+
+
+
+
+    std::cout << "Use default port 32581? (Y / N)" << std::endl;
     std::string defportyorn;
     std::getline(std::cin, defportyorn);
 
@@ -495,7 +518,7 @@ int main(int argc, char** argv)
         t.async_wait(boost::bind(tick, boost::asio::placeholders::error, &t));
 
         std::thread thread([&io] { io.run(); });
-        // Detach the thread if you don't need to join it later.
+
         thread.detach();
 
     }
