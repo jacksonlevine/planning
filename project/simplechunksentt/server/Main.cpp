@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include <glm/glm.hpp>
 #include <boost/bind.hpp>
-#include "../persistentVariablesLib/pvarslib.hpp"
+#include "pvarslib.hpp"
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace websocket = beast::websocket;
@@ -374,9 +374,9 @@ void do_session(tcp::socket& socket)
                 }
                 else {                           // or else respond with payload
                     json resp;
-                    resp["x"] = it->pos.x;
-                    resp["y"] = it->pos.y;
-                    resp["z"] = it->pos.z;
+                    resp["x"] = std::to_string(it->pos.x);
+                    resp["y"] = std::to_string(it->pos.y);
+                    resp["z"] = std::to_string(it->pos.z);
                     ws.write(net::buffer(resp.dump()));
                 }
 
@@ -390,7 +390,7 @@ void do_session(tcp::socket& socket)
     catch (beast::system_error const& se)
     {
         if (se.code() != websocket::error::closed)
-            std::cerr << "Error: " << se.code().message() << std::endl;
+            std::cerr << "Beast Error: " << se.code().message() << std::endl;
     }
     catch (std::exception const& e)
     {
