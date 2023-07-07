@@ -631,6 +631,11 @@ int main()
     std::string name = nameRes.value();
 
 
+
+    std::thread serverGreeting(getJustTheSeed_PepeBustEmoji, host, port, name);
+    serverGreeting.detach();
+
+
     setupHud();
     GLWrapper wrap;
     wrap.initializeGL();
@@ -640,10 +645,9 @@ int main()
     game.waterHeight = -4.5f;
     game.world.generate();
 
-
-
     std::thread serverThread(startTalkingToServer, host, port, name);
     serverThread.detach();
+
 
     auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     auto chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };

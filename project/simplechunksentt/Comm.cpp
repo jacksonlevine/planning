@@ -77,6 +77,52 @@ void addServerCommandsToQueue(Game* g)
 
 volatile int thisTest = 0;
 
+void getJustTheSeed_PepeBustEmoji(std::string host, std::string port, std::string name)
+{
+    try
+    {
+
+        net::io_context ioc;
+
+        tcp::resolver resolver{ ioc };
+        websocket::stream<tcp::socket> ws{ ioc };
+
+        auto const results = resolver.resolve(host.c_str(), port);
+
+        net::connect(ws.next_layer(), results.begin(), results.end());
+
+        ws.set_option(websocket::stream_base::decorator(
+            [](websocket::request_type& req)
+            {
+                req.set(http::field::user_agent,
+                std::string(BOOST_BEAST_VERSION_STRING) +
+                " websocket-client-coro");
+            }));
+
+        ws.handshake(host, "/");
+
+        auto serverFetch = [&](const char* cmd) {
+            ws.write(net::buffer(std::string(cmd) + "|{}"));
+            beast::flat_buffer buffer;
+            ws.read(buffer);
+            std::string s = beast::buffers_to_string(buffer.data());
+            return s;
+        };
+
+
+        std::string fetchedSeed = serverFetch("getSeed");
+        World::generateSeed = false;
+        World::worldSeed = std::stol(fetchedSeed);
+
+        ws.close(websocket::close_code::normal);
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+}
+
 void startTalkingToServer(std::string host, std::string port, std::string name)
 {
 
@@ -113,10 +159,26 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
             return s;
         };
 
-        
-        std::string fetchedSeed = serverFetch("getSeed");
-        World::generateSeed = false;
-        World::worldSeed = std::stol(fetchedSeed);
+        auto serverFetchWithArg = [&](const char* cmd, const char* arg) {
+            ws.write(net::buffer(std::string(std::string(std::string(cmd) + "|{") + arg)+"}"));
+            beast::flat_buffer buffer;
+            ws.read(buffer);
+            std::string s = beast::buffers_to_string(buffer.data());
+            return s;
+        };
+
+        std::string amIResult = serverFetchWithArg("amI", std::string(std::string("\"name\":\"") + name + "\"").c_str());
+
+        if (*amIResult.begin() != 'n')
+        {
+            json myPos = json::parse(amIResult);
+            GLWrapper::instance->cameraPos = glm::vec3(
+                std::stof(myPos["x"].get<std::string>()),
+                std::stof(myPos["y"].get<std::string>()),
+                std::stof(myPos["z"].get<std::string>())
+            );
+        }
+
 
         //The infinite loop
         for (;;) {
