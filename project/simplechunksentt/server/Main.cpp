@@ -223,9 +223,8 @@ std::string getJsonifiedListOfUpdatedPlayers(const char* pName)
         {
             json j;
 
-            std::vector<std::string> seenByListButWithYou;
-            seenByListButWithYou.insert(seenByListButWithYou.end(), i.seenBy.begin(), i.seenBy.end());
-            seenByListButWithYou.push_back(pName); //Youve seen it now, according to here!
+       
+            i.seenBy.push_back(pName);
 
             j["name"] = i.name;
             j["x"] = i.pos.x;
