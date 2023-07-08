@@ -65,14 +65,7 @@ void addServerCommandsToQueue(Game* g)
 {
     //std::cout << "Adding commands!";
     //std::cout << Game::instance->serverCommandQueue.size() << std::endl;
-    if (prevPos != GLWrapper::instance->cameraPos)
-    {
-        prevPos = GLWrapper::instance->cameraPos;
-        g->instance->serverCommandQueue.push_back("pUp");
-    }
-    else {
-        g->instance->serverCommandQueue.push_back("getUp");
-    }
+
 }
 
 volatile int thisTest = 0;
@@ -183,105 +176,118 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
         //The infinite loop
         for (;;) {
             //std::cout << Game::instance->otherPlayersIfMultiplayer.size() << std::endl;
-            bool queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
 
-            while (queueEmpty) {
-                thisTest = rand();
-                // Wait until the condition becomes false
 
-                queueEmpty = (Game::instance->serverCommandQueue.size() == 0);
-            }
-            ///*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
 
-            //The command entered
-            auto command = Game::instance->serverCommandQueue.begin();
+            std::this_thread::sleep_for(std::chrono::seconds(1));
 
-            json payload;
-
-            if (*command == "pUp")
-            {
-                payload["x"] = std::to_string(GLWrapper::instance->cameraPos.x);
-                payload["y"] = std::to_string(GLWrapper::instance->cameraPos.y);
-                payload["z"] = std::to_string(GLWrapper::instance->cameraPos.z);
-            }
-
-            payload["name"] = name;
-            std::string text = std::string(*command) + std::string("|") + payload.dump();
-
-            ws.write(net::buffer(std::string(text)));
-
-            beast::flat_buffer buffer;
-
-            ws.read(buffer);
-
-            std::string s = beast::buffers_to_string(buffer.data());
-
-            json response = json::parse(s);
-
-            auto receivePlayers = [&]() {
-
-                for (auto& player : response.items())
+            //inlined to guarantee to get this shit in whack
+                if (prevPos != GLWrapper::instance->cameraPos)
                 {
-                    json thisPlayer = json::parse(player.value().get<std::string>());
-
-                    //std::cout << thisPlayer.dump() << std::endl;
-
-                    //this is one player on the list that needs updating
-                    auto it = std::find_if(Game::instance->otherPlayersIfMultiplayer.begin(), Game::instance->otherPlayersIfMultiplayer.end(), [&](const Player& p) {
-                        return p.name == thisPlayer["name"];
-                        });
-                    if (it == Game::instance->otherPlayersIfMultiplayer.end()) //first time we heard about this player
-                    {
-                        Player p;
-                        p.name = thisPlayer["name"];
-                        p.pos = glm::vec3(
-                            thisPlayer["x"].get<float>(),
-                            thisPlayer["y"].get<float>(),
-                            thisPlayer["z"].get<float>()
-                        );
-                        p.prevPos = p.pos;
-                        Game::instance->otherPlayersIfMultiplayer.push_back(p);
-                    }
-                    else {                                                      //existing player updating
-                        it->prevPos = it->pos;
-                        it->pos = glm::vec3(
-                            thisPlayer["x"].get<float>(),
-                            thisPlayer["y"].get<float>(),
-                            thisPlayer["z"].get<float>()
-                        );
-                    }
+                    prevPos = GLWrapper::instance->cameraPos;
+                    /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
+                    Game::instance->serverCommandQueue.push_back("pUp");
+                }
+                else {
+                    /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
+                    Game::instance->serverCommandQueue.push_back("getUp");
                 }
 
-            };
-            
-            if (*command == "pUp")
+            //if (Game::instance->serverCommandQueue.size() > 0)
             {
-                receivePlayers();
-                
 
-            }
-            else
-                if (*command == "getUp")
+  
+                /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
+                //The command entered
+                auto command = Game::instance->serverCommandQueue.begin();
+
+                json payload;
+
+                if (*command == "pUp")
                 {
-                    receivePlayers();
+                    payload["x"] = std::to_string(GLWrapper::instance->cameraPos.x);
+                    payload["y"] = std::to_string(GLWrapper::instance->cameraPos.y);
+                    payload["z"] = std::to_string(GLWrapper::instance->cameraPos.z);
                 }
-                else
-                    if (*command == "amI")
+
+                payload["name"] = name;
+                std::string text = std::string(*command) + std::string("|") + payload.dump();
+
+                ws.write(net::buffer(std::string(text)));
+
+                beast::flat_buffer buffer;
+
+                ws.read(buffer);
+
+                std::string s = beast::buffers_to_string(buffer.data());
+
+                json response = json::parse(s);
+
+                auto receivePlayers = [&]() {
+
+                    for (auto& player : response.items())
                     {
-                        if (*s.begin() == 'n')
+                        json thisPlayer = json::parse(player.value().get<std::string>());
+
+                        std::cout << thisPlayer.dump() << std::endl;
+
+                        //this is one player on the list that needs updating
+                        auto it = std::find_if(Game::instance->otherPlayersIfMultiplayer.begin(), Game::instance->otherPlayersIfMultiplayer.end(), [&](const Player& p) {
+                            return p.name == thisPlayer["name"];
+                            });
+                        if (it == Game::instance->otherPlayersIfMultiplayer.end()) //first time we heard about this player
                         {
-                            //youre joining first time, no worries!
+                            Player p;
+                            p.name = thisPlayer["name"];
+                            p.pos = glm::vec3(
+                                thisPlayer["x"].get<float>(),
+                                thisPlayer["y"].get<float>(),
+                                thisPlayer["z"].get<float>()
+                            );
+                            p.prevPos = p.pos;
+                            Game::instance->otherPlayersIfMultiplayer.push_back(p);
                         }
-                        else {
-                            //the response has where you should be
-                            GLWrapper::instance->cameraPos = glm::vec3(
-                                response["x"].get<float>(),
-                                response["y"].get<float>(),
-                                response["z"].get<float>()
+                        else {                                                      //existing player updating
+                            it->prevPos = it->pos;
+                            it->pos = glm::vec3(
+                                thisPlayer["x"].get<float>(),
+                                thisPlayer["y"].get<float>(),
+                                thisPlayer["z"].get<float>()
                             );
                         }
                     }
-            Game::instance->serverCommandQueue.erase(command); //command done, take it from queue & do next one/wait for another
+
+                };
+            
+                if (*command == "pUp")
+                {
+                    receivePlayers();
+                
+
+                }
+                else
+                    if (*command == "getUp")
+                    {
+                        receivePlayers();
+                    }
+                    else
+                        if (*command == "amI")
+                        {
+                            if (*s.begin() == 'n')
+                            {
+                                //youre joining first time, no worries!
+                            }
+                            else {
+                                //the response has where you should be
+                                GLWrapper::instance->cameraPos = glm::vec3(
+                                    response["x"].get<float>(),
+                                    response["y"].get<float>(),
+                                    response["z"].get<float>()
+                                );
+                            }
+                        }
+                Game::instance->serverCommandQueue.erase(command); //command done, take it from queue & do next one/wait for another
+            }
         }
         //End infinite loop
 

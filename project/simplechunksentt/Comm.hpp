@@ -22,7 +22,7 @@ public:
 
 #include "Game.hpp"
 
-//static std::mutex COMMAND_QUEUE_MUTEX;
+static std::mutex COMMAND_QUEUE_MUTEX;
 
 void getPublicListings(std::string masterServerIp);
 

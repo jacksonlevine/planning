@@ -231,7 +231,6 @@ std::string getJsonifiedListOfUpdatedPlayers(const char* pName)
             j["x"] = i.pos.x;
             j["y"] = i.pos.y;
             j["z"] = i.pos.z;
-            j["seenBy"] = seenByListButWithYou;
 
             resp[std::to_string(index)] = j.dump();
             index++;
@@ -385,6 +384,8 @@ void do_session(tcp::socket& socket)
             {
                 ws.write(net::buffer(std::to_string(worldSeed)));
             }
+            /*LOCK MUTEX*/ std::lock_guard<std::mutex> LOCK_PLAYER_LIST(PLAYER_LIST_MUTEX);
+            MyPopulation = THE_PLAYER_LIST.size();
         }
     }
     catch (beast::system_error const& se)
