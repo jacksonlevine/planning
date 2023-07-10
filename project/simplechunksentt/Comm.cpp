@@ -170,30 +170,22 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
 
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
+            std::string command;
             //inlined to guarantee to get this shit in whack
                 if (prevPos != GLWrapper::instance->cameraPos)
                 {
                     prevPos = GLWrapper::instance->cameraPos;
-                    /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
-                    Game::instance->serverCommandQueue.push_back("pUp");
+                    command = "pUp";
                 }
                 else {
-                    /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
-                    Game::instance->serverCommandQueue.push_back("getUp");
+                    command = "getUp";
                 }
 
-            //if (Game::instance->serverCommandQueue.size() > 0)
-            
 
-  
-                /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
-                //The command entered
-                auto command = Game::instance->serverCommandQueue.begin();
 
                 json payload;
 
-                if (*command == "pUp")
+                if (command == "pUp")
                 {
                     payload["x"] = std::to_string(GLWrapper::instance->cameraPos.x);
                     payload["y"] = std::to_string(GLWrapper::instance->cameraPos.y);
@@ -201,7 +193,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                 }
 
                 payload["name"] = name;
-                std::string text = std::string(*command) + std::string("|") + payload.dump();
+                std::string text = command + std::string("|") + payload.dump();
 
                 ws.write(net::buffer(std::string(text)));
 
@@ -250,19 +242,19 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
                 };
             
-                if (*command == "pUp")
+                if (*command.begin() == 'p') //pUp
                 {
                     receivePlayers();
                 
 
                 }
                 else
-                    if (*command == "getUp")
+                    if (*command.begin() == 'g') //getUp
                     {
                         receivePlayers();
                     }
                     else
-                        if (*command == "amI")
+                        if (*command.begin() == 'a') //amI
                         {
                             if (*s.begin() == 'n')
                             {
@@ -277,7 +269,6 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                                 );
                             }
                         }
-                Game::instance->serverCommandQueue.erase(command); //command done, take it from queue & do next one/wait for another
                 Game::instance->commsTimer = 0;
             
         }
