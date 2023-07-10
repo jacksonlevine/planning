@@ -29,6 +29,7 @@ unsigned int texture;
 HudView hud;
 
 
+
 void setupHud()
 {
     hud.rects.push_back(
@@ -448,6 +449,186 @@ void waterTile(
 }
 
 
+std::vector<float> playerVerts = { //TEST VERTS FOR PLAYER
+    -0.5f, -0.5f, -0.5f,
+    0.5f, -0.5f, -0.5f,
+    0.5f,  0.5f, -0.5f,
+
+    0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f
+};
+
+std::vector<float> playerUvs = {
+    0.0f, 0.0f,
+    0.0f, 0.0f,
+    0.0f, 0.0f,
+
+    0.0f, 0.0f,
+    0.0f, 0.0f,
+    0.0f, 0.0f,
+};
+
+
+
+
+void drawPlayers()
+{
+    static GLuint playerVao = 0;
+    static GLuint playerShader = 0;
+    static GLuint playerVertexVbo = 0;
+    static GLuint playerUvVbo = 0;
+    static GLuint playerInstanceVbo = 0;
+    if (playerVao == 0)
+    {
+        glGenVertexArrays(1, &playerVao);
+        glBindVertexArray(playerVao);
+        glGenBuffers(1, &playerInstanceVbo);
+        glGenBuffers(1, &playerVertexVbo);
+        glGenBuffers(1, &playerUvVbo);
+        const GLchar* vertexSrc =
+            "#version 450 core\n"
+            "layout (location = 0) in vec3 position;\n"
+            "layout (location = 1) in vec2 uv;\n"
+            "layout (location = 2) in mat4 instanceMatrix;\n"
+
+            "uniform mat4 view;\n"
+            "uniform mat4 proj;\n"
+
+            "out vec2 TexCoord;\n"
+            "void main()\n"
+            "{\n"
+            "mat4 model = instanceMatrix;\n"
+            "\n"
+            "    gl_Position = proj * view * model * vec4(position, 1.0);\n"
+            "    TexCoord = uv;\n"
+            "}\n";
+        const GLchar* fragmentSrc =
+            "#version 450 core\n"
+            "in vec2 TexCoord;\n"
+            "out vec4 FragColor;\n"
+            "uniform sampler2D ourTexture;\n"
+            "void main()\n"
+            "{\n"
+            "vec4 texColor = texture(ourTexture, TexCoord);\n"
+            //"if(texColor.a < 0.1){\n"
+            //"discard;}\n"
+            "    FragColor = texColor;\n"
+            "}\n";
+
+        GLuint vertexShaderId, fragmentShaderId;
+        vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
+        fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(vertexShaderId, 1, &vertexSrc, NULL);
+        glShaderSource(fragmentShaderId, 1, &fragmentSrc, NULL);
+        glCompileShader(vertexShaderId);
+
+        GLint success;
+        GLchar infoLog[512];
+        glGetShaderiv(vertexShaderId, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(vertexShaderId, 512, NULL, infoLog);
+            std::cerr << "Vertex shader compilation error: " << infoLog << std::endl;
+        }
+
+        glCompileShader(fragmentShaderId);
+
+        glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(fragmentShaderId, 512, NULL, infoLog);
+            std::cerr << "Fragment shader compilation error: " << infoLog << std::endl;
+        }
+
+        playerShader = glCreateProgram();
+        glAttachShader(playerShader, vertexShaderId);
+        glAttachShader(playerShader, fragmentShaderId);
+        glLinkProgram(playerShader);
+        glDetachShader(playerShader, fragmentShaderId);
+        glDetachShader(playerShader, vertexShaderId);
+        glDeleteShader(fragmentShaderId);
+        glDeleteShader(vertexShaderId);
+
+
+        glBindVertexArray(playerVao);
+        glUseProgram(playerShader);
+
+        //BUFFER THIS INFORMATION ONCE
+        glBindBuffer(GL_ARRAY_BUFFER, playerVertexVbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * playerVerts.size(), playerVerts.data(), GL_STATIC_DRAW);
+        // Set up the vertex attribute pointers for the position buffer object
+        GLint positionAttribute = glGetAttribLocation(playerShader, "position");
+        glEnableVertexAttribArray(positionAttribute);
+        glVertexAttribPointer(positionAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        // Generate a vertex buffer object (VBO) for the uv data
+        glBindBuffer(GL_ARRAY_BUFFER, playerUvVbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * playerUvs.size(), playerUvs.data(), GL_STATIC_DRAW);
+        // Set up the vertex attribute pointers for the uv buffer object
+        GLint uvAttribute = glGetAttribLocation(playerShader, "uv");
+        glEnableVertexAttribArray(uvAttribute);
+        glVertexAttribPointer(uvAttribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    }
+    glBindVertexArray(playerVao);
+    glUseProgram(playerShader);
+    glUniformMatrix4fv(glGetUniformLocation(playerShader, "view"), 1, GL_FALSE, glm::value_ptr(GLWrapper::instance->view));
+    glUniformMatrix4fv(glGetUniformLocation(playerShader, "proj"), 1, GL_FALSE, glm::value_ptr(GLWrapper::instance->projection));
+    
+
+    //BIND THIS INFORMATION EVERTIM
+    glBindBuffer(GL_ARRAY_BUFFER, playerVertexVbo);
+    GLint positionAttribute = glGetAttribLocation(playerShader, "position");
+    glEnableVertexAttribArray(positionAttribute);
+    glVertexAttribPointer(positionAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, playerUvVbo);
+    GLint uvAttribute = glGetAttribLocation(playerShader, "uv");
+    glEnableVertexAttribArray(uvAttribute);
+    glVertexAttribPointer(uvAttribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    std::vector<glm::mat4> instanceData; // MAAAAAAAAAAAAAAAKE THE INSTANCE MAT4s
+    for (int i = 0; i < Game::instance->otherPlayersIfMultiplayer.size(); i++)
+    {
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, glm::mix(Game::instance->otherPlayersIfMultiplayer[i].prevPos, Game::instance->otherPlayersIfMultiplayer[i].pos, Game::instance->commsTimer));
+        instanceData.push_back(transform);
+    }
+
+    //BIIIIIIIIIIIIND THE INSTANCE MAT4s
+    glBindBuffer(GL_ARRAY_BUFFER, playerInstanceVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4)* instanceData.size(), instanceData.data(), GL_STATIC_DRAW);
+
+    //TELL GL A WHOLE BUNCH OF SHIT ABOUT MAT4s 
+    GLint matrixAttribute = glGetAttribLocation(playerShader, "instanceMatrix");
+
+    glEnableVertexAttribArray(matrixAttribute);
+    glVertexAttribPointer(matrixAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+    glVertexAttribDivisor(matrixAttribute, 1);
+
+    glEnableVertexAttribArray(matrixAttribute + 1);
+    glVertexAttribPointer(matrixAttribute + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+    glVertexAttribDivisor(matrixAttribute + 1, 1);
+
+    glEnableVertexAttribArray(matrixAttribute + 2);
+    glVertexAttribPointer(matrixAttribute + 2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+    glVertexAttribDivisor(matrixAttribute + 2, 1);
+
+    glEnableVertexAttribArray(matrixAttribute + 3);
+    glVertexAttribPointer(matrixAttribute + 3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+    glVertexAttribDivisor(matrixAttribute + 3, 1);
+ 
+
+    glDrawArraysInstanced(GL_TRIANGLES, 0, playerVerts.size(), instanceData.size());
+    //std::cout << instanceData.size() << std::endl;
+    glBindVertexArray(0);
+}
+
+
+
+
+
+
 std::string lastText;
 std::vector<GLfloat> tverts;
 std::vector<GLfloat> tuvs;
@@ -700,8 +881,11 @@ int main()
 
     auto meshesView = game.registry.view<MeshComponent>();
 
+
     while (!glfwWindowShouldClose(wrap.window))
     {
+
+        Game::instance->commsTimer = std::min(GLWrapper::instance->deltaTime + Game::instance->commsTimer, 1.0f);
        /* std::cout << wrap.cameraPos.x;
         std::cout << "   z:";
         std::cout << wrap.cameraPos.z;
@@ -774,7 +958,7 @@ int main()
             0.0f, 0.0f, 1.0f, 1.0f, game.waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
 
 
-
+        drawPlayers();
 
         drawHeadsUpDisplay(hud);
         drawText("This 12000 + 340 = 12340 () #$% EEE ", 0.0f, -0.5f);

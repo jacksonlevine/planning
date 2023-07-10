@@ -125,4 +125,5 @@ public:
     void sortChunkPool();
     static int compareChunksInPool(const void* a, const void* b);
     static Game* instance;
+    float commsTimer;
 };

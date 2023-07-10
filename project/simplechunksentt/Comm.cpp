@@ -15,8 +15,8 @@ const std::string ANSI_GREEN = "\033[32m";
 const std::string ANSI_YELLOW = "\033[33m";
 const std::string ANSI_BLUE = "\033[34m";
 
-std::string ServerAddress = "10.0.0.21";
-std::string MasterAddress = "10.0.0.21";
+std::string ServerAddress = "192.168.1.131";
+std::string MasterAddress = "192.168.1.131";
 std::mutex COMMAND_QUEUE_MUTEX;
 
 void getPublicListings(std::string masterServerIp)
@@ -70,7 +70,6 @@ void getJustTheSeed_PepeBustEmoji(std::string host, std::string port, std::strin
 {
     try
     {
-
         net::io_context ioc;
 
         tcp::resolver resolver{ ioc };
@@ -98,7 +97,6 @@ void getJustTheSeed_PepeBustEmoji(std::string host, std::string port, std::strin
             return s;
         };
 
-
         std::string fetchedSeed = serverFetch("getSeed");
         World::generateSeed = false;
         World::worldSeed = std::stol(fetchedSeed);
@@ -109,7 +107,6 @@ void getJustTheSeed_PepeBustEmoji(std::string host, std::string port, std::strin
     {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-
 }
 
 void startTalkingToServer(std::string host, std::string port, std::string name)
@@ -172,7 +169,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
 
 
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
             //inlined to guarantee to get this shit in whack
                 if (prevPos != GLWrapper::instance->cameraPos)
@@ -187,7 +184,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                 }
 
             //if (Game::instance->serverCommandQueue.size() > 0)
-            {
+            
 
   
                 /*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
@@ -222,12 +219,13 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                     {
                         json thisPlayer = json::parse(player.value().get<std::string>());
 
-                        std::cout << thisPlayer.dump() << std::endl;
+                        //std::cout << thisPlayer.dump() << std::endl;
 
                         //this is one player on the list that needs updating
                         auto it = std::find_if(Game::instance->otherPlayersIfMultiplayer.begin(), Game::instance->otherPlayersIfMultiplayer.end(), [&](const Player& p) {
                             return p.name == thisPlayer["name"];
                             });
+
                         if (it == Game::instance->otherPlayersIfMultiplayer.end()) //first time we heard about this player
                         {
                             Player p;
@@ -280,7 +278,8 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                             }
                         }
                 Game::instance->serverCommandQueue.erase(command); //command done, take it from queue & do next one/wait for another
-            }
+                Game::instance->commsTimer = 0;
+            
         }
         //End infinite loop
 
