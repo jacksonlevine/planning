@@ -15,6 +15,10 @@ const std::string ANSI_GREEN = "\033[32m";
 const std::string ANSI_YELLOW = "\033[33m";
 const std::string ANSI_BLUE = "\033[34m";
 
+std::string ServerAddress = "10.0.0.21";
+std::string MasterAddress = "10.0.0.21";
+std::mutex COMMAND_QUEUE_MUTEX;
+
 void getPublicListings(std::string masterServerIp)
 {
     try
@@ -59,14 +63,6 @@ void getPublicListings(std::string masterServerIp)
 }
 
 glm::vec3 prevPos;
-
-
-void addServerCommandsToQueue(Game* g)
-{
-    //std::cout << "Adding commands!";
-    //std::cout << Game::instance->serverCommandQueue.size() << std::endl;
-
-}
 
 volatile int thisTest = 0;
 
@@ -118,9 +114,6 @@ void getJustTheSeed_PepeBustEmoji(std::string host, std::string port, std::strin
 
 void startTalkingToServer(std::string host, std::string port, std::string name)
 {
-
-
-
 
     try
     {
@@ -275,7 +268,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                         {
                             if (*s.begin() == 'n')
                             {
-                                //youre joining first time, no worries!
+                                //youre joining first time
                             }
                             else {
                                 //the response has where you should be

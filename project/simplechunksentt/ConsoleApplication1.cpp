@@ -623,16 +623,14 @@ int main()
     assert(nameRes.type != PVARSERROR);
 
 
-    getPublicListings(std::string("192.168.1.131"));
+    getPublicListings(MasterAddress);
 
-
-    std::string host = "192.168.1.131";
     std::string port = "32851";
     std::string name = nameRes.value();
 
 
 
-    std::thread serverGreeting(getJustTheSeed_PepeBustEmoji, host, port, name);
+    std::thread serverGreeting(getJustTheSeed_PepeBustEmoji, ServerAddress, port, name);
     serverGreeting.detach();
 
 
@@ -645,25 +643,19 @@ int main()
     game.waterHeight = -4.5f;
     game.world.generate();
 
-    std::thread serverThread(startTalkingToServer, host, port, name);
+    std::thread serverThread(startTalkingToServer, ServerAddress, port, name);
     serverThread.detach();
 
 
     auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
     auto chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
     auto sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
-    auto updateTheServerTask = [](Game* g) { 
-
-        ///*LOCK MUTEX*/ std::lock_guard<std::mutex> lock(COMMAND_QUEUE_MUTEX);
-        addServerCommandsToQueue(g);
-    };
 
 
 
     game.addTask(surveyTask, 5.0f, 1);
     game.addTask(chunkQueueTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
-    game.addTask(updateTheServerTask, 2.0f, 4);
 
 
     /*TEXTURE BIT*/
