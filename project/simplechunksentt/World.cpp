@@ -204,19 +204,7 @@ double World::getTerrainNoise(int localX, int localZ)
 	double noise = p.noise((long double)(worldSeed + localX) / 150.25, 30.253, (long double)(worldSeed + localZ) / 150.25) * 25;
 
 	double noise2 = p.noise((long double)(worldSeed + localX) / 800.25, 30.253, (long double)(worldSeed + localZ) / 800.25) * 60;
-
-	double continentalness = p.noise((long double)(worldSeed + localX) / 1000.25, 30.253, (long double)(worldSeed + localZ) / 1000.25);
-
-	double factor;
-	if (continentalness < -1) {
-		// Quadratic curve from 0.8 at continentalness=0.2 to 4 at continentalness=0.4.
-		factor = -14 * continentalness * continentalness + 13 * continentalness - 1;
-	}
-	else {
-		factor = 4;
-	}
-
-	return (noise + noise2) + factor * continentalness;
+	return noise + noise2;
 }
 intTup loadPen[] = {
 	intTup(0,0),
