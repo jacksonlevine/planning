@@ -25,7 +25,7 @@ public:
 
 extern std::string ServerAddress;
 extern std::string MasterAddress;
-
+extern int tickTime;
 
 extern std::mutex COMMAND_QUEUE_MUTEX;
 

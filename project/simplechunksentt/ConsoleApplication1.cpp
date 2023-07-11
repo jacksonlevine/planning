@@ -592,7 +592,7 @@ void drawPlayers()
     {
         glm::mat4 transform = glm::mat4(1.0f);
 
-        float lerp_factor = Game::instance->commsTimer * 2.0f;
+        float lerp_factor = Game::instance->commsTimer / (float)((float)tickTime/1000);
         transform = glm::translate(transform, glm::mix(Game::instance->otherPlayersIfMultiplayer[i].prevPos, Game::instance->otherPlayersIfMultiplayer[i].pos, lerp_factor));
         instanceData.push_back(transform);
     }

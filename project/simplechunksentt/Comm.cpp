@@ -15,6 +15,8 @@ const std::string ANSI_GREEN = "\033[32m";
 const std::string ANSI_YELLOW = "\033[33m";
 const std::string ANSI_BLUE = "\033[34m";
 
+int tickTime = 250;
+
 std::string ServerAddress = "192.168.1.131";
 std::string MasterAddress = "192.168.1.131";
 std::mutex COMMAND_QUEUE_MUTEX;
@@ -169,7 +171,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
 
 
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::this_thread::sleep_for(std::chrono::milliseconds(tickTime));
             std::string command;
             //inlined to guarantee to get this shit in whack
                 if (prevPos != GLWrapper::instance->cameraPos)
