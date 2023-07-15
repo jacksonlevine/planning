@@ -179,6 +179,7 @@ class App extends Component {
         else {
           mainElement = 
           <React.Fragment>
+            <h3>MimosDono 2 Coming soon</h3>
             <GameInfo message={this.state.messageToClient} />
             <div className="mainButtons">
               <button className="btn btn-outline-info slide1" onClick={

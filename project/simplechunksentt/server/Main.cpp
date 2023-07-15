@@ -30,7 +30,7 @@ int MyPopulation = 0;
 std::string MyIP;
 unsigned short MyPort = 32851;
 
-std::string Masterhost = "192.168.1.131";   //THIS WILL NEED TO BE THE PUBLIC IP AND PORT FORWARDED 
+std::string Masterhost = "192.168.3.30";   //THIS WILL NEED TO BE THE PUBLIC IP AND PORT FORWARDED 
 
 //std::string Masterhost = "10.0.0.21";
 
