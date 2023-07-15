@@ -17,8 +17,8 @@ const std::string ANSI_BLUE = "\033[34m";
 
 int tickTime = 250;
 
-std::string ServerAddress = "192.168.1.131";
-std::string MasterAddress = "192.168.1.131";
+std::string ServerAddress = "67.58.229.227";
+std::string MasterAddress = "67.58.229.227";
 std::mutex COMMAND_QUEUE_MUTEX;
 
 void getPublicListings(std::string masterServerIp)

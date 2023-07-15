@@ -814,7 +814,7 @@ int main()
 
 
     std::thread serverGreeting(getJustTheSeed_PepeBustEmoji, ServerAddress, port, name);
-    serverGreeting.detach();
+    serverGreeting.join();
 
 
     setupHud();
