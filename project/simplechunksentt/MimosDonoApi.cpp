@@ -1,7 +1,10 @@
 #include "MimosDonoApi.hpp"
-#include <pybind11/embed.h>
-#include <pybind11/pybind11.h>
-#include <python3.10/Python.h>
+
+
+std::shared_ptr<MimosDonoApi> MimosDonoApi::instance = nullptr;
+
+MimosDonoApi::MimosDonoApi(Game& g) : game(g) {
+}
 
 void MimosDonoApi::setClientPosition(float x, float y, float z)
 {
@@ -14,8 +17,17 @@ std::tuple<float, float, float> MimosDonoApi::getClientPosition()
 	return std::make_tuple(vec.x, vec.y, vec.z);
 }
 
-PYBIND11_EMBEDDED_MODULE(mdapi, m) {
-    pybind11::class_<MimosDonoApi>(m, "MimosDonoApi")
-        .def("setClientPosition", &MimosDonoApi::setClientPosition)
-        .def("getClientPosition", &MimosDonoApi::getClientPosition);
+void MimosDonoApi::_initializePython()
+{
+	//pybind11::module_ mimosdono = pybind11::module_("mimosdono");
+	//Make sure the interpreters running ebfoer this
+	pybind11::class_<MimosDonoApi>(pybind11::module::import("__main__"), "MimosDonoApi")
+			.def("setClientPosition", &MimosDonoApi::setClientPosition)
+			.def("getClientPosition", &MimosDonoApi::getClientPosition);
+
+	pybind11::globals()["mdma"] = pybind11::cast(MimosDonoApi::instance);
+
+	
 }
+
+

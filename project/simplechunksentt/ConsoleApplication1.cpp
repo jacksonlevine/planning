@@ -25,6 +25,11 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "MimosDonoApi.hpp"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <yaml-cpp/yaml.h>
 unsigned int texture;
 HudView hud;
 
@@ -153,7 +158,7 @@ void drawHeadsUpDisplay(HudView& hudView)
 
 
 
-void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
+void drawSky(float top_r, float top_g, float top_b, float top_a,
     float bot_r, float bot_g, float bot_b, float bot_a, float cameraPitch)
 {
     glDisable(GL_DEPTH_TEST);
@@ -243,7 +248,7 @@ void mygl_GradientBackground(float top_r, float top_g, float top_b, float top_a,
 }
 
 
-void waterTile(
+void drawWaterPlane(
     float bot_r, float bot_g, float bot_b, float bot_a, float wheight, glm::mat4 mvp, glm::mat4 model, glm::vec3 camPos)
 {
     glEnable(GL_DEPTH_TEST);
@@ -788,8 +793,24 @@ void drawText(const char* text, float x, float y)
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }
+
+std::string preprocessPythonCode(std::string code) { //remove the stub import from any scripts! convenient for developers!
+    std::string line;
+    std::stringstream ss(code);
+    std::stringstream new_code;
+    while (std::getline(ss, line)) {
+        if (line.find("mimos_api") == std::string::npos) {
+            new_code << line << "\n";
+        }
+    }
+    //std::cout << new_code.str() << std::endl;
+    return new_code.str();
+}
+
 int main()
 {
+
+
     // Create a random UUID generator.
     boost::uuids::random_generator generator;
 
@@ -823,11 +844,72 @@ int main()
     wrap.setupVAO();
 
     Game game(&wrap);
+
+
+    //Initialize modding API
+
+    pybind11::scoped_interpreter guard{}; //pyth interpreter
+    MimosDonoApi theApi(game);            //create instance of api class
+
+
+
+    MimosDonoApi::instance = std::make_shared<MimosDonoApi>(theApi);
+
+    theApi._initializePython();           //put api class stub and single global instance "mdma" into pyth
+
+
+  
+
     game.waterHeight = -4.5f;
     game.world.generate();
 
     std::thread serverThread(startTalkingToServer, ServerAddress, port, name);
     serverThread.detach();
+
+    // Execute the preprocessed Python code.
+    /*try
+    {
+        pybind11::exec(pythonCode);
+    }
+    catch (pybind11::error_already_set& e)
+    {
+        std::cerr << "Python error: " << e.what() << std::endl;
+    }*/
+
+    YAML::Node silverback = YAML::LoadFile("silverback.yaml");
+
+    //RUN THE START UP TASKS IN SILVERBACK LIST
+    for (const auto& moduleName : silverback["list"].as<std::vector<std::string>>()) {
+        std::cout << moduleName << std::endl;
+        try {
+            std::ifstream file(std::string(moduleName) + ".py");
+            std::stringstream buffer;
+            buffer << file.rdbuf();
+            std::string pythonCode = buffer.str();
+            pythonCode = preprocessPythonCode(pythonCode);
+
+            pybind11::object main = pybind11::module::import("__main__");
+            pybind11::object localNamespace = main.attr("__dict__");
+
+            std::cout << pythonCode << std::endl;
+
+            pybind11::exec(pythonCode.c_str(), localNamespace);
+
+            try {
+                pybind11::exec("startup()", localNamespace);
+            }
+            catch (pybind11::error_already_set& e) {
+                std::cerr << "Python error while calling startup in module " << moduleName << ": " << e.what() << std::endl;
+            }
+            
+        }
+        catch (pybind11::error_already_set& e) {
+            std::cerr << "Python error in file " << moduleName << ": " << e.what() << std::endl;
+        }
+        catch (...) {
+            std::cerr << "Unknown error occurred while processing file " << moduleName << std::endl;
+        }
+    }
 
 
     auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
@@ -898,7 +980,7 @@ int main()
 
         //SKY BIT
  
-        mygl_GradientBackground(0.4f, 0.4f, 1.0f, 1.0f,    0.0f, 0.0f, 0.3f, 1.0f, wrap.cameraPitch);
+        drawSky(0.4f, 0.4f, 1.0f, 1.0f,    0.0f, 0.0f, 0.3f, 1.0f, wrap.cameraPitch);
 
          //glDepthMask(GL_FALSE);
         
@@ -956,7 +1038,7 @@ int main()
         }
         glBindVertexArray(0);
 
-        waterTile(
+        drawWaterPlane(
             0.0f, 0.0f, 1.0f, 1.0f, game.waterHeight, wrap.mvp, wrap.model, wrap.cameraPos + glm::vec3(1000, 0, 0));
 
 

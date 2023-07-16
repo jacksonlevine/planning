@@ -152,7 +152,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
             return s;
         };
 
-        std::string amIResult = serverFetchWithArg("amI", std::string(std::string("\"name\":\"") + name + "\"").c_str());
+        /*std::string amIResult = serverFetchWithArg("amI", std::string(std::string("\"name\":\"") + name + "\"").c_str());
 
         if (*amIResult.begin() != 'n')
         {
@@ -162,7 +162,7 @@ void startTalkingToServer(std::string host, std::string port, std::string name)
                 std::stof(myPos["y"].get<std::string>()),
                 std::stof(myPos["z"].get<std::string>())
             );
-        }
+        }*/
 
 
         //The infinite loop
