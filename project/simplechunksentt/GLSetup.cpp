@@ -129,7 +129,7 @@ int GLWrapper::initializeGL() {
     //this->wi = 1900;
     //this->he = 1000;
 
-    this->wi = 960;
+    this->wi = 1280;
     this->he = 720;
     
 
@@ -139,7 +139,7 @@ int GLWrapper::initializeGL() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a GLFW window
-    window = glfwCreateWindow(wi, he, "MimosDono v15.0.0", NULL, NULL);
+    window = glfwCreateWindow(wi, he, "MimosDono v17.0.2", NULL, NULL);
     if (!this->window)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;

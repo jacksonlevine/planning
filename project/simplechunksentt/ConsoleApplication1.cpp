@@ -733,34 +733,43 @@ void drawText(const char* text, float x, float y)
         const char* c = text;
         while (*c != '\0')
         {
-            glyph.setCharCode((int)*c);
+            if (*c == '\n')
+            {
+                pen_x = x;
+                pen_y -= gWidth;
+            }
+            else
+            {
+                glyph.setCharCode((int)*c);
 
 
-            float x0 = pen_x;
-            float y0 = pen_y;
-            float x1 = x0 + gWidth / 2;
-            float y1 = y0 - gWidth;
+                float x0 = pen_x;
+                float y0 = pen_y;
+                float x1 = x0 + gWidth / 2;
+                float y1 = y0 - gWidth;
 
-            tverts.insert(tverts.end(), {
+                tverts.insert(tverts.end(), {
+                        x0, y1, 0.3f,
+                    x1, y1,0.3f,
+                    x1, y0,0.3f,
+                    x1, y0,0.3f,
+                    x0, y0,0.3f,
                     x0, y1, 0.3f,
-                x1, y1,0.3f,
-                x1, y0,0.3f,
-                x1, y0,0.3f,
-                x0, y0,0.3f,
-                x0, y1, 0.3f,
-                });
-            tuvs.insert(tuvs.end(), {
-                glyph.bl.x, glyph.bl.y,
-                glyph.br.x, glyph.br.y,
-                glyph.tr.x, glyph.tr.y,
+                    });
+                tuvs.insert(tuvs.end(), {
+                    glyph.bl.x, glyph.bl.y,
+                    glyph.br.x, glyph.br.y,
+                    glyph.tr.x, glyph.tr.y,
 
-                glyph.tr.x, glyph.tr.y,
-                glyph.tl.x, glyph.tl.y,
-                glyph.bl.x, glyph.bl.y,
-                });
+                    glyph.tr.x, glyph.tr.y,
+                    glyph.tl.x, glyph.tl.y,
+                    glyph.bl.x, glyph.bl.y,
+                    });
 
-            // Move the pen position to the right for the next character
-            pen_x += gWidth / 2.5;
+                // Move the pen position to the right for the next character
+                pen_x += gWidth / 2.5;
+            }
+            
             // Move to the next character
             ++c;
         }
@@ -876,40 +885,56 @@ int main()
         std::cerr << "Python error: " << e.what() << std::endl;
     }*/
 
+    std::string loadedComponents("Components currently loaded: \n");
     YAML::Node silverback = YAML::LoadFile("silverback.yaml");
 
-    //RUN THE START UP TASKS IN SILVERBACK LIST
-    for (const auto& moduleName : silverback["list"].as<std::vector<std::string>>()) {
-        std::cout << moduleName << std::endl;
-        try {
-            std::ifstream file(std::string(moduleName) + ".py");
-            std::stringstream buffer;
-            buffer << file.rdbuf();
-            std::string pythonCode = buffer.str();
-            pythonCode = preprocessPythonCode(pythonCode);
+    if (silverback["list"]) { // Check if "list" is defined
+        if (silverback["list"].size() > 0) {
+            // The list is not empty.
 
-            pybind11::object main = pybind11::module::import("__main__");
-            pybind11::object localNamespace = main.attr("__dict__");
 
-            std::cout << pythonCode << std::endl;
+               //RUN THE START UP TASKS IN SILVERBACK LIST
+            for (const auto& moduleName : silverback["list"].as<std::vector<std::string>>()) {
+                loadedComponents += std::string(moduleName) + "\n";
+                try {
+                    std::ifstream file(std::string(moduleName) + ".py");
+                    std::stringstream buffer;
+                    buffer << file.rdbuf();
+                    std::string pythonCode = buffer.str();
+                    pythonCode = preprocessPythonCode(pythonCode);
 
-            pybind11::exec(pythonCode.c_str(), localNamespace);
+                    pybind11::object main = pybind11::module::import("__main__");
+                    pybind11::object localNamespace = main.attr("__dict__");
 
-            try {
-                pybind11::exec("startup()", localNamespace);
+                    pybind11::exec(pythonCode.c_str(), localNamespace);
+
+                    try {
+                        pybind11::exec("startup()", localNamespace);
+                    }
+                    catch (pybind11::error_already_set& e) {
+                        std::cerr << "Python error while calling startup in module " << moduleName << ": " << e.what() << std::endl;
+                    }
+
+                }
+                catch (pybind11::error_already_set& e) {
+                    std::cerr << "Python error in file " << moduleName << ": " << e.what() << std::endl;
+                }
+                catch (...) {
+                    std::cerr << "Unknown error occurred while processing file " << moduleName << std::endl;
+                }
             }
-            catch (pybind11::error_already_set& e) {
-                std::cerr << "Python error while calling startup in module " << moduleName << ": " << e.what() << std::endl;
-            }
-            
+
+
+
         }
-        catch (pybind11::error_already_set& e) {
-            std::cerr << "Python error in file " << moduleName << ": " << e.what() << std::endl;
-        }
-        catch (...) {
-            std::cerr << "Unknown error occurred while processing file " << moduleName << std::endl;
+        else {
+            // The list is empty.
         }
     }
+    else {
+        // "list" is not defined in the YAML file.
+    }
+ 
 
 
     auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
@@ -964,6 +989,7 @@ int main()
     float jumpTimer = 0.0f;
 
     auto meshesView = game.registry.view<MeshComponent>();
+
 
 
     while (!glfwWindowShouldClose(wrap.window))
@@ -1045,7 +1071,13 @@ int main()
         drawPlayers();
 
         drawHeadsUpDisplay(hud);
-        drawText("This 12000 + 340 = 12340 () #$% EEE ", 0.0f, -0.5f);
+
+
+
+
+
+
+        drawText(loadedComponents.c_str(), -0.95f, 0.95f);
 
 
         float currentFrame = glfwGetTime();
@@ -1150,6 +1182,6 @@ int main()
     }
 
     glfwTerminate();
-
+    serverThread.join();
     return 0;
 }
