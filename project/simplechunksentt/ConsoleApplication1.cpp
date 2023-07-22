@@ -992,7 +992,7 @@ int main()
 
     auto meshesView = game.registry.view<MeshComponent>();
 
-
+    int prevUwv = 0;
 
     while (!glfwWindowShouldClose(wrap.window))
     {
@@ -1041,13 +1041,18 @@ int main()
             buoyancy = std::min<float>(std::abs(wrap.cameraPos.y - game.waterHeight), 0.5f);
         }
         int queueFOV = 0;
-        if (uwV == 1)
+        if (prevUwv != uwV)
         {
-            queueFOV = 70;
+            if (uwV == 1)
+            {
+                queueFOV = 70;
+            }
+            else {
+                queueFOV = 90;
+            }
+            prevUwv = uwV;
         }
-        else {
-            queueFOV = 90;
-        }
+        
         for (const entt::entity entity : meshesView)
         {
             MeshComponent& m = game.registry.get<MeshComponent>(entity);
