@@ -17,6 +17,11 @@ std::tuple<float, float, float> MimosDonoApi::getClientPosition()
 	return std::make_tuple(vec.x, vec.y, vec.z);
 }
 
+void MimosDonoApi::addNewModel(std::vector<GLfloat> verts, std::vector<GLfloat> uvs) {
+	// Your implementation here...
+}
+
+
 void MimosDonoApi::_initializePython()
 {
 	//pybind11::module_ mimosdono = pybind11::module_("mimosdono");

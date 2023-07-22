@@ -885,6 +885,8 @@ int main()
         std::cerr << "Python error: " << e.what() << std::endl;
     }*/
 
+    pybind11::module::import("numpy");
+    pybind11::module::import("math");
     std::string loadedComponents("Components currently loaded: \n");
     YAML::Node silverback = YAML::LoadFile("silverback.yaml");
 

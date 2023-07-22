@@ -28,7 +28,7 @@ std::vector<std::function<Model(float, float, float)>> forestObjs = {
 	)
 	{
 		return Rock::getRockModel(x,y,z);
-	},
+	}, 
 	[](
 		float x,
 		float y,
