@@ -108,6 +108,9 @@ public:
     std::vector<std::string> serverCommandQueue;
     std::vector<Player> otherPlayersIfMultiplayer;
 
+    std::vector<intTup> neededSimpChunks;
+    std::vector<intTup> neededZeroChunks;
+
     entt::registry registry;
 
     Game(GLWrapper* wr);

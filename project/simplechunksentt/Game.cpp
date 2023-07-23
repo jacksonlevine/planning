@@ -21,14 +21,14 @@ intTup& intTup::operator+=(const intTup& other)
 	return *this;
 }
 
-intTup operator+(intTup first, // parameter as value, move-construct (or elide)
+intTup operator+(intTup first,
 	const intTup& second)
 {
 	first.x += second.x;
 	first.y += second.y;
 	first.z += second.z;
 
-	return first; // NRVO (or move-construct)
+	return first; 
 }
 
 intTup::intTup(int x, int y, int z)
@@ -434,28 +434,9 @@ void Game::surveyNeededChunks()
 					}
 					if (this->activeZeroChunks.find(tup) == this->activeZeroChunks.end() || this->activeSimpChunks.find(tup) != this->activeSimpChunks.end())
 					{
-						if (this->activeSimpChunks.find(tup) != this->activeSimpChunks.end())
-						{
-							SimpleChunk& simp = this->activeSimpChunks.at(tup);
-							this->registry.remove<MeshComponent>(simp.me);
-							this->activeSimpChunks.erase(tup);
-							simp.active = false;
-						}
-						if (zeroChunkPool.size() > 5) {
-							ZeroChunk grabbedZero = *(this->zeroChunkPool.begin());
-
-							if (this->activeZeroChunks.find(intTup(grabbedZero.x, grabbedZero.z)) != this->activeZeroChunks.end())
-							{
-								this->activeZeroChunks.erase(intTup(grabbedZero.x, grabbedZero.z));
-							}
-
-							grabbedZero.active = false;
-							this->zeroChunkPool.erase(this->zeroChunkPool.begin());
-
-							grabbedZero.moveAndRebuildMesh(tup.x, tup.z);
-
-							this->zeroChunkPool.push_back(grabbedZero);
-						}
+						
+						this->neededZeroChunks.push_back(tup);
+						
 					}
 				}
 				else
@@ -466,28 +447,12 @@ void Game::surveyNeededChunks()
 					}
 					if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end() || this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
 					{
-						if (this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
-						{
-							ZeroChunk& zer = this->activeZeroChunks.at(tup);
-							this->registry.remove<MeshComponent>(zer.me);
-							this->activeZeroChunks.erase(tup);
-							zer.active = false;
-						}
-						if (simpleChunkPool.size() > 5) {
-							SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+						
 
-							if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
-							{
-								this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
-							}
+						this->neededSimpChunks.push_back(tup);
 
-							grabbedSimp.active = false;
-							this->simpleChunkPool.erase(this->simpleChunkPool.begin());
 
-							grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
-
-							this->simpleChunkPool.push_back(grabbedSimp);
-						}
+						
 					}
 				}
 				
@@ -522,10 +487,74 @@ void Game::surveyNeededChunks()
 
 void Game::rebuildNextChunk()
 {
+
+	if (this->neededZeroChunks.size() > 0)
+	{
+		if (zeroChunkPool.size() > 5) {
+			intTup tup = *this->neededZeroChunks.begin();
+			if (this->activeZeroChunks.find(tup) == this->activeZeroChunks.end())
+			{
+				if (this->activeSimpChunks.find(tup) != this->activeSimpChunks.end())
+				{
+					SimpleChunk& simp = this->activeSimpChunks.at(tup);
+					this->registry.remove<MeshComponent>(simp.me);
+					this->activeSimpChunks.erase(tup);
+					simp.active = false;
+				}
+				ZeroChunk grabbedZero = *(this->zeroChunkPool.begin());
+
+				if (this->activeZeroChunks.find(intTup(grabbedZero.x, grabbedZero.z)) != this->activeZeroChunks.end())
+				{
+					this->activeZeroChunks.erase(intTup(grabbedZero.x, grabbedZero.z));
+				}
+
+				grabbedZero.active = false;
+				this->zeroChunkPool.erase(this->zeroChunkPool.begin());
+
+				grabbedZero.moveAndRebuildMesh(tup.x, tup.z);
+				grabbedZero.active = true;
+				this->zeroChunkPool.push_back(grabbedZero);
+			}
+			this->neededZeroChunks.erase(this->neededZeroChunks.begin());
+		}
+	}
+	if (this->neededSimpChunks.size() > 0)
+	{
+		if (simpleChunkPool.size() > 3) {
+			intTup tup = *this->neededSimpChunks.begin();
+			if (this->activeSimpChunks.find(tup) == this->activeSimpChunks.end()) {
+
+				if (this->activeZeroChunks.find(tup) != this->activeZeroChunks.end())
+				{
+					ZeroChunk& zer = this->activeZeroChunks.at(tup);
+					this->registry.remove<MeshComponent>(zer.me);
+					this->activeZeroChunks.erase(tup);
+					zer.active = false;
+				}
+
+				SimpleChunk grabbedSimp = *(this->simpleChunkPool.begin());
+
+
+
+				if (this->activeSimpChunks.find(intTup(grabbedSimp.x, grabbedSimp.z)) != this->activeSimpChunks.end())
+				{
+					this->activeSimpChunks.erase(intTup(grabbedSimp.x, grabbedSimp.z));
+				}
+
+				grabbedSimp.active = false;
+				this->simpleChunkPool.erase(this->simpleChunkPool.begin());
+
+				grabbedSimp.moveAndRebuildMesh(tup.x, tup.z);
+
+				this->simpleChunkPool.push_back(grabbedSimp);
+			}
+			this->neededSimpChunks.erase(this->neededSimpChunks.begin());
+		}
+	}
 	if (this->neededChunks.size() > 0)
 	{
 		intTup neededSpot = *(this->neededChunks.begin());
-		this->neededChunks.erase(this->neededChunks.begin());
+		
 
 		if (activeChunks.find(neededSpot) == activeChunks.end())
 		{
@@ -549,5 +578,6 @@ void Game::rebuildNextChunk()
 				
 			}
 		}
+		this->neededChunks.erase(this->neededChunks.begin());
 	}
 }

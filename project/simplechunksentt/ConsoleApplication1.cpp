@@ -940,13 +940,13 @@ int main()
 
 
     auto surveyTask = [](Game* g) { g->surveyNeededChunks(); };
-    auto chunkQueueTask = [](Game* g) { g->rebuildNextChunk(); };
+    auto rebuildNextTask = [](Game* g) { g->rebuildNextChunk(); };
     auto sortChunkPoolTask = [](Game* g) { g->sortChunkPool(); };
 
 
 
     game.addTask(surveyTask, 5.0f, 1);
-    game.addTask(chunkQueueTask, 0.1, 2);
+    game.addTask(rebuildNextTask, 0.1, 2);
     game.addTask(sortChunkPoolTask, 7.0f, 3);
 
 
