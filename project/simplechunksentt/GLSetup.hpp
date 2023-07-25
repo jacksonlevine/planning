@@ -48,7 +48,6 @@ public:
 	InputState activeState;
 	GLWrapper();
 	int initializeGL();
-	void runGLLoop();
 	void setFOV(int newF);
 	void bindGeometry(GLuint vbov, GLuint vboc, GLuint vbouv, const GLfloat* vertices, const GLfloat* colors, const GLfloat* uv, int vsize, int csize, int usize);
 	void bindGeometryNoUpload(GLuint vbov, GLuint vboc, GLuint vbouv);

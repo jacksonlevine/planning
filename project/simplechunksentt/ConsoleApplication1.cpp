@@ -935,6 +935,7 @@ int main()
     }
     else {
         // "list" is not defined in the YAML file.
+        std::cerr << "Hey, buckaroo, you gotta define a list called list in silverback.yaml!" << std::endl;
     }
  
 
